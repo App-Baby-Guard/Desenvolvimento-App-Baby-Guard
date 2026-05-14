@@ -4,22 +4,19 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SensorCard from '../components/SensorCard';
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
 
-type DashboardNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('Quarto Sofia');
 
   return (
-
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View>
@@ -34,7 +31,7 @@ const DashboardScreen: React.FC = () => {
 
       {/* ========== Linha dos DISPOSITIVOS ========== */}
       <View style={styles.tabsContainer}>
-        {['Quarto Sofia', 'Sala', '+'].map((tab) => ( //TODO: Substituir os dispositivos fixos pelos adicionados
+        {['Quarto Sofia', 'Sala', 'Adicionar'].map((tab) => ( //TODO: Substituir os dispositivos fixos pelos adicionados
           <TouchableOpacity
             key={tab}
             style={[
@@ -107,7 +104,7 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.chartHeader}>
           <Text style={styles.chartTitle}>Variação de temperatura</Text>
           <View style={styles.chartFilters}>
-            {['1h', '6h', '24h'].map((period) => (
+            {['1h', '6h', '24h'].map((period) => ( //TODO: Adicionar as variações reais de temperatura
               <TouchableOpacity
                 key={period}
                 style={[
@@ -145,33 +142,6 @@ const DashboardScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* ========== BARRA DE NAVEGAÇÃO entre as telas - tab ========== */}
-      <View style={styles.navigationBar}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home" size={24} color="#0066FF" />
-          <Text style={[styles.navLabel, { color: '#0066FF' }]}>Início</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} >
-          <Ionicons name="notifications-outline" size={24} color="#888888" />
-          <Text style={styles.navLabel}>Alertas</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="hardware-chip-outline" size={24} color="#888888" />
-          <Text style={styles.navLabel}>Robôs</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="settings-outline" size={24} color="#888888" />
-          <Text style={styles.navLabel}>Config.</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="person-outline" size={24} color="#888888" />
-          <Text style={styles.navLabel}>Perfil</Text>
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.bottomSpacer} /> {/* espaço pra separar o conteúdo da barra de navegação do final do celular */}
     </ScrollView>
@@ -215,8 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // ========== nome dos dispositivos ==========
-
+  //========== nome dos dispositivos ==========
   tabsContainer: {
     flexDirection: 'row',
     marginBottom: 16,
@@ -247,38 +216,35 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // ========== card do reusmo ==========
-
+  //========== card do resumo ==========
   welcomeCard: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#E8F5E9', // Verde suave
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginBottom: 20,
-
   },
 
   welcomeTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2E7D32',
+    color: '#2E7D32', // Verde escuro
     marginBottom: 4,
   },
 
   welcomeSubtitle: {
     fontSize: 12,
-    color: '#66BB6A',
+    color: '#66BB6A', // Verde médio
     marginBottom: 12,
   },
 
   welcomeIllustrationPlaceholder: {
     height: 60,
-    backgroundColor: '#C8E6C9',
+    backgroundColor: '#C8E6C9', // Verde mais claro
     borderRadius: 8,
   },
 
-  // ========== Card dos SENSORES ==========
-
+  //========== Card dos SENSORES ==========
   sensorSection: {
     marginBottom: 20,
   },
@@ -297,7 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  // ========== SEÇÃO DE GRÁFICO ==========
+ // ========== SEÇÃO DE GRÁFICO ==========
   chartSection: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -373,35 +339,6 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
   },
 
-
-  // ========== NAVEGAÇÃO  ==========
-
-  navigationBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-    justifyContent: 'space-around',
-    marginHorizontal: -16,
-    marginBottom: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#EEEEEE',
-  },
-
-  navItem: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    flex: 1,
-  },
-
-  navLabel: {
-    fontSize: 10,
-    color: '#888888',
-    fontWeight: '500',
-    marginTop: 4,
-  },
 
   bottomSpacer: {
     height: 20,

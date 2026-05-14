@@ -1,10 +1,7 @@
-// src/components/AlertCard.tsx
-
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Interface para as props do alerta
 interface AlertCardProps {
   iconName: string;        // Nome do ícone Ionicons
   iconColor: string;       // Cor do ícone (ex: "#FF6B6B")
@@ -45,7 +42,6 @@ const AlertCard: React.FC<AlertCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  // Container principal do alerta
   alertContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -54,16 +50,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 12,
     alignItems: 'flex-start',
-    // Sombra iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    // Elevação Android
     elevation: 2,
   },
 
-  // Wrapper do ícone
   iconWrapper: {
     width: 44,
     height: 44,
@@ -74,12 +67,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  // Wrapper do conteúdo de texto
   contentWrapper: {
     flex: 1,
   },
 
-  // Título do alerta
   titleText: {
     fontSize: 14,
     fontWeight: '600',
@@ -87,7 +78,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // Descrição do alerta
   descriptionText: {
     fontSize: 12,
     color: '#888888',
@@ -95,14 +85,12 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // Hora do alerta
   timeText: {
     fontSize: 11,
     color: '#BBBBBB',
     fontWeight: '500',
   },
 
-  // Botão de fechar
   closeButton: {
     padding: 4,
     marginLeft: 8,

@@ -1,177 +1,181 @@
 import React, { useState } from 'react';
 import {
-    View,
-    Text,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    Switch,
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SensorCard from '../components/SensorCard';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+
+type DashboardNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC = () => {
-   
-    const [activeTab, setActiveTab] = useState('Quarto Sofia');
 
-    return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.headerTitle}>BabyGuard</Text>
-                    <Text style={styles.headerSubtitle}>Monitoramento em tempo real</Text>
-                </View>
+  const [activeTab, setActiveTab] = useState('Quarto Sofia');
 
-                <View style={styles.avatarContainer}>
-                    <Ionicons name="person" size={24} color="#FFFFFF" />
-                </View>
-            </View>
+  return (
 
-            {/* ========== ABAS DE DISPOSITIVOS ========== */}
-            <View style={styles.tabsContainer}>
-                {['Quarto Sofia', 'Sala', 'Adicionar'].map((tab) => ( //TODO: Substituir os dispositivos fixos pelos adicionados
-                    <TouchableOpacity
-                        key={tab}
-                        style={[
-                            styles.tabButton,
-                            activeTab === tab && styles.tabButtonActive,
-                        ]}
-                        onPress={() => setActiveTab(tab)}
-                    >
-                        <Text
-                            style={[
-                                styles.tabText,
-                                activeTab === tab && styles.tabTextActive,
-                            ]}
-                        >
-                            {tab}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>BabyGuard</Text>
+          <Text style={styles.headerSubtitle}>Monitoramento em tempo real</Text>
+        </View>
 
-            <View style={styles.welcomeCard}>
-                <Text style={styles.welcomeTitle}>Tudo tranquilo</Text>
-                <Text style={styles.welcomeSubtitle}>Última leitura: agora há pouco</Text>
-                <View style={styles.welcomeIllustrationPlaceholder} />
-            </View>
+        <View style={styles.avatarContainer}>
+          <Ionicons name="person" size={24} color="#FFFFFF" />
+        </View>
+      </View>
 
-            {/* ========== SENSORES ========== */}
-            <View style={styles.sensorSection}>
-                <Text style={styles.sectionTitle}>SENSORES EM TEMPO REAL</Text>
+      {/* ========== Linha dos DISPOSITIVOS ========== */}
+      <View style={styles.tabsContainer}>
+        {['Quarto Sofia', 'Sala', '+'].map((tab) => ( //TODO: Substituir os dispositivos fixos pelos adicionados
+          <TouchableOpacity
+            key={tab}
+            style={[
+              styles.tabButton,
+              activeTab === tab && styles.tabButtonActive,
+            ]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.tabTextActive,
+              ]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-                <View style={styles.sensorGrid}>
-                    <SensorCard
-                        iconName="thermometer-outline"
-                        label="Temperatura"
-                        value="26°C"
-                        status="Normal"
-                        statusColor="#4CAF50"
-                        iconColor="#FF6B6B"
-                    />
-                    <SensorCard
-                        iconName="water-outline"
-                        label="Umidade"
-                        value="52%"
-                        status="Normal"
-                        statusColor="#4CAF50"
-                        iconColor="#4ECDC4"
-                    />
-                    <SensorCard
-                        iconName="sunny-outline"
-                        label="Luminosidade"
-                        value="Baixa"
-                        status="Normal"
-                        statusColor="#4CAF50"
-                        iconColor="#FFD93D"
-                    />
-                    <SensorCard
-                        iconName="body-outline"
-                        label="Presença"
-                        value="Calmo"
-                        status="Normal"
-                        statusColor="#4CAF50"
-                        iconColor="#A78BFA"
-                    />
-                </View>
-            </View>
+      <View style={styles.welcomeCard}>
+        <Text style={styles.welcomeTitle}>Tudo tranquilo</Text>
+        <Text style={styles.welcomeSubtitle}>Última leitura: agora há pouco</Text>
+        <View style={styles.welcomeIllustrationPlaceholder} />
+      </View>
 
-            {/* ========== GRÁFICO DE TEMPERATURA ========== */}
-            <View style={styles.chartSection}>
-                <View style={styles.chartHeader}>
-                    <Text style={styles.chartTitle}>Variação de temperatura</Text>
-                    <View style={styles.chartFilters}>
-                        {['1h', '6h', '24h'].map((period) => ( //TODO: Adicionar as variações reais de temperatura
-                            <TouchableOpacity
-                                key={period}
-                                style={[
-                                    styles.filterButton,
-                                    period === '1h' && styles.filterButtonActive,
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.filterText,
-                                        period === '1h' && styles.filterTextActive,
-                                    ]}
-                                >
-                                    {period}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
+      {/* ========== Card onde fica os SENSORES ========== */}
+      {/* TODO: Substituir os valores dos sensores fixos pelos sensores reais conectados */}
+      <View style={styles.sensorSection}>
+        <Text style={styles.sectionTitle}>SENSORES EM TEMPO REAL</Text>
 
-                <View style={styles.chartPlaceholder}>
-                    <Text style={styles.chartPlaceholderText}>
-                        [Gráfico de linha aqui]
-                    </Text>
-                </View>
+        <View style={styles.sensorGrid}>
+          <SensorCard
+            iconName="thermometer-outline"
+            label="Temperatura"
+            value="26°C"
+            status="Normal"
+            statusColor="#4CAF50"
+            iconColor="#FF6B6B"
+          />
+          <SensorCard
+            iconName="water-outline"
+            label="Umidade"
+            value="52%"
+            status="Normal"
+            statusColor="#4CAF50"
+            iconColor="#4ECDC4"
+          />
+          <SensorCard
+            iconName="sunny-outline"
+            label="Luminosidade"
+            value="Baixa"
+            status="Normal"
+            statusColor="#4CAF50"
+            iconColor="#FFD93D"
+          />
+          <SensorCard
+            iconName="body-outline"
+            label="Presença"
+            value="Calmo"
+            status="Normal"
+            statusColor="#4CAF50"
+            iconColor="#A78BFA"
+          />
+        </View>
+      </View>
 
-                <View style={styles.chartAxisLabels}>
-                    {['14h', '15h', '16h', '17h', '18h', '19h', '20h', '21h'].map(
-                        (hour) => (
-                            <Text key={hour} style={styles.axisLabel}>
-                                {hour}
-                            </Text>
-                        )
-                    )}
-                </View>
-            </View>
+      {/* ========== GRÁFICO DE TEMPERATURA ========== */}
+      <View style={styles.chartSection}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>Variação de temperatura</Text>
+          <View style={styles.chartFilters}>
+            {['1h', '6h', '24h'].map((period) => (
+              <TouchableOpacity
+                key={period}
+                style={[
+                  styles.filterButton,
+                  period === '1h' && styles.filterButtonActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    period === '1h' && styles.filterTextActive,
+                  ]}
+                >
+                  {period}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* TODO Adicionar o gráfico real de temperatura, substituindo o placeholder */}
+        <View style={styles.chartPlaceholder}>
+          <Text style={styles.chartPlaceholderText}>
+            [Gráfico de linha aqui]
+          </Text>
+        </View>
 
-            {/* ========== BARRA DE NAVEGAÇÃO - tab ========== */}
-            <View style={styles.navigationBar}>
+        <View style={styles.chartAxisLabels}>
+          {['14h', '15h', '16h', '17h', '18h', '19h', '20h', '21h'].map(
+            (hour) => (
+              <Text key={hour} style={styles.axisLabel}>
+                {hour}
+              </Text>
+            )
+          )}
+        </View>
+      </View>
 
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="home" size={24} color="#0066FF" />
-                    <Text style={[styles.navLabel, { color: '#0066FF' }]}>Início</Text>
-                </TouchableOpacity>
+      {/* ========== BARRA DE NAVEGAÇÃO entre as telas - tab ========== */}
+      <View style={styles.navigationBar}>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="home" size={24} color="#0066FF" />
+          <Text style={[styles.navLabel, { color: '#0066FF' }]}>Início</Text>
+        </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="notifications-outline" size={24} color="#888888" />
-                    <Text style={styles.navLabel}>Alertas</Text>
-                </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} >
+          <Ionicons name="notifications-outline" size={24} color="#888888" />
+          <Text style={styles.navLabel}>Alertas</Text>
+        </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="hardware-chip-outline" size={24} color="#888888" />
-                    <Text style={styles.navLabel}>Robôs</Text>
-                </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="hardware-chip-outline" size={24} color="#888888" />
+          <Text style={styles.navLabel}>Robôs</Text>
+        </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="settings-outline" size={24} color="#888888" />
-                    <Text style={styles.navLabel}>Config.</Text>
-                </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="settings-outline" size={24} color="#888888" />
+          <Text style={styles.navLabel}>Config.</Text>
+        </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="person-outline" size={24} color="#888888" />
-                    <Text style={styles.navLabel}>Perfil</Text>
-                </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="person-outline" size={24} color="#888888" />
+          <Text style={styles.navLabel}>Perfil</Text>
+        </TouchableOpacity>
+      </View>
 
-            </View>
-
-            <View style={styles.bottomSpacer} />
-        </ScrollView>
-    );
+      <View style={styles.bottomSpacer} /> {/* espaço pra separar o conteúdo da barra de navegação do final do celular */}
+    </ScrollView>
+  );
 };
 
 
@@ -211,7 +215,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // ========== ABAS ==========
+  // ========== nome dos dispositivos ==========
+
   tabsContainer: {
     flexDirection: 'row',
     marginBottom: 16,
@@ -242,35 +247,38 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // ========== BEM-VINDA ==========
+  // ========== card do reusmo ==========
+
   welcomeCard: {
-    backgroundColor: '#E8F5E9', // Verde suave
+    backgroundColor: '#E8F5E9',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginBottom: 20,
+
   },
 
   welcomeTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2E7D32', // Verde escuro
+    color: '#2E7D32',
     marginBottom: 4,
   },
 
   welcomeSubtitle: {
     fontSize: 12,
-    color: '#66BB6A', // Verde médio
+    color: '#66BB6A',
     marginBottom: 12,
   },
 
   welcomeIllustrationPlaceholder: {
     height: 60,
-    backgroundColor: '#C8E6C9', // Verde mais claro
+    backgroundColor: '#C8E6C9',
     borderRadius: 8,
   },
 
-  // ========== SENSORES ==========
+  // ========== Card dos SENSORES ==========
+
   sensorSection: {
     marginBottom: 20,
   },
@@ -365,46 +373,9 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
   },
 
-  // ========== AÇÕES RÁPIDAS ==========
-  quickActionSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  quickActionContent: {
-    flex: 1,
-  },
-
-  // Container para ícone + da ação rápida
-  quickActionIconText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-
-  quickActionStatus: {
-    fontSize: 11,
-    color: '#888888',
-  },
 
   // ========== NAVEGAÇÃO  ==========
+
   navigationBar: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',

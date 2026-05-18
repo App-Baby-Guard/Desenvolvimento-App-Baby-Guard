@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import SensorCard from '../components/SensorCard';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 
 const DashboardScreen: React.FC = () => {
@@ -152,35 +153,35 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
   },
 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: SPACING.xxl,
   },
 
   headerTitle: {
-    fontSize: 24,
+    fontSize: TYPOGRAPHY.fontSize.xxl,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
 
   headerSubtitle: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 2,
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
   },
 
   avatarContainer: {
     width: 44,
     height: 44,
-    borderRadius: 12,
-    backgroundColor: '#0066FF',
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -188,73 +189,73 @@ const styles = StyleSheet.create({
   //========== nome dos dispositivos ==========
   tabsContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: SPACING.lg,
+    gap: SPACING.sm,
   },
 
   tabButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#DDDDDD',
+    borderColor: COLORS.border,
   },
 
   tabButtonActive: {
-    backgroundColor: '#0066FF',
-    borderColor: '#0066FF',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
 
   tabText: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.fontSize.md,
     fontWeight: '500',
-    color: '#666666',
+    color: COLORS.textSecondary,
   },
 
   tabTextActive: {
-    color: '#FFFFFF',
+    color: COLORS.textInverse,
   },
 
   //========== card do resumo ==========
   welcomeCard: {
     backgroundColor: '#E8F5E9', // Verde suave
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 20,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    marginBottom: SPACING.xxl,
   },
 
   welcomeTitle: {
-    fontSize: 18,
+    fontSize: TYPOGRAPHY.fontSize.xl,
     fontWeight: '700',
     color: '#2E7D32', // Verde escuro
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
 
   welcomeSubtitle: {
-    fontSize: 12,
+    fontSize: TYPOGRAPHY.fontSize.sm,
     color: '#66BB6A', // Verde médio
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
 
   welcomeIllustrationPlaceholder: {
     height: 60,
     backgroundColor: '#C8E6C9', // Verde mais claro
-    borderRadius: 8,
+    borderRadius: BORDER_RADIUS.sm,
   },
 
   //========== Card dos SENSORES ==========
   sensorSection: {
-    marginBottom: 20,
+    marginBottom: SPACING.xxl,
   },
 
   sectionTitle: {
-    fontSize: 12,
+    fontSize: TYPOGRAPHY.fontSize.sm,
     fontWeight: '600',
-    color: '#AAAAAA',
+    color: COLORS.textTertiary,
     letterSpacing: 0.5,
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
 
   sensorGrid: {
@@ -265,11 +266,11 @@ const styles = StyleSheet.create({
 
  // ========== SEÇÃO DE GRÁFICO ==========
   chartSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.lg,
+    marginBottom: SPACING.xxl,
+    shadowColor: COLORS.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -280,53 +281,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
 
   chartTitle: {
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.fontSize.md,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
 
   chartFilters: {
     flexDirection: 'row',
-    gap: 4,
+    gap: SPACING.xs,
   },
 
   filterButton: {
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#F0F0F0',
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.surfaceSoft,
   },
 
   filterButtonActive: {
-    backgroundColor: '#0066FF',
+    backgroundColor: COLORS.primary,
   },
 
   filterText: {
-    fontSize: 11,
+    fontSize: TYPOGRAPHY.fontSize.xs,
     fontWeight: '600',
-    color: '#666666',
+    color: COLORS.textSecondary,
   },
 
   filterTextActive: {
-    color: '#FFFFFF',
+    color: COLORS.textInverse,
   },
 
   chartPlaceholder: {
     height: 120,
-    backgroundColor: '#FAFAFA',
-    borderRadius: 8,
+    backgroundColor: COLORS.surfaceSoft,
+    borderRadius: BORDER_RADIUS.sm,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
 
   chartPlaceholderText: {
-    fontSize: 12,
-    color: '#CCCCCC',
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textTertiary,
   },
 
   chartAxisLabels: {
@@ -335,13 +336,13 @@ const styles = StyleSheet.create({
   },
 
   axisLabel: {
-    fontSize: 10,
-    color: '#CCCCCC',
+    fontSize: TYPOGRAPHY.fontSize.xs,
+    color: COLORS.textTertiary,
   },
 
 
   bottomSpacer: {
-    height: 20,
+    height: SPACING.lg,
   },
 });
 

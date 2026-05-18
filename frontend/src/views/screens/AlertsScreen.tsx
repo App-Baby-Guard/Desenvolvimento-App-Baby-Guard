@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AlertCard from '../components/AlertCard';
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 const AlertsScreen: React.FC = () => {
     const [alerts, setAlerts] = useState([
@@ -174,68 +175,68 @@ const AlertsScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: COLORS.background,
     },
 
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        backgroundColor: '#FFFFFF',
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.lg,
+        backgroundColor: COLORS.surface,
         borderBottomWidth: 1,
-        borderBottomColor: '#EEEEEE',
+        borderBottomColor: COLORS.border,
     },
 
     headerTitle: {
-        fontSize: 24,
+        fontSize: TYPOGRAPHY.fontSize.xxl,
         fontWeight: '700',
-        color: '#1A1A1A',
+        color: COLORS.textPrimary,
     },
 
     headerButton: {
-        fontSize: 14,
+        fontSize: TYPOGRAPHY.fontSize.md,
         fontWeight: '600',
-        color: '#0066FF',
+        color: COLORS.primary,
     },
 
     // ========== filtros ==========
     tabsContainer: {
         flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFFFFF',
-        gap: 8,
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.md,
+        backgroundColor: COLORS.surface,
+        gap: SPACING.sm,
     },
 
     tabButton: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 16,
-        backgroundColor: '#F0F0F0',
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.sm,
+        borderRadius: BORDER_RADIUS.full,
+        backgroundColor: COLORS.surfaceSoft,
     },
 
     // filtro ativa
     tabButtonActive: {
-        backgroundColor: '#0066FF',
+        backgroundColor: COLORS.primary,
     },
 
     tabText: {
-        fontSize: 12,
+        fontSize: TYPOGRAPHY.fontSize.sm,
         fontWeight: '600',
-        color: '#666666',
+        color: COLORS.textSecondary,
     },
 
     tabTextActive: {
-        color: '#FFFFFF',
+        color: COLORS.textInverse,
     },
 
     // ========== LISTA DE ALERTAS ==========
     alertsList: {
         flex: 1,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.md,
     },
 
     // ========== ESTADO VAZIO ==========
@@ -247,20 +248,20 @@ const styles = StyleSheet.create({
     },
 
     emptyStateText: {
-        fontSize: 18,
+        fontSize: TYPOGRAPHY.fontSize.xl,
         fontWeight: '700',
-        color: '#1A1A1A',
-        marginTop: 12,
+        color: COLORS.textPrimary,
+        marginTop: SPACING.md,
     },
 
     emptyStateSubtext: {
-        fontSize: 12,
-        color: '#888888',
-        marginTop: 4,
+        fontSize: TYPOGRAPHY.fontSize.sm,
+        color: COLORS.textSecondary,
+        marginTop: SPACING.xs,
     },
 
     bottomSpacer: {
-        height: 20,
+        height: SPACING.lg,
     },
 });
 

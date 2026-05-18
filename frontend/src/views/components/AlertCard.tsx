@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 interface AlertCardProps {
   iconName: string;        // Nome do ícone Ionicons
@@ -44,13 +45,13 @@ const AlertCard: React.FC<AlertCardProps> = ({
 const styles = StyleSheet.create({
   alertContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    marginBottom: SPACING.md,
     alignItems: 'flex-start',
-    shadowColor: '#000',
+    shadowColor: COLORS.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -61,10 +62,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.surfaceSoft,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
 
   contentWrapper: {
@@ -72,28 +73,28 @@ const styles = StyleSheet.create({
   },
 
   titleText: {
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.fontSize.md,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 4,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xs,
   },
 
   descriptionText: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 6,
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
     lineHeight: 16,
   },
 
   timeText: {
-    fontSize: 11,
-    color: '#BBBBBB',
+    fontSize: TYPOGRAPHY.fontSize.xs,
+    color: COLORS.textTertiary,
     fontWeight: '500',
   },
 
   closeButton: {
-    padding: 4,
-    marginLeft: 8,
+    padding: SPACING.xs,
+    marginLeft: SPACING.md,
   },
 });
 

@@ -5,7 +5,9 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   GLOBAL_STYLES,
@@ -122,30 +124,44 @@ export default function MeusRobosScreen() {
   }
 
   return (
-    <View style={GLOBAL_STYLES.screen}>
-      <View style={{ padding: SPACING.lg }}>
-        <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
+    <SafeAreaView style={GLOBAL_STYLES.safeArea}>
+      <View style={{ flex: 1 }}>
+        <View style={GLOBAL_STYLES.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={GLOBAL_STYLES.backBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={22} color={COLORS.textPrimary} />
+          </TouchableOpacity>
 
-        <TextInput
-          placeholder="Buscar robô..."
-          placeholderTextColor={COLORS.textTertiary}
-          style={[
-            GLOBAL_STYLES.input,
-            { marginTop: SPACING.lg, borderRadius: BORDER_RADIUS.lg },
-          ]}
-          value={busca}
-          onChangeText={setBusca}
-        />
+          <Text style={[GLOBAL_STYLES.title, { marginLeft: 0 }]}>Meus Robôs</Text>
+        </View>
+
+        <View style={GLOBAL_STYLES.screen}>
+          <View style={{ padding: SPACING.lg }}>
+            <TextInput
+              placeholder="Buscar robô..."
+              placeholderTextColor={COLORS.textTertiary}
+              style={[
+                GLOBAL_STYLES.input,
+                { marginTop: SPACING.lg, borderRadius: BORDER_RADIUS.lg },
+              ]}
+              value={busca}
+              onChangeText={setBusca}
+            />
+          </View>
+
+          <FlatList
+            data={mockRobos.filter((r) =>
+              r.nome.toLowerCase().includes(busca.toLowerCase())
+            )}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ padding: SPACING.lg }}
+          />
+        </View>
       </View>
-
-      <FlatList
-        data={mockRobos.filter((r) =>
-          r.nome.toLowerCase().includes(busca.toLowerCase())
-        )}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: SPACING.lg }}
-      />
-    </View>
+    </SafeAreaView>
   );
 }

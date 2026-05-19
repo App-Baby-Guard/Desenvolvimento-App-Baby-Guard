@@ -264,17 +264,21 @@ export default function ConfiguracoesScreen({
         {/* DISPOSITIVO */}
         <SectionHeader title="DISPOSITIVO" />
         <View style={GLOBAL_STYLES.cardNoPadding}>
-          <View style={GLOBAL_STYLES.deviceField}>
-            <Text style={GLOBAL_STYLES.fieldLabel}>DISPOSITIVO</Text>
+          <TouchableOpacity
+            style={GLOBAL_STYLES.deviceField}
+            activeOpacity={0.7}
+            onPress={() => navigation?.navigate("MeusRobos")}
+          >
+            <Text style={GLOBAL_STYLES.fieldLabel}>DISPOSITIVOS</Text>
 
             <View style={GLOBAL_STYLES.spaceBetween}>
-              <Text style={GLOBAL_STYLES.fieldValue}>ESP32-BG-001</Text>
+              <Text style={styles.fieldValueDisp}>ESP32-BG-001</Text>
 
               <View style={styles.activeBadge}>
                 <Text style={styles.activeBadgeText}>ATIVO</Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={[GLOBAL_STYLES.deviceField, GLOBAL_STYLES.rowBorder]}>
             <Text style={GLOBAL_STYLES.fieldLabel}>VERSÃO DO FIRMWARE</Text>

@@ -58,4 +58,15 @@ export const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: "bold",
   },
+
+  fieldValueDisp: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.surfaceSoft,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+
 });

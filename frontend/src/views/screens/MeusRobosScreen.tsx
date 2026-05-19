@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+
 import {
   GLOBAL_STYLES,
   COLORS,
@@ -168,6 +175,7 @@ export default function MeusRobosScreen() {
     <View style={GLOBAL_STYLES.screen}>
       <View style={{ padding: SPACING.lg }}>
         <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
+
         <TextInput
           placeholder="Buscar robô..."
           placeholderTextColor={COLORS.textTertiary}
@@ -179,8 +187,11 @@ export default function MeusRobosScreen() {
           onChangeText={setBusca}
         />
       </View>
+
       <FlatList
-        data={listaFiltrada}
+        data={mockRobos.filter((r) =>
+          r.nome.toLowerCase().includes(busca.toLowerCase())
+        )}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: SPACING.lg }}

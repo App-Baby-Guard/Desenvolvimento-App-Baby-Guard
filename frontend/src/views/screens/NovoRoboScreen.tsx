@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
 
 import {
@@ -39,7 +40,7 @@ export default function NovoRoboScreen() {
         type: "success",
         text1: "Robô criado! 🎉",
         text2: "Seu robô foi registrado com sucesso.",
-        visibilityTime : 3000,
+        visibilityTime: 3000,
       });
 
       setTimeout(() => {
@@ -50,71 +51,75 @@ export default function NovoRoboScreen() {
         type: "error",
         text1: "Erro ao criar robô",
         text2: error.message,
-        visibilityTime : 3000,
+        visibilityTime: 3000,
       });
     }
   }
 
   return (
-    <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-      {/* Botão voltar */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: SPACING.lg,
-        }}
-      >
-        <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
-        <Text style={{ marginLeft: 8, color: COLORS.textPrimary }}>Voltar</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={GLOBAL_STYLES.screen}>
+      <View style={{ padding: SPACING.lg }}>
+        {/* Botão voltar */}
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: SPACING.lg,
+          }}
+        >
+          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
+          <Text style={{ marginLeft: 8, color: COLORS.textPrimary }}>
+            Voltar
+          </Text>
+        </TouchableOpacity>
 
-      <Text style={GLOBAL_STYLES.title}>Configurar Novo Robô</Text>
+        <Text style={GLOBAL_STYLES.title}>Configurar Novo Robô</Text>
 
-      {/* Nome */}
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        NOME DO ROBÔ
-      </Text>
-      <TextInput
-        placeholder="Ex: Quarto da Sofia"
-        placeholderTextColor={COLORS.textTertiary}
-        value={nome}
-        onChangeText={setNome}
-        style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
-      />
+        {/* Nome */}
+        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
+          NOME DO ROBÔ
+        </Text>
+        <TextInput
+          placeholder="Ex: Quarto da Sofia"
+          placeholderTextColor={COLORS.textTertiary}
+          value={nome}
+          onChangeText={setNome}
+          style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
+        />
 
-      {/* ID */}
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        ID DO DISPOSITIVO (ESP32)
-      </Text>
-      <TextInput
-        placeholder="Ex: ESP32-BD-001"
-        placeholderTextColor={COLORS.textTertiary}
-        value={id}
-        onChangeText={setId}
-        style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
-      />
+        {/* ID */}
+        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
+          ID DO DISPOSITIVO (ESP32)
+        </Text>
+        <TextInput
+          placeholder="Ex: ESP32-BD-001"
+          placeholderTextColor={COLORS.textTertiary}
+          value={id}
+          onChangeText={setId}
+          style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
+        />
 
-      {/* Local */}
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        LOCAL (opcional)
-      </Text>
-      <TextInput
-        placeholder="Ex: Quarto, Sala…"
-        placeholderTextColor={COLORS.textTertiary}
-        value={local}
-        onChangeText={setLocal}
-        style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
-      />
+        {/* Local */}
+        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
+          LOCAL (opcional)
+        </Text>
+        <TextInput
+          placeholder="Ex: Quarto, Sala…"
+          placeholderTextColor={COLORS.textTertiary}
+          value={local}
+          onChangeText={setLocal}
+          style={[GLOBAL_STYLES.input, { marginTop: SPACING.xs }]}
+        />
 
-      {/* Botão Registrar */}
-      <TouchableOpacity
-        style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.xxl }]}
-        onPress={handleRegistrar}
-      >
-        <Text style={GLOBAL_STYLES.buttonPrimaryText}>Registrar Robô</Text>
-      </TouchableOpacity>
-    </View>
+        {/* Botão Registrar */}
+        <TouchableOpacity
+          style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.xxl }]}
+          onPress={handleRegistrar}
+        >
+          <Text style={GLOBAL_STYLES.buttonPrimaryText}>Registrar Robô</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }

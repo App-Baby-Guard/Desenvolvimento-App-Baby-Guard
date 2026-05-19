@@ -73,21 +73,21 @@ const styles = StyleSheet.create({
   },
 
   titleText: {
-    fontSize: TYPOGRAPHY.fontSize.md,
+    fontSize: 18,
     fontWeight: '600',
     color: COLORS.textPrimary,
     marginBottom: SPACING.xs,
   },
 
   descriptionText: {
-    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
     lineHeight: 16,
   },
 
   timeText: {
-    fontSize: TYPOGRAPHY.fontSize.xs,
+    fontSize: 12,
     color: COLORS.textTertiary,
     fontWeight: '500',
   },

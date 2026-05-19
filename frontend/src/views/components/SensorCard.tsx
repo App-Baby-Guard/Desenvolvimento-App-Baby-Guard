@@ -75,13 +75,13 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   valueText: {
-    fontSize: TYPOGRAPHY.fontSize.xxl,
+    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.textPrimary,
     marginBottom: SPACING.xs,
   },
   labelText: {
-    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontSize: 14,
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   statusText: {
-    fontSize: TYPOGRAPHY.fontSize.xs,
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textInverse,
   },

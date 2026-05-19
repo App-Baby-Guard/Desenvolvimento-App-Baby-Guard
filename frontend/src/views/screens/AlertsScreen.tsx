@@ -5,12 +5,16 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
+    SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import AlertCard from '../components/AlertCard';
-import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/globalStyles';
+import styles from '../../styles/alertStyles';
+import { COLORS, SPACING, BORDER_RADIUS, GLOBAL_STYLES, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 const AlertsScreen: React.FC = () => {
+    const navigation = useNavigation();
     const [alerts, setAlerts] = useState([
         // Exemplo de dados de alerta
         //TODO: Substituir os alertas fixos pelos recebidos da API
@@ -77,14 +81,32 @@ const AlertsScreen: React.FC = () => {
         setAlerts([]);
     };
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Alertas</Text>
-                <TouchableOpacity onPress={handleClearAll}>
-                    <Text style={styles.headerButton}>Limpar</Text>
-                </TouchableOpacity>
-            </View>
+    return (    
+ <View style={styles.container}>
+  <SafeAreaView style={GLOBAL_STYLES.safeArea}>
+    <View style={GLOBAL_STYLES.header}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={GLOBAL_STYLES.backBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={22}
+          color={COLORS.textPrimary}
+        />
+      </TouchableOpacity>
+
+      <View style={GLOBAL_STYLES.header}>
+        <Text style={[GLOBAL_STYLES.title, styles.headerTitle]}>
+          Alertas
+        </Text>
+
+        <TouchableOpacity onPress={handleClearAll}>
+          <Text style={styles.headerButton}>Limpar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
 
             {/* ========== filtros ========== */}
             <View style={styles.tabsContainer}>
@@ -167,102 +189,10 @@ const AlertsScreen: React.FC = () => {
                     </>
                 )}
             </ScrollView>
+            </SafeAreaView>
 
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
-
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.lg,
-        backgroundColor: COLORS.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: COLORS.border,
-    },
-
-    headerTitle: {
-        fontSize: TYPOGRAPHY.fontSize.xxl,
-        fontWeight: '700',
-        color: COLORS.textPrimary,
-    },
-
-    headerButton: {
-        fontSize: TYPOGRAPHY.fontSize.md,
-        fontWeight: '600',
-        color: COLORS.primary,
-    },
-
-    // ========== filtros ==========
-    tabsContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.md,
-        backgroundColor: COLORS.surface,
-        gap: SPACING.sm,
-    },
-
-    tabButton: {
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.sm,
-        borderRadius: BORDER_RADIUS.full,
-        backgroundColor: COLORS.surfaceSoft,
-    },
-
-    // filtro ativa
-    tabButtonActive: {
-        backgroundColor: COLORS.primary,
-    },
-
-    tabText: {
-        fontSize: TYPOGRAPHY.fontSize.sm,
-        fontWeight: '600',
-        color: COLORS.textSecondary,
-    },
-
-    tabTextActive: {
-        color: COLORS.textInverse,
-    },
-
-    // ========== LISTA DE ALERTAS ==========
-    alertsList: {
-        flex: 1,
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.md,
-    },
-
-    // ========== ESTADO VAZIO ==========
-    emptyState: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 80,
-    },
-
-    emptyStateText: {
-        fontSize: TYPOGRAPHY.fontSize.xl,
-        fontWeight: '700',
-        color: COLORS.textPrimary,
-        marginTop: SPACING.md,
-    },
-
-    emptyStateSubtext: {
-        fontSize: TYPOGRAPHY.fontSize.sm,
-        color: COLORS.textSecondary,
-        marginTop: SPACING.xs,
-    },
-
-    bottomSpacer: {
-        height: SPACING.lg,
-    },
-});
 
 export default AlertsScreen;

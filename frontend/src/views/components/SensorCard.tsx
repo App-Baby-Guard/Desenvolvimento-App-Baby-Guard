@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 interface SensorCardProps {
   //icones
@@ -55,57 +56,57 @@ const SensorCard: React.FC<SensorCardProps> = ({
 const styles = StyleSheet.create({
   cardContainer: {
     width: '48%', 
-    marginVertical: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    shadowColor: '#000',
+    marginVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    shadowColor: COLORS.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   iconContainer: {
-    marginBottom: 12,
+    marginBottom: SPACING.md,
     alignItems: 'flex-start',
   },
   contentWrapper: {
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   valueText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 4,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xs,
   },
   labelText: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: 14,
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   statusBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.full,
+    marginBottom: SPACING.md,
   },
   statusText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.textInverse,
   },
   progressBarBackground: {
     width: '100%',
     height: 4,
-    backgroundColor: '#EEEEEE',
-    borderRadius: 2,
+    backgroundColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.sm,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: BORDER_RADIUS.sm,
   },
 });
 

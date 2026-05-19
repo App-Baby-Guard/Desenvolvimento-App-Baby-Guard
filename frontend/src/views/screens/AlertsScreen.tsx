@@ -5,11 +5,16 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
+    SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import AlertCard from '../components/AlertCard';
+import styles from '../../styles/alertStyles';
+import { COLORS, SPACING, BORDER_RADIUS, GLOBAL_STYLES, TYPOGRAPHY } from '../../shared/styles/globalStyles';
 
 const AlertsScreen: React.FC = () => {
+    const navigation = useNavigation();
     const [alerts, setAlerts] = useState([
         // Exemplo de dados de alerta
         //TODO: Substituir os alertas fixos pelos recebidos da API
@@ -76,14 +81,32 @@ const AlertsScreen: React.FC = () => {
         setAlerts([]);
     };
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Alertas</Text>
-                <TouchableOpacity onPress={handleClearAll}>
-                    <Text style={styles.headerButton}>Limpar</Text>
-                </TouchableOpacity>
-            </View>
+    return (    
+ <View style={styles.container}>
+  <SafeAreaView style={GLOBAL_STYLES.safeArea}>
+    <View style={GLOBAL_STYLES.header}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={GLOBAL_STYLES.backBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={22}
+          color={COLORS.textPrimary}
+        />
+      </TouchableOpacity>
+
+      <View style={GLOBAL_STYLES.header}>
+        <Text style={[GLOBAL_STYLES.title, styles.headerTitle]}>
+          Alertas
+        </Text>
+
+        <TouchableOpacity onPress={handleClearAll}>
+          <Text style={styles.headerButton}>Limpar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
 
             {/* ========== filtros ========== */}
             <View style={styles.tabsContainer}>
@@ -166,102 +189,10 @@ const AlertsScreen: React.FC = () => {
                     </>
                 )}
             </ScrollView>
+            </SafeAreaView>
 
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-    },
-
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        backgroundColor: '#FFFFFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#EEEEEE',
-    },
-
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#1A1A1A',
-    },
-
-    headerButton: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#0066FF',
-    },
-
-    // ========== filtros ==========
-    tabsContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFFFFF',
-        gap: 8,
-    },
-
-    tabButton: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 16,
-        backgroundColor: '#F0F0F0',
-    },
-
-    // filtro ativa
-    tabButtonActive: {
-        backgroundColor: '#0066FF',
-    },
-
-    tabText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#666666',
-    },
-
-    tabTextActive: {
-        color: '#FFFFFF',
-    },
-
-    // ========== LISTA DE ALERTAS ==========
-    alertsList: {
-        flex: 1,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-    },
-
-    // ========== ESTADO VAZIO ==========
-    emptyState: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 80,
-    },
-
-    emptyStateText: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#1A1A1A',
-        marginTop: 12,
-    },
-
-    emptyStateSubtext: {
-        fontSize: 12,
-        color: '#888888',
-        marginTop: 4,
-    },
-
-    bottomSpacer: {
-        height: 20,
-    },
-});
 
 export default AlertsScreen;

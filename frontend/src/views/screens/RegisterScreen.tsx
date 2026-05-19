@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../../App";
+import type { RootStackParamList } from "../../routes/RootNavigator";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Register">;

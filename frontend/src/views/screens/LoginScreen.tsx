@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../shared/styles/globalStyles'; // ✅ CORRIGIDO: era '../../styles/globalStyles'
 import { useLogin } from '../../hooks/useLogin';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../../App";
+import type { RootStackParamList } from "../../routes/RootNavigator";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Login">;
@@ -30,7 +30,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     handleLogin
   } = useLogin((token) => {
     console.log("Token recebido:", token);
-    navigation.navigate("Main");
+    navigation.navigate("Tabs");
   });
 
   return (

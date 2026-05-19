@@ -1,14 +1,24 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
+} from "react-native";
+
 import {
   GLOBAL_STYLES,
   COLORS,
   SPACING,
   BORDER_RADIUS,
 } from "../../shared/styles/globalStyles";
+
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
+
 import { useRobos } from "../../context/RoboContext";
 import { Robo } from "../../context/RoboContext";
 import Toast from "react-native-toast-message";
@@ -73,18 +83,24 @@ export default function MeusRobosScreen() {
 
   function renderItem({ item }: { item: Robo }) {
     const isConfig = item.id === "new";
+
     return (
       <View style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg }]}>
         <Text style={GLOBAL_STYLES.subtitle}>{item.nome}</Text>
         <Text style={GLOBAL_STYLES.textMuted}>{item.id}</Text>
+
         <View style={{ marginVertical: SPACING.sm }}>
           {renderStatus(item.status)}
         </View>
+
         <Text style={GLOBAL_STYLES.textMuted}>{item.ultimoSinal}</Text>
+
         {isConfig ? (
           <TouchableOpacity
             style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.lg }]}
-            onPress={() => navigation.navigate("NovoRobo")}
+            onPress={() => {
+              navigation.getParent()?.navigate("NovoRobo");
+            }}
           >
             <Text style={GLOBAL_STYLES.buttonPrimaryText}>
               Configurar agora
@@ -102,17 +118,18 @@ export default function MeusRobosScreen() {
               <>
                 <TouchableOpacity
                   style={[GLOBAL_STYLES.buttonSecondary, { flex: 1 }]}
-                  onPress={() =>
-                    navigation.navigate("RenomearRobo", {
+                  onPress={() => {
+                    navigation.getParent()?.navigate("RenomearRobo", {
                       id: item.id,
                       nome: item.nome,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <Text style={GLOBAL_STYLES.buttonSecondaryText}>
                     Renomear
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[
                     GLOBAL_STYLES.buttonSecondary,
@@ -120,12 +137,11 @@ export default function MeusRobosScreen() {
                   ]}
                   onPress={() => {
                     removeRobo(item.id);
-
                     Toast.show({
                       type: "success",
                       text1: "Robô excluído! 🗑️",
                       text2: `${item.nome} foi removido.`,
-                      visibilityTime : 3000,
+                      visibilityTime: 3000,
                     });
                   }}
                 >
@@ -140,15 +156,16 @@ export default function MeusRobosScreen() {
                 </TouchableOpacity>
               </>
             )}
+
             <TouchableOpacity
               style={[GLOBAL_STYLES.buttonPrimary, { flex: 1 }]}
-              onPress={() =>
-                navigation.navigate("RoboDetalhes", {
+              onPress={() => {
+                navigation.getParent()?.navigate("RoboDetalhes", {
                   id: item.id,
                   nome: item.nome,
                   local: item.local,
-                })
-              }
+                });
+              }}
             >
               <Text style={GLOBAL_STYLES.buttonPrimaryText}>
                 Ver detalhes
@@ -165,9 +182,10 @@ export default function MeusRobosScreen() {
   );
 
   return (
-    <View style={GLOBAL_STYLES.screen}>
+    <SafeAreaView style={GLOBAL_STYLES.screen}>
       <View style={{ padding: SPACING.lg }}>
         <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
+
         <TextInput
           placeholder="Buscar robô..."
           placeholderTextColor={COLORS.textTertiary}
@@ -179,12 +197,13 @@ export default function MeusRobosScreen() {
           onChangeText={setBusca}
         />
       </View>
+
       <FlatList
         data={listaFiltrada}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: SPACING.lg }}
       />
-    </View>
+    </SafeAreaView>
   );
 }

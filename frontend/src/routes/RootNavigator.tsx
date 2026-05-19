@@ -8,6 +8,7 @@ import TabNavigator from "./TabNavigator";
 import NovoRoboScreen from "../views/screens/NovoRoboScreen";
 import RenomearRoboScreen from "../views/screens/RenomearRoboScreen";
 import RoboDetalhesScreen from "../views/screens/RoboDetalhesScreen";
+import PerfilScreen from "../views/screens/PerfilScreen";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -16,6 +17,7 @@ export type RootStackParamList = {
   NovoRobo: undefined;
   RenomearRobo: { id: string; nome: string };
   RoboDetalhes: { id: string; nome: string; local?: string };
+  Perfil: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -36,6 +38,7 @@ export default function RootNavigator() {
         <Stack.Screen name="NovoRobo" component={NovoRoboScreen} />
         <Stack.Screen name="RenomearRobo" component={RenomearRoboScreen} />
         <Stack.Screen name="RoboDetalhes" component={RoboDetalhesScreen} />
+        <Stack.Screen name="Perfil" component={PerfilScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

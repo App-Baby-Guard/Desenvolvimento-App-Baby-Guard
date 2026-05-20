@@ -12,6 +12,7 @@ import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
 import { styles } from "../../styles/perfilStyles";
 
 // MOCK
+// TODO: Substituir dados mockados pelos recebidos da API (endpoint de usuário)
 const USER = {
   nome: "Ricardo Silva",
   email: "ricardo.silva@hotmail.com",

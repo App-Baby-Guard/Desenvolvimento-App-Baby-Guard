@@ -35,7 +35,7 @@ export default function RenomearRoboScreen() {
 
     Toast.show({
       type: "success",
-      text1: "Robô renomeado! ✏️",
+      text1: "Robô renomeado!",
       text2: `Novo nome: ${novoNome}`,
       visibilityTime : 3000,
     });

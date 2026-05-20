@@ -38,7 +38,7 @@ export default function NovoRoboScreen() {
 
       Toast.show({
         type: "success",
-        text1: "Robô criado! 🎉",
+        text1: "Robô criado!",
         text2: "Seu robô foi registrado com sucesso.",
         visibilityTime: 3000,
       });

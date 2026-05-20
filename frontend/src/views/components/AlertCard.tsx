@@ -5,9 +5,9 @@ import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '../../shared/styles/
 
 interface AlertCardProps {
   iconName: string;        // Nome do ícone Ionicons
-  iconColor: string;       // Cor do ícone (ex: "#FF6B6B")
-  title: string;           // Título do alerta (ex: "Temperatura alta")
-  description: string;     // Descrição do alerta
+  iconColor: string;       
+  title: string;           // Título do alerta 
+  description: string;     
   time: string;            // Hora (ex: "14:30")
   onDismiss: () => void;   // Função para remover alerta
 }

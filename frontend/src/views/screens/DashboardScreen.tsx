@@ -54,7 +54,7 @@ const DashboardScreen: React.FC = () => {
         {/* dispositivos */}
         <View style={GLOBAL_STYLES.rowPadding}>
           <View style={GLOBAL_STYLES.row}>
-            {["Quarto Sofia", "Sala", "Adicionar"].map((tab) => (
+            {["Quarto Sofia", "Sala", "+"].map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={[

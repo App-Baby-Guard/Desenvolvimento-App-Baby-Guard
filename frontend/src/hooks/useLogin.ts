@@ -56,7 +56,7 @@ export function useLogin(onSuccess?: (token: string) => void): UseLoginReturn {
     setCarregando(true);
     setErro('');
 
-    // ⚠️  MODO DE TESTE — remove esse bloco quando o backend estiver pronto
+    // TODO: MODO DE TESTE — remove esse bloco quando o backend estiver pronto
     // Qualquer e-mail/senha válidos passam direto
     await new Promise((resolve) => setTimeout(resolve, 800)); // simula delay de rede
     setCarregando(false);
@@ -64,7 +64,7 @@ export function useLogin(onSuccess?: (token: string) => void): UseLoginReturn {
     return;
     // ── fim do bloco de teste ──────────────────────────────────────────────
 
-    // 🔒 Código real (descomente quando o backend estiver pronto):
+    //  Código real 
     // try {
     //   const resposta = await fetch('http://localhost:3000/auth/login', {
     //     method: 'POST',

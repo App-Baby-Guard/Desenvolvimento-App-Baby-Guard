@@ -30,6 +30,7 @@ export default function MeusRobosScreen() {
   const { robos, removeRobo } = useRobos();
   const [busca, setBusca] = useState("");
 
+  // TODO: Substituir dados mockados pelos recebidos da API (endpoint de robôs)
   const robosMock: Robo[] = [
     {
       id: "ESP32-BD-001",
@@ -139,7 +140,7 @@ export default function MeusRobosScreen() {
                     removeRobo(item.id);
                     Toast.show({
                       type: "success",
-                      text1: "Robô excluído! 🗑️",
+                      text1: "Robô excluído!",
                       text2: `${item.nome} foi removido.`,
                       visibilityTime: 3000,
                     });

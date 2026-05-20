@@ -86,8 +86,8 @@ export default function RoboDetalhesScreen() {
         {robo.status === "config"
           ? "Em configuração"
           : robo.status === "online"
-          ? "Online"
-          : "Offline"}
+            ? "Online"
+            : "Offline"}
       </Text>
 
       {/* Último sinal */}
@@ -123,7 +123,7 @@ export default function RoboDetalhesScreen() {
       {/* Botão Ver Dados */}
       <TouchableOpacity
         style={[GLOBAL_STYLES.buttonSecondary]}
-        onPress={() => {}}
+        onPress={() => { }}
       >
         <Text style={GLOBAL_STYLES.buttonSecondaryText}>Ver dados</Text>
       </TouchableOpacity>

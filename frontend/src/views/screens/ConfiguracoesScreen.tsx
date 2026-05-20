@@ -145,7 +145,7 @@ export default function ConfiguracoesScreen({
   const handleLogout = () => {
     Alert.alert("Sair da Conta", "Tem certeza que deseja sair?", [
       { text: "Cancelar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: () => {} },
+      { text: "Sair", style: "destructive", onPress: () => { } },
     ]);
   };
 
@@ -249,7 +249,7 @@ export default function ConfiguracoesScreen({
         <SectionHeader
           title="LIMITES DOS SENSORES"
           actionLabel="Ajustar"
-          onAction={() => {}}
+          onAction={() => { }}
         />
         <View style={GLOBAL_STYLES.cardNoPadding}>
           {SENSOR_LIMITS.map((item, idx) => (

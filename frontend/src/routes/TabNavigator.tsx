@@ -5,8 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import MeusRobosScreen from "../views/screens/MeusRobosScreen";
 import DashboardScreen from "../views/screens/DashboardScreen";
-import AlertsScreen from "../views/screens/AlertsScreen";
-import HistoricoScreen from "../views/screens/HistoricoScreen";
+import AlertasScreen from "../views/screens/AlertasScreen";
 import ConfiguracoesScreen from "../views/screens/ConfiguracoesScreen";
 
 const Tab = createBottomTabNavigator();
@@ -23,7 +22,6 @@ export default function TabNavigator() {
 
           if (route.name === "Início") icon = "home-outline";
           if (route.name === "Alertas") icon = "notifications-outline";
-          if (route.name === "Histórico") icon = "time-outline";
           if (route.name === "Robôs") icon = "hardware-chip-outline";
           if (route.name === "Ajustes") icon = "settings-outline";
 
@@ -32,8 +30,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Início" component={DashboardScreen} />
-      <Tab.Screen name="Alertas" component={AlertsScreen} />
-      <Tab.Screen name="Histórico" component={HistoricoScreen} />
+      <Tab.Screen name="Alertas" component={AlertasScreen} />
       <Tab.Screen name="Robôs" component={MeusRobosScreen} />
       <Tab.Screen name="Ajustes" component={ConfiguracoesScreen} />
     </Tab.Navigator>

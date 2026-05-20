@@ -304,4 +304,137 @@ export const GLOBAL_STYLES = StyleSheet.create({
   },
 
   flex1: { flex: 1 },
+
+  // FILTROS/TABS
+  filterContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.surface,
+    gap: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  filterButton: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.surfaceSoft,
+  },
+  filterButtonActive: {
+    backgroundColor: COLORS.primary,
+  },
+  filterText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semiBold,
+    color: COLORS.textSecondary,
+  },
+  filterTextActive: {
+    color: COLORS.textInverse,
+  },
+
+  // LISTA/SCROLL
+  list: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+  },
+
+  // EVENTOS/ALERTAS CARD
+  eventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.md,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  eventCardUnresolved: {
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+  },
+  lateralBar: {
+    width: 4,
+    alignSelf: 'stretch',
+  },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: SPACING.md,
+    marginRight: SPACING.sm,
+  },
+  eventTitle: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.textPrimary,
+    marginRight: SPACING.sm,
+  },
+  eventTitleRead: {
+    fontWeight: TYPOGRAPHY.weight.medium,
+    color: COLORS.textSecondary,
+  },
+  eventTime: {
+    fontSize: TYPOGRAPHY.size.xs,
+    color: COLORS.textTertiary,
+    marginTop: 2,
+  },
+  eventDescription: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  eventDescriptionRead: {
+    color: COLORS.textTertiary,
+  },
+
+  // BADGES
+  badgeUnresolved: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFEBEE',
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    marginTop: SPACING.xs,
+  },
+  badgeUnresolvedText: {
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.semiBold,
+    color: '#E53935',
+  },
+
+  // EMPTY STATES
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: 80,
+  },
+  emptyStateTitle: {
+    fontSize: TYPOGRAPHY.size.xl,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.textPrimary,
+    marginTop: SPACING.md,
+  },
+  emptyStateSubtitle: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
+  },
+
+  // SEÇÃO LABELS
+  secaoLabel: {
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.textTertiary,
+    letterSpacing: 1,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
 });

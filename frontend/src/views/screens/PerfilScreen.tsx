@@ -2,11 +2,11 @@ import React from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
 import { styles } from "../../styles/perfilStyles";

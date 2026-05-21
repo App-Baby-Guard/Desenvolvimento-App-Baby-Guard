@@ -1,0 +1,1 @@
+// interface para representar um dispositivo

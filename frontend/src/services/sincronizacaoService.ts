@@ -1,0 +1,1 @@
+// lógica de negócio para sincronização de dados

@@ -129,6 +129,120 @@ export const criarUsuario = async (req: Request, res: Response) => {
   }
 };
 
+// PATCH
+export const atualizarUsuario = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { nome, email, senha, telefone, foto_perfil, push_token } = req.body;
+
+    const campos: string[] = [];
+    const valores: any[] = [];
+
+    if (nome !== undefined) {
+      if (!Validacao.isNomeValido(nome)) {
+        return res
+          .status(400)
+          .json(Respostas.validacaoFalhou(["Nome inválido"]));
+      }
+
+      campos.push(`nome = $${valores.length + 1}`);
+      valores.push(Validacao.sanitizarString(nome));
+    }
+
+    if (email !== undefined) {
+      if (!Validacao.isEmailValido(email)) {
+        return res
+          .status(400)
+          .json(Respostas.validacaoFalhou(["Email inválido"]));
+      }
+
+      const emailFormatado = email.toLowerCase().trim();
+
+      const usuarioExistente = await pool.query(
+        `
+        SELECT 1
+        FROM usuarios
+        WHERE email = $1
+        AND id_usuario != $2
+        `,
+        [emailFormatado, id],
+      );
+
+      if (usuarioExistente.rows.length > 0) {
+        return res.status(409).json(Respostas.conflito("Email já cadastrado"));
+      }
+
+      campos.push(`email = $${valores.length + 1}`);
+      valores.push(emailFormatado);
+    }
+
+    if (senha !== undefined) {
+      if (!Validacao.isPasswordValida(senha)) {
+        return res
+          .status(400)
+          .json(Respostas.validacaoFalhou(["Senha inválida"]));
+      }
+
+      const senhaHash = await bcrypt.hash(senha, 10);
+
+      campos.push(`senha_hash = $${valores.length + 1}`);
+      valores.push(senhaHash);
+    }
+
+    if (telefone !== undefined) {
+      if (telefone && !Validacao.isTelefoneValido(telefone)) {
+        return res
+          .status(400)
+          .json(Respostas.validacaoFalhou(["Telefone inválido"]));
+      }
+
+      campos.push(`telefone = $${valores.length + 1}`);
+      valores.push(telefone || null);
+    }
+
+    if (foto_perfil !== undefined) {
+      campos.push(`foto_perfil = $${valores.length + 1}`);
+      valores.push(foto_perfil || null);
+    }
+
+    if (push_token !== undefined) {
+      campos.push(`push_token = $${valores.length + 1}`);
+      valores.push(push_token || null);
+    }
+
+    if (!campos.length) {
+      return res
+        .status(400)
+        .json(
+          Respostas.validacaoFalhou(["Nenhum campo enviado para atualização"]),
+        );
+    }
+
+    valores.push(id);
+
+    const { rows } = await pool.query<Usuario>(
+      `
+      UPDATE usuarios
+      SET ${campos.join(", ")}
+      WHERE id_usuario = $${valores.length}
+      RETURNING id_usuario, nome, email, telefone, foto_perfil, push_token, criado_em
+      `,
+      valores,
+    );
+
+    if (!rows[0]) {
+      return res.status(404).json(Respostas.naoEncontrado("Usuário"));
+    }
+
+    return res.json(
+      Respostas.sucesso(rows[0], "Usuário atualizado com sucesso"),
+    );
+  } catch (error: any) {
+    return res.status(500).json(Respostas.erroInterno(error.message));
+  }
+};
+
 // DELETE
 export const deletarUsuario = async (req: Request, res: Response) => {
   try {

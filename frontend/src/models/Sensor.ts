@@ -1,11 +1,13 @@
-// interface do evento
+// interface do sensor
 
 export interface Sensor {
-  id_sensor: number;
+  id_sensor?: number;
   id_dispositivo: number;
-  nome_sensor?: string | null;
-  tipo_sensor: 'temperatura' | 'umidade' | 'luminosidade' | 'proximidade' | 'movimento';
-  unidade_medida?: string | null;
-  descricao?: string | null;
-  criado_em: string;
+  nome_sensor: string;
+  tipo_sensor: string;
+  unidade_medida?: string;        // Unidade: °C, %, hPa (opcional)
+  criado_em?: string;
 }
+
+export type CreateSensorInput = Omit<Sensor, 'id_sensor' | 'criado_em'>;
+export type UpdateSensorInput = Partial<CreateSensorInput>;

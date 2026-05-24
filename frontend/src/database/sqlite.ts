@@ -7,15 +7,15 @@ let db: SQLite.SQLiteDatabase | null = null;
 // abre o arquivo do abnco de dados SQLite, se não existir, ele será criado automaticamente
 export async function initDatabase(): Promise<void> {
   try {
-    console.log('Inicializando banco de dados SQLite...');
+    console.log('[DB] Inicializando banco de dados SQLite...');
 
     db = await SQLite.openDatabaseAsync('babyguard.db');
 
-    console.log('Banco de dados SQLite inicializado com sucesso!');
-    console.log('Arquivo: babyguard.db');
+    console.log('[DB] Banco de dados SQLite inicializado com sucesso!');
+    console.log('[DB] Arquivo: babyguard.db');
 
   } catch (error) {
-    console.error('Erro ao inicializar o banco de dados SQLite:', error);
+    console.error('[DB] Erro ao inicializar o banco de dados SQLite:', error);
     throw error;
   }
 }
@@ -116,9 +116,9 @@ export async function executeBatch(
       );
     }
 
-    console.log('Batch de consultas executado (${queries.length}) com sucesso!');
+    console.log('[DB] Batch de consultas executado (${queries.length}) com sucesso!');
   } catch (error) {
-    console.error('ERRO em BATCH:', error);
+    console.error('[DB] Erro em BATCH:', error);
     throw error;
   }
 }
@@ -135,9 +135,9 @@ export async function executeTransaction(
       await callback();
     });
 
-    console.log('Transação concluída com sucesso');
+    console.log('[DB] Transação concluída com sucesso');
   } catch (error) {
-    console.error('ERRO em transação (ROLLBACK automático):', error);
+    console.error('[DB] Erro em transação (ROLLBACK automático):', error);
     throw error;
   }
 }
@@ -149,9 +149,9 @@ export async function listTables(): Promise<void> {
     const tables = await database.getAllAsync(
       `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
     );
-    console.log('Tabelas no banco de dados:', tables.map((t: any) => t.name));
+    console.log('[DB] Tabelas no banco de dados:', tables.map((t: any) => t.name));
   } catch (error) {
-    console.error('ERRO ao listar tabelas:', error);
+    console.error('[DB] Erro ao listar tabelas:', error);
     throw error;
   }
 }

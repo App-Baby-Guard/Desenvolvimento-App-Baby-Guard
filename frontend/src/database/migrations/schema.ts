@@ -1,4 +1,4 @@
-// schema completo do banco de dados, incluindo as tabelas e suas relações
+﻿// schema completo do banco de dados, incluindo as tabelas e suas relações
 //Schema é o "desenho" do banco - quais tabelas, quais campos cada uma tem.
 
 const SCHEMA = {
@@ -62,27 +62,27 @@ const SCHEMA = {
 
 export async function createTables(db: any): Promise<void> {
   try {
-    console.log('Criando tabelas do banco de dados SQLite...');
+    console.log('[SCHEMA] Criando tabelas do banco de dados SQLite...');
 
     //cria tabela DISPOSITIVOS
-    await db.executeSqlAsync(SCHEMA.dispositivos);
-    console.log('Tabela "dispositivos" criada ou já existe.');
+    await db.execAsync(SCHEMA.dispositivos);
+    console.log('[SCHEMA] Tabela "dispositivos" criada ou já existe.');
 
     //cria tabela SENSORES
-    await db.executeSqlAsync(SCHEMA.sensores);
-    console.log('Tabela "sensores" criada ou já existe.');
+    await db.execAsync(SCHEMA.sensores);
+    console.log('[SCHEMA] Tabela "sensores" criada ou já existe.');
 
     //cria tabela LEITURAS
-    await db.executeSqlAsync(SCHEMA.leituras);
-    console.log('Tabela "leituras" criada ou já existe.');
+    await db.execAsync(SCHEMA.leituras);
+    console.log('[SCHEMA] Tabela "leituras" criada ou já existe.');
 
     //cria tabela EVENTOS
-    await db.executeSqlAsync(SCHEMA.eventos);
-    console.log('Tabela "eventos" criada ou já existe.');
+    await db.execAsync(SCHEMA.eventos);
+    console.log('[SCHEMA] Tabela "eventos" criada ou já existe.');
 
-    console.log('4 Tabelas do banco de dados SQLite criadas com sucesso!');
+    console.log('[SCHEMA] 4 Tabelas do banco de dados SQLite criadas com sucesso!');
   } catch (error) {
-    console.error('Erro ao criar tabelas do banco de dados SQLite:', error);
+    console.error('[SCHEMA] Erro ao criar tabelas do banco de dados SQLite:', error);
     throw error;
   }
 }

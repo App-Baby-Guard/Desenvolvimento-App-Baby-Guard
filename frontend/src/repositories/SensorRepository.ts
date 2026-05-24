@@ -8,10 +8,10 @@ export async function getAllSensores(): Promise<Sensor[]> {
         const query = `SELECT * FROM sensores ORDER BY criado_em DESC`;
         const sensores = await executeSelect<Sensor>(query);
 
-        console.log(`SensorRepository.getAllSensores: ${sensores.length} sensores encontrados`);
+        console.log(`[REPO] SensorRepository.getAllSensores: ${sensores.length} sensores encontrados`);
         return sensores;
     } catch (error) {
-        console.error('ERRO em getAllSensores:', error);
+        console.error(`[REPO] Erro em getAllSensores:`, error);
         throw error;
     }
 }
@@ -23,10 +23,10 @@ export async function getSensoresByDispositivo(id_dispositivo: number): Promise<
         const query = `SELECT * FROM sensores WHERE id_dispositivo = ? ORDER BY criado_em DESC`;
         const sensores = await executeSelect<Sensor>(query, [id_dispositivo]);
 
-        console.log(`SensorRepository.getSensoresByDispositivo: ${sensores.length} sensores encontrados`);
+        console.log(`[REPO] SensorRepository.getSensoresByDispositivo: ${sensores.length} sensores encontrados`);
         return sensores;
     } catch (error) {
-        console.error('ERRO em getSensoresByDispositivo:', error);
+        console.error(`[REPO] Erro em getSensoresByDispositivo(${id_dispositivo}):`, error);
         throw error;
     }
 }
@@ -38,17 +38,17 @@ export async function getSensorById(id: number): Promise<Sensor | null> {
         const query = `SELECT * FROM sensores WHERE id_sensor = ?`;
         const sensor = await executeSelectOne<Sensor>(query, [id]);
 
-        console.log(`SensorRepository.getSensorById: sensor ${sensor ? 'encontrado' : 'não encontrado'}`);
+        console.log(`[REPO] SensorRepository.getSensorById: sensor ${sensor ? 'encontrado' : 'não encontrado'}`);
         return sensor;
     } catch (error) {
-        console.error('ERRO em getSensorById:', error);
+        console.error(`[REPO] Erro em getSensorById(${id}):`, error);
         throw error;
     }
 }
 
 export async function createSensor(data: CreateSensorInput): Promise<number> {
     try {
-        console.log('[REPO] SensorRepository.createSensor()', data);
+        console.log(`[REPO] SensorRepository.createSensor()`, data);
         const query = `
       INSERT INTO sensores (id_dispositivo, nome_sensor, tipo_sensor, unidade_medida)
       VALUES (?, ?, ?, ?)
@@ -56,10 +56,10 @@ export async function createSensor(data: CreateSensorInput): Promise<number> {
         const params = [data.id_dispositivo, data.nome_sensor, data.tipo_sensor, data.unidade_medida || null];
         const changes = await executeUpdate(query, params);
 
-        console.log(`SensorRepository.createSensor: ${changes} sensor(es) inserido(s)`);
+        console.log(`[REPO] SensorRepository.createSensor: ${changes} sensor(es) inserido(s)`);
         return changes;
     } catch (error) {
-        console.error('ERRO em createSensor:', error);
+        console.error(`[REPO] Erro em createSensor:`, error);
         throw error;
     }
 }
@@ -89,10 +89,10 @@ export async function updateSensor(id: number, data: UpdateSensorInput): Promise
         const query = `UPDATE sensores SET ${fields.join(', ')} WHERE id_sensor = ?`;
         const changes = await executeUpdate(query, params);
 
-        console.log(`SensorRepository.updateSensor: ${changes} sensor(es) atualizado(s)`);
+        console.log(`[REPO] SensorRepository.updateSensor: ${changes} sensor(es) atualizado(s)`);
         return changes;
     } catch (error) {
-        console.error('ERRO em updateSensor:', error);
+        console.error(`[REPO] Erro em updateSensor(${id}):`, error);
         throw error;
     }
 }
@@ -104,10 +104,10 @@ export async function deleteSensor(id: number): Promise<number> {
         const query = `DELETE FROM sensores WHERE id_sensor = ?`;
         const changes = await executeUpdate(query, [id]);
 
-        console.log(`SensorRepository.deleteSensor: ${changes} sensor(es) deletado(s)`);
+        console.log(`[REPO] SensorRepository.deleteSensor: ${changes} sensor(es) deletado(s)`);
         return changes;
     } catch (error) {
-        console.error('ERRO em deleteSensor:', error);
+        console.error(`[REPO] Erro em deleteSensor(${id}):`, error);
         throw error;
     }
 }

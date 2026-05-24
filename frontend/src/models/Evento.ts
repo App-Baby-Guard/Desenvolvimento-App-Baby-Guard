@@ -10,5 +10,8 @@ export interface Evento {
   sincronizado: 0 | 1;            // 0=local, 1=sincronizado
 }
 
+// Usado quando CRIAR um evento (sem IDs auto-gerados)
 export type CreateEventoInput = Omit<Evento, 'id_evento' | 'data_evento'>;
+
+// Usado quando ATUALIZAR um evento (campos opcionais). Partial torna todos os campos opcionais, menos o ID
 export type UpdateEventoInput = Partial<CreateEventoInput>;

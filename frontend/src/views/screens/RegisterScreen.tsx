@@ -1,3 +1,7 @@
+//tela de cadastro do app, onde o usuário pode criar uma nova conta para acessar as funcionalidades do BabyGuard. O design é moderno
+//  e clean, com foco na usabilidade e clareza das informações. O formulário de cadastro inclui campos para nome, email e senha, 
+// com validação de campos obrigatórios, formato de email e senha mínima. Há feedback visual para erros, além de um botão 
+// para alternar a visibilidade da senha. Após o cadastro bem-sucedido, o usuário é redirecionado para a tela de login.
 import React, { useState } from "react";
 import {
   View,
@@ -20,13 +24,13 @@ type Props = {
 };
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
-  const [nome, setNome] = useState("");
+  const [nome, setNome] = useState(""); //o que o usuario digita
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [senhaVisivel, setSenhaVisivel] = useState(false);
-  const [carregando, setCarregando] = useState(false);
+  const [carregando, setCarregando] = useState(false); //olhino ocultar cadatro espera
   const [erro, setErro] = useState("");
-
+//responsavel validar o que foi digitado e enviar back
   const handleCadastro = async () => {
     setErro("");
 

@@ -1,10 +1,17 @@
+
+// Esse hook centraliza toda a lógica da tela de login , A tela de login só cuida da parte visual; toda a lógica fica aqui.
+
 import { useState } from 'react';
+import { loginApi } from '../services/authService';
+import { DadosUsuario } from '../services/authService';
+
 
 interface LoginForm {
   email: string;
   senha: string;
 }
 
+// O que o hook retorna para a tela usar
 interface UseLoginReturn {
   form: LoginForm;
   senhaVisivel: boolean;
@@ -16,27 +23,36 @@ interface UseLoginReturn {
   handleLogin: () => Promise<void>;
 }
 
-export function useLogin(onSuccess?: (token: string) => void): UseLoginReturn {
+// Callback que recebe token e usuário após login bem-sucedido
+type OnSuccessCallback = (token: string, usuario: DadosUsuario) => void;
+
+export function useLogin(onSuccess?: OnSuccessCallback): UseLoginReturn {
   const [form, setForm] = useState<LoginForm>({ email: '', senha: '' });
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
 
+  // Atualiza o email e limpa o erro anterior
   const setEmail = (value: string) => {
     setErro('');
     setForm((prev) => ({ ...prev, email: value }));
   };
 
+  // Atualiza a senha e limpa o erro anterior
   const setSenha = (value: string) => {
     setErro('');
     setForm((prev) => ({ ...prev, senha: value }));
   };
 
+  // Alterna entre mostrar e esconder a senha
   const toggleSenhaVisivel = () => setSenhaVisivel((prev) => !prev);
 
+  // Função principal: valida os campos e chama a API
   const handleLogin = async () => {
     const emailLimpo = form.email.trim().toLowerCase();
     const senhaLimpa = form.senha.trim();
+
+    //validações antes de chamar a api (lembrar verificação)
 
     if (!emailLimpo || !senhaLimpa) {
       setErro('Preencha o e-mail e a senha para continuar.');
@@ -53,35 +69,28 @@ export function useLogin(onSuccess?: (token: string) => void): UseLoginReturn {
       return;
     }
 
+    // aqui chama a api, mostra indicador de carregamento e trata erros
+
     setCarregando(true);
     setErro('');
 
-    // TODO: MODO DE TESTE — remove esse bloco quando o backend estiver pronto
-    // Qualquer e-mail/senha válidos passam direto
-    await new Promise((resolve) => setTimeout(resolve, 800)); // simula delay de rede
-    setCarregando(false);
-    onSuccess?.('token-de-teste');
-    return;
-    // ── fim do bloco de teste ──────────────────────────────────────────────
+    try {
+      const resposta = await loginApi(emailLimpo, senhaLimpa);
 
-    //  Código real 
-    // try {
-    //   const resposta = await fetch('http://localhost:3000/auth/login', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ email: emailLimpo, password: senhaLimpa }),
-    //   });
-    //   const dados = await resposta.json();
-    //   if (dados.sucesso) {
-    //     onSuccess?.(dados.dados.token);
-    //   } else {
-    //     setErro(dados.mensagem || 'E-mail ou senha incorretos.');
-    //   }
-    // } catch {
-    //   setErro('Não foi possível conectar ao servidor.');
-    // } finally {
-    //   setCarregando(false);
-    // }
+      if (resposta.sucesso && resposta.dados) {
+        // Login funcionou: chama o callback com o token e usuário
+        onSuccess?.(resposta.dados.token, resposta.dados.usuario);
+      } else {
+        // A API retornou um erro (email ou senha errados, por exemplo)
+        setErro(resposta.mensagem || 'E-mail ou senha incorretos.');
+      }
+    } catch (error) {
+      // Erro de rede: servidor offline, sem internet, etc.
+      setErro('Não foi possível conectar ao servidor. Verifique sua conexão.');
+    } finally {
+      // Sempre para o indicador de carregamento, deu certo ou errado
+      setCarregando(false);
+    }
   };
 
   return {

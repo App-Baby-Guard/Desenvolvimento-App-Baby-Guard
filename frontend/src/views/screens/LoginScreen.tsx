@@ -16,6 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../shared/styles/globalStyles'; 
 import { useLogin } from '../../hooks/useLogin';
+import { useAuth } from '../../context/AuthContext';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../routes/RootNavigator";
 //defino parametro 
@@ -24,6 +25,9 @@ type Props = {
 };
 //declara que é um componente react
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  //aqui fiz a integração com o contexto de autenticação para salvar a sessão do usuário após um login bem-sucedido.
+  const { salvarSessao } = useAuth();
+
   const {
     form,
     senhaVisivel,
@@ -33,9 +37,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setSenha,
     toggleSenhaVisivel,
     handleLogin
-  } = useLogin((token) => { //passo uma função callback /navega tabs
-    console.log("Token recebido:", token);
-    navigation.navigate("Tabs");
+  } = useLogin((token,usuario) => { //passo uma função callback /navega tabs
+    salvarSessao(token, usuario);
+    navigation.replace('Tabs');
   });
 
   return (

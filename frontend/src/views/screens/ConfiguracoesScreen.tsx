@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,16 +9,14 @@ import {
   Image,
 } from "react-native";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-
 import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
-
 import { styles } from "../../styles/configuracoesStyles";
+// importei o contexto de autenticação para pegar o token e os dados do usuário logado
+import { useAuth } from '../../context/AuthContext';
+// importei o serviço de logout para invalidar o token na API
+import { logoutApi } from '../../services/authService';
 
 // TYPES
 interface SensorLimit {
@@ -30,14 +28,8 @@ interface SensorLimit {
   description: string;
 }
 
-type Usuario = {
-  nome: string;
-  email: string;
-  telefone?: string;
-  foto_perfil?: string;
-};
-
 // ICONES
+//aqui defini cores e ícones para os limites dos sensores, para deixar a interface mais visual e intuitiva
 const SENSOR_LIMITS: SensorLimit[] = [
   {
     label: "Limite de Temperatura",
@@ -58,6 +50,9 @@ const SENSOR_LIMITS: SensorLimit[] = [
 ];
 
 // HEADER
+//aqui criei um componente reutilizável para os títulos das seções, que pode receber um título, 
+// um rótulo de ação e uma função de callback para quando a ação for pressionada. Isso ajuda a manter o código 
+// mais organizado e evita repetição.
 const SectionHeader = ({
   title,
   actionLabel,
@@ -79,6 +74,8 @@ const SectionHeader = ({
 );
 
 // TOGGLE
+//aqui criei um componente com temas claro e escuro para as linhas de configuração que possuem um switch,
+//  como os alertas e o tema escuro.
 const ToggleRow = ({
   icon,
   iconColor = COLORS.primary,
@@ -138,6 +135,8 @@ const ToggleRow = ({
 );
 
 // SENSOR
+//aqui eu criei um componente para exibir os limites dos sensores, mostrando o ícone, o nome, a descrição e a faixa ideal.
+
 const SensorLimitRow = ({
   item,
   isLast = false,
@@ -166,7 +165,6 @@ const SensorLimitRow = ({
 
     <View style={{ flex: 1 }}>
       <Text style={styles.userName}>{item.label}</Text>
-
       <Text style={styles.userEmail}>{item.description}</Text>
     </View>
 
@@ -177,43 +175,23 @@ const SensorLimitRow = ({
 );
 
 // SCREEN
+//aqui é a tela principal de configurações, onde utilizo os componentes criados acima para organizar as seções de conta, 
+// notificações, limites dos sensores e dispositivo. Também implementei a função de logout, que exibe um alerta de confirmação e,
+//  ao confirmar, tenta invalidar o token na API e limpa a sessão local.
 export default function ConfiguracoesScreen({
   navigation,
 }: {
   navigation?: any;
 }) {
   const [alertsEnabled, setAlertsEnabled] = useState(true);
-
   const [soundEnabled, setSoundEnabled] = useState(true);
-
   const [darkTheme, setDarkTheme] = useState(false);
 
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  // pego o token, usuário e função de limpar sessão do contexto de autenticação
+  // agora não preciso mais do AsyncStorage para isso
+  const { token, usuario, limparSessao } = useAuth();
 
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
-
-      const carregarUsuario = async () => {
-        try {
-          const usuarioStorage = await AsyncStorage.getItem("usuario");
-
-          if (usuarioStorage && isActive) {
-            setUsuario(JSON.parse(usuarioStorage));
-          }
-        } catch (error) {
-          console.log("Erro ao carregar usuário:", error);
-        }
-      };
-
-      carregarUsuario();
-
-      return () => {
-        isActive = false;
-      };
-    }, []),
-  );
-
+  // função de logout: invalida o token na API e limpa a sessão local
   const handleLogout = () => {
     Alert.alert("Sair da Conta", "Tem certeza que deseja sair?", [
       {
@@ -223,17 +201,19 @@ export default function ConfiguracoesScreen({
       {
         text: "Sair",
         style: "destructive",
-
         onPress: async () => {
-          try {
-            await AsyncStorage.removeItem("token");
-
-            await AsyncStorage.removeItem("usuario");
-
-            navigation?.replace("Login");
-          } catch (error) {
-            console.log("Erro ao sair:", error);
+          // tenta invalidar o token na API, mesmo se falhar desloga localmente
+          if (token) {
+            try {
+              await logoutApi(token);
+            } catch {
+              console.log("Erro ao invalidar token na API, deslogando localmente.");
+            }
           }
+          // limpa os dados da sessão no app
+          limparSessao();
+          // volta para a tela de login
+          navigation?.reset({ index: 0, routes: [{ name: 'Login' }] });
         },
       },
     ]);
@@ -246,7 +226,9 @@ export default function ConfiguracoesScreen({
         contentContainerStyle={GLOBAL_STYLES.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
+          {/*aqui header da tela de configurações, com um botão de voltar e o título centralizado. O botão de voltar
+           utiliza a função de navegação para retornar à tela anterior. O título é estilizado para se destacar como o cabeçalho 
+           da tela.*/}
         <View style={GLOBAL_STYLES.header}>
           <TouchableOpacity
             onPress={() => navigation?.goBack()}
@@ -265,7 +247,9 @@ export default function ConfiguracoesScreen({
           </Text>
         </View>
 
-        {/* CONTA */}
+        {/*aqui conta as informações da conta do usuário, como nome, email e foto de perfil. O usuário pode
+         clicar nessa seção para acessar a tela de perfil, onde pode editar suas informações. Também tem um botão para sair da conta,
+          que chama a função de logout definida acima.*/}
         <SectionHeader title="CONTA" />
 
         <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
@@ -281,9 +265,7 @@ export default function ConfiguracoesScreen({
           >
             {usuario?.foto_perfil ? (
               <Image
-                source={{
-                  uri: usuario.foto_perfil,
-                }}
+                source={{ uri: usuario.foto_perfil }}
                 style={styles.accountAvatar}
               />
             ) : (
@@ -293,8 +275,8 @@ export default function ConfiguracoesScreen({
             )}
 
             <View style={{ flex: 1 }}>
+              {/* mostra o nome e email real do usuário logado */}
               <Text style={styles.userName}>{usuario?.nome || "Usuário"}</Text>
-
               <Text style={styles.userEmail}>
                 {usuario?.email || "Email não encontrado"}
               </Text>
@@ -318,13 +300,15 @@ export default function ConfiguracoesScreen({
           >
             <View style={styles.logoutContent}>
               <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
-
               <Text style={styles.logoutText}>Sair da Conta</Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* NOTIFICAÇÕES */}
+        {/*aqui as configurações de notificações, onde o usuário pode ativar ou desativar os alertas, escolher se quer som de alerta e ativar
+         o tema escuro. Cada opção tem um
+         ícone representativo e um switch para ligar ou desligar. As opções são organizadas em uma seção separada para facilitar 
+         a navegação.*/}
         <SectionHeader title="NOTIFICAÇÕES" />
 
         <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
@@ -351,7 +335,9 @@ export default function ConfiguracoesScreen({
           />
         </View>
 
-        {/* LIMITES DOS SENSORES */}
+        {/* aqui limites dos sensores, onde mostro os limites de temperatura e umidade, com ícones, 
+        descrições e faixas ideais. O usuário pode clicar em "Ajustar" para configurar esses limites, o que pode levar a uma tela de 
+        configuração avançada. */}
         <SectionHeader
           title="LIMITES DOS SENSORES"
           actionLabel="Ajustar"
@@ -368,7 +354,9 @@ export default function ConfiguracoesScreen({
           ))}
         </View>
 
-        {/* DISPOSITIVO */}
+        {/*aqui no dispositivo mostro as informações do dispositivo conectado, como nome, status de conexão, versão do firmware
+         e última sincronização. O usuário pode clicar nessa seção para acessar a tela de dispositivos, onde pode gerenciar
+          seus dispositivos conectados. Também tem um ícone de atualização para verificar se há novas versões de firmware disponíveis.*/}
         <SectionHeader title="DISPOSITIVO" />
 
         <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
@@ -384,7 +372,6 @@ export default function ConfiguracoesScreen({
 
               <View style={styles.deviceStatus}>
                 <View style={styles.statusDot} />
-
                 <Text style={styles.statusText}>Conectado e sincronizado</Text>
               </View>
 
@@ -410,12 +397,12 @@ export default function ConfiguracoesScreen({
 
           <View style={GLOBAL_STYLES.deviceField}>
             <Text style={GLOBAL_STYLES.fieldLabel}>ÚLTIMA SINCRONIZAÇÃO</Text>
-
             <Text style={GLOBAL_STYLES.fieldValue}>Há 2 minutos</Text>
           </View>
         </View>
 
-        {/* FOOTER */}
+        {/*aqui o rodapé da tela de configurações, com o nome e versão do aplicativo. O rodapé é estilizado para se
+         destacar do restante do conteúdo e fornecer informações importantes sobre a versão do app.*/}
         <Text style={GLOBAL_STYLES.footer}>BabyGuard v2.4.0 (2023)</Text>
       </ScrollView>
     </SafeAreaView>

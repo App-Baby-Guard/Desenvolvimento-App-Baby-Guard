@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,12 +23,50 @@ import { useRobos } from "../../context/RoboContext";
 import { Robo } from "../../context/RoboContext";
 import Toast from "react-native-toast-message";
 
+import * as dispositivoService from "../../services/dispositivosService";
+
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MeusRobosScreen() {
   const navigation = useNavigation<Nav>();
-  const { robos, removeRobo } = useRobos();
+  const { robos, addRobo, removeRobo } = useRobos();
   const [busca, setBusca] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carrega os robôs do banco de dados SQLite ao abrir a tela
+  useEffect(() => {
+    async function loadDispositivos() {
+      try {
+        setLoading(true);
+        console.log('[SCREEN] MeusRobosScreen: Carregando dispositivos do banco SQLite...');
+
+        //busca dispositivos do banco
+        const dispositivos = await dispositivoService.listarDispositivos();
+        console.log(`[SCREEN] MeusRobosScreen: ${dispositivos.length} dispositivos encontrados no banco`);
+
+        // Adiciona os dispositivos como robôs no contexto
+        for (const disp of dispositivos) {
+          addRobo({
+            id: String(disp.id_dispositivo),
+            nome: disp.nome_dispositivo,
+            local: 'Sala', //mock
+            status: disp.status_dispositivo === 'online' ? 'conectado' : 'desconectado', ultimoSinal: new Date().toISOString()
+          });
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error('[SCREEN] Erro ao carregar dispositivos:', err);
+        setError('Não foi possível carregar os robôs. Tente novamente mais tarde.');
+      } finally {
+        setLoading(false);
+      }
+
+    }
+
+    loadDispositivos();
+  }, []); // Executa apenas na montagem da tela
 
   // TODO: Substituir dados mockados pelos recebidos da API (endpoint de robôs)
   const robosMock: Robo[] = [
@@ -56,7 +94,11 @@ export default function MeusRobosScreen() {
     ultimoSinal: "Aguardando configuração",
   };
 
-  const listaCompleta = [...robosMock, ...robos, mockConfig];
+  const listaCompleta = [
+    ...robosMock.filter((mock) => !robos.some((r) => r.id === mock.id)),  // mostra o mock apenas se não houver um robô com o mesmo ID vindo do banco
+    ...robos,
+    mockConfig,
+  ];
 
   function renderStatus(status: string) {
     const map: any = {
@@ -202,7 +244,7 @@ export default function MeusRobosScreen() {
       <FlatList
         data={listaFiltrada}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || String(index)}  
         contentContainerStyle={{ padding: SPACING.lg }}
       />
     </SafeAreaView>

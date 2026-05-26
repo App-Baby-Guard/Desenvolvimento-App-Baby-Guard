@@ -22,7 +22,12 @@ export function RoboProvider({ children }: { children: ReactNode }) {
   const [robos, setRobos] = useState<Robo[]>([]);
 
   function addRobo(robo: Robo) {
-    setRobos((prev) => [...prev, robo]);
+    setRobos((prev) => {
+      if (prev.some((r) => r.id === robo.id)) { // verifica se já existe um robô com o mesmo ID
+        return prev;
+      }
+      return [...prev, robo];
+    });
   }
 
   function updateRobo(id: string, data: Partial<Robo>) {

@@ -30,11 +30,11 @@ export default function NovoRoboScreen() {
   const [nome, setNome] = useState("");
   const [id, setId] = useState("");
   const [local, setLocal] = useState("");
-  const { addRobo } = useRobos();
+  const { addRobo, getRoboById } = useRobos();
 
   function handleRegistrar() {
     try {
-      registrarRobo(nome, id, local, addRobo);
+      registrarRobo(nome, id, local, addRobo, getRoboById); //passa getRoboById para validação de ID único
 
       Toast.show({
         type: "success",

@@ -223,11 +223,53 @@ export default function MeusRobosScreen() {
   const listaFiltrada = listaCompleta.filter((r) =>
     r.nome.toLowerCase().includes(busca.toLowerCase())
   );
+ 
+  //========= TESTE RÁPIDO DO CRUD NO BANCO LOCAL (SQLite) =========
+  async function testarCRUD() {
+    try {
+      // 1. Cria um dispositivo de teste
+      await dispositivoService.criarDispositivo({
+        uuid_dispositivo: 'teste-uuid-' + Date.now(),
+        nome_dispositivo: 'Robô Teste ' + new Date().getSeconds(),
+        status_dispositivo: 'online',
+        ativo: 1,
+      });
+
+      // 2. Lista os dispositivos
+      const dispositivos = await dispositivoService.listarDispositivos();
+      
+      Toast.show({
+        type: "success",
+        text1: "Teste SQLite concluído! ✅",
+        text2: `Agora existem ${dispositivos.length} robôs no banco local.`,
+        visibilityTime: 4000,
+      });
+
+      // Recarrega os robôs no contexto se necessário (aqui só mostramos o toast para confirmar que salvou)
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: "Erro no teste do SQLite",
+        text2: error.message || String(error),
+        visibilityTime: 4000,
+      });
+    }
+  }
 
   return (
     <SafeAreaView style={GLOBAL_STYLES.screen}>
       <View style={{ padding: SPACING.lg }}>
-        <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>  // botão de teste do CRUD no banco local (SQLite) - só para teste
+          <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
+
+          // BOTÃO DE TESTE RÁPIDO DO CRUD NO BANCO LOCAL (SQLite) - APENAS PARA TESTES
+          <TouchableOpacity 
+            style={[GLOBAL_STYLES.buttonSecondary, { paddingVertical: SPACING.xs, paddingHorizontal: SPACING.sm }]} 
+            onPress={testarCRUD}
+          >
+            <Text style={[GLOBAL_STYLES.buttonSecondaryText, { fontSize: 12 }]}>Testar DB</Text>
+          </TouchableOpacity>
+        </View>
 
         <TextInput
           placeholder="Buscar robô..."

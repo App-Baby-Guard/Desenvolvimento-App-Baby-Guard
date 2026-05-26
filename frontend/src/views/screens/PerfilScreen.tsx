@@ -1,3 +1,7 @@
+//essa tela de perfil do usuário, onde ele pode visualizar e editar suas informações pessoais, como nome, email e telefone. 
+// O usuário também pode alterar sua senha através de um modal dedicado. A tela é organizada em seções para facilitar a navegação, 
+// e cada campo tem um estilo consistente para melhorar a experiência do usuário. O botão de salvar alterações fica desativado
+//  enquanto as alterações estão sendo salvas para evitar ações duplicadas, e o usuário recebe feedback visual sobre o status da ação.
 import React, { useState } from "react";
 import {
   View,

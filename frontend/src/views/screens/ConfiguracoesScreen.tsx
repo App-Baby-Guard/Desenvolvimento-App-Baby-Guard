@@ -1,3 +1,5 @@
+//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos 
+// sensores e informações do dispositivo.
 import React, { useState } from "react";
 import {
   View,

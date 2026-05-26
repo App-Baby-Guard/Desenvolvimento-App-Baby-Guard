@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,18 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Image,
 } from "react-native";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
 import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
+
 import { styles } from "../../styles/configuracoesStyles";
 
 // TYPES
@@ -21,6 +29,13 @@ interface SensorLimit {
   range: string;
   description: string;
 }
+
+type Usuario = {
+  nome: string;
+  email: string;
+  telefone?: string;
+  foto_perfil?: string;
+};
 
 // ICONES
 const SENSOR_LIMITS: SensorLimit[] = [
@@ -54,6 +69,7 @@ const SectionHeader = ({
 }) => (
   <View style={GLOBAL_STYLES.sectionHeader}>
     <Text style={GLOBAL_STYLES.sectionTitle}>{title}</Text>
+
     {actionLabel && (
       <TouchableOpacity onPress={onAction} activeOpacity={0.7}>
         <Text style={GLOBAL_STYLES.sectionAction}>{actionLabel}</Text>
@@ -86,17 +102,35 @@ const ToggleRow = ({
     ]}
   >
     <View
-      style={[GLOBAL_STYLES.iconWrap, { backgroundColor: COLORS.surfaceSoft }]}
+      style={[
+        GLOBAL_STYLES.iconWrap,
+        {
+          backgroundColor: COLORS.surfaceSoft,
+          marginRight: 12,
+        },
+      ]}
     >
       <Ionicons name={icon} size={18} color={iconColor} />
     </View>
 
-    <Text style={GLOBAL_STYLES.rowLabel}>{label}</Text>
+    <Text
+      style={[
+        GLOBAL_STYLES.rowLabel,
+        {
+          fontWeight: "600",
+        },
+      ]}
+    >
+      {label}
+    </Text>
 
     <Switch
       value={value}
       onValueChange={onToggle}
-      trackColor={{ false: COLORS.border, true: COLORS.primary }}
+      trackColor={{
+        false: COLORS.border,
+        true: COLORS.primary,
+      }}
       thumbColor={COLORS.surface}
       ios_backgroundColor={COLORS.border}
     />
@@ -119,16 +153,26 @@ const SensorLimitRow = ({
       !isLast && GLOBAL_STYLES.rowBorder,
     ]}
   >
-    <View style={[GLOBAL_STYLES.iconWrap, { backgroundColor: item.iconBg }]}>
+    <View
+      style={[
+        GLOBAL_STYLES.iconWrap,
+        {
+          backgroundColor: item.iconBg,
+        },
+      ]}
+    >
       <Ionicons name={item.icon} size={18} color={item.iconColor} />
     </View>
 
     <View style={{ flex: 1 }}>
-      <Text style={GLOBAL_STYLES.rowLabel}>{item.label}</Text>
-      <Text style={GLOBAL_STYLES.textMuted}>{item.description}</Text>
+      <Text style={styles.userName}>{item.label}</Text>
+
+      <Text style={styles.userEmail}>{item.description}</Text>
     </View>
 
-    <Text style={GLOBAL_STYLES.rangeText}>{item.range}</Text>
+    <View style={styles.sensorRange}>
+      <Text style={styles.sensorRangeText}>{item.range}</Text>
+    </View>
   </View>
 );
 
@@ -139,13 +183,59 @@ export default function ConfiguracoesScreen({
   navigation?: any;
 }) {
   const [alertsEnabled, setAlertsEnabled] = useState(true);
+
   const [soundEnabled, setSoundEnabled] = useState(true);
+
   const [darkTheme, setDarkTheme] = useState(false);
+
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const carregarUsuario = async () => {
+        try {
+          const usuarioStorage = await AsyncStorage.getItem("usuario");
+
+          if (usuarioStorage && isActive) {
+            setUsuario(JSON.parse(usuarioStorage));
+          }
+        } catch (error) {
+          console.log("Erro ao carregar usuário:", error);
+        }
+      };
+
+      carregarUsuario();
+
+      return () => {
+        isActive = false;
+      };
+    }, []),
+  );
 
   const handleLogout = () => {
     Alert.alert("Sair da Conta", "Tem certeza que deseja sair?", [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: () => { } },
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Sair",
+        style: "destructive",
+
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem("token");
+
+            await AsyncStorage.removeItem("usuario");
+
+            navigation?.replace("Login");
+          } catch (error) {
+            console.log("Erro ao sair:", error);
+          }
+        },
+      },
     ]);
   };
 
@@ -177,7 +267,8 @@ export default function ConfiguracoesScreen({
 
         {/* CONTA */}
         <SectionHeader title="CONTA" />
-        <View style={GLOBAL_STYLES.cardNoPadding}>
+
+        <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
           <TouchableOpacity
             style={[
               GLOBAL_STYLES.row,
@@ -188,14 +279,24 @@ export default function ConfiguracoesScreen({
             activeOpacity={0.7}
             onPress={() => navigation?.navigate("Perfil")}
           >
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={24} color={COLORS.primaryDark} />
-            </View>
+            {usuario?.foto_perfil ? (
+              <Image
+                source={{
+                  uri: usuario.foto_perfil,
+                }}
+                style={styles.accountAvatar}
+              />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={24} color={COLORS.primaryDark} />
+              </View>
+            )}
 
             <View style={{ flex: 1 }}>
-              <Text style={GLOBAL_STYLES.rowLabel}>Ricardo Silva</Text>
-              <Text style={GLOBAL_STYLES.textMuted}>
-                ricardo.silva@hotmail.com
+              <Text style={styles.userName}>{usuario?.nome || "Usuário"}</Text>
+
+              <Text style={styles.userEmail}>
+                {usuario?.email || "Email não encontrado"}
               </Text>
             </View>
 
@@ -215,27 +316,32 @@ export default function ConfiguracoesScreen({
             activeOpacity={0.7}
             onPress={handleLogout}
           >
-            <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
+            <View style={styles.logoutContent}>
+              <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
 
-            <Text style={GLOBAL_STYLES.logoutText}>Sair da Conta</Text>
+              <Text style={styles.logoutText}>Sair da Conta</Text>
+            </View>
           </TouchableOpacity>
         </View>
 
         {/* NOTIFICAÇÕES */}
         <SectionHeader title="NOTIFICAÇÕES" />
-        <View style={GLOBAL_STYLES.cardNoPadding}>
+
+        <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
           <ToggleRow
             icon="notifications-outline"
             label="Ativar alertas"
             value={alertsEnabled}
             onToggle={setAlertsEnabled}
           />
+
           <ToggleRow
             icon="volume-medium-outline"
             label="Som de alerta"
             value={soundEnabled}
             onToggle={setSoundEnabled}
           />
+
           <ToggleRow
             icon="moon-outline"
             label="Tema Escuro"
@@ -249,9 +355,10 @@ export default function ConfiguracoesScreen({
         <SectionHeader
           title="LIMITES DOS SENSORES"
           actionLabel="Ajustar"
-          onAction={() => { }}
+          onAction={() => {}}
         />
-        <View style={GLOBAL_STYLES.cardNoPadding}>
+
+        <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
           {SENSOR_LIMITS.map((item, idx) => (
             <SensorLimitRow
               key={item.label}
@@ -263,7 +370,8 @@ export default function ConfiguracoesScreen({
 
         {/* DISPOSITIVO */}
         <SectionHeader title="DISPOSITIVO" />
-        <View style={GLOBAL_STYLES.cardNoPadding}>
+
+        <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionCard]}>
           <TouchableOpacity
             style={GLOBAL_STYLES.deviceField}
             activeOpacity={0.7}
@@ -273,6 +381,12 @@ export default function ConfiguracoesScreen({
 
             <View style={GLOBAL_STYLES.spaceBetween}>
               <Text style={styles.fieldValueDisp}>ESP32-BG-001</Text>
+
+              <View style={styles.deviceStatus}>
+                <View style={styles.statusDot} />
+
+                <Text style={styles.statusText}>Conectado e sincronizado</Text>
+              </View>
 
               <View style={styles.activeBadge}>
                 <Text style={styles.activeBadgeText}>ATIVO</Text>
@@ -296,6 +410,7 @@ export default function ConfiguracoesScreen({
 
           <View style={GLOBAL_STYLES.deviceField}>
             <Text style={GLOBAL_STYLES.fieldLabel}>ÚLTIMA SINCRONIZAÇÃO</Text>
+
             <Text style={GLOBAL_STYLES.fieldValue}>Há 2 minutos</Text>
           </View>
         </View>

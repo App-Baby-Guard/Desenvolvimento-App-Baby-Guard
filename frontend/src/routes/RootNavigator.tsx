@@ -28,6 +28,7 @@ export default function RootNavigator() {
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
         initialRouteName="Login"
+        //initialRouteName="Tabs"  pra rodar sem login, trocar initialRouteName para "Tabs":   
       >
         {/* Auth (sem validação real) */}
         <Stack.Screen name="Login" component={LoginScreen} />

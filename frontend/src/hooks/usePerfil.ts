@@ -1,6 +1,6 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/apiUrl";
+import { useAuth } from "../context/AuthContext";
 
 type UsePerfilParams = {
   usuario: any | null;
@@ -18,6 +18,9 @@ export function usePerfil({
   const [salvando, setSalvando] = useState(false);
   const [salvandoSenha, setSalvandoSenha] = useState(false);
 
+  // pega o token do contexto de autenticação em vez do AsyncStorage
+  const { token } = useAuth();
+
   const atualizarPerfil = async (nome: string, telefone: string) => {
     if (!usuario?.id_usuario) {
       throw new Error("Usuário não encontrado.");
@@ -26,8 +29,6 @@ export function usePerfil({
     setSalvando(true);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(
         `${API_URL}/usuarios/${usuario.id_usuario}`,
         {
@@ -36,10 +37,7 @@ export function usePerfil({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            nome,
-            telefone,
-          }),
+          body: JSON.stringify({ nome, telefone }),
         },
       );
 
@@ -52,8 +50,6 @@ export function usePerfil({
       const usuarioAtualizado = data?.dados || data;
 
       setUsuario(usuarioAtualizado);
-      await AsyncStorage.setItem("usuario", JSON.stringify(usuarioAtualizado));
-
       if (setNome) setNome(usuarioAtualizado.nome || "");
       if (setTelefone) setTelefone(usuarioAtualizado.telefone || "");
 
@@ -71,8 +67,6 @@ export function usePerfil({
     setSalvandoSenha(true);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(
         `${API_URL}/usuarios/${usuario.id_usuario}`,
         {

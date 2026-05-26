@@ -1,3 +1,7 @@
+
+// Tela de cadastro do app. O layout é igual ao da LoginScreen para manter consistência visual.
+// A lógica valida os campos e envia os dados para a API de cadastro.
+
 import React, { useState } from "react";
 import {
   View,
@@ -5,7 +9,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,12 +17,18 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../routes/RootNavigator";
-
+import { cadastrarApi } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
+import { COLORS } from "../../shared/styles/globalStyles";
+//aqui definimos os tipos de navegação para a tela de cadastro, indicando que ela faz parte do stack de navegação e 
+// pode navegar para outras telas como "Login" ou "Tabs".
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Register">;
 };
-
-const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+//criei a constante RegisterScreen, que é um componente funcional do React.
+// Ele recebe as props de navegação para permitir a transição entre telas.
+const RegisterScreen: React.FC<Props> = ({ navigation }) => { //usei react.FC para indicar que é um componente funcional do React, 
+// e Props para tipar as props de navegação.
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -27,22 +36,37 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
 
+  // pega a função de salvar sessão do contexto de autenticação
+  const { salvarSessao } = useAuth();
+
+  // limpa o erro quando o usuário começa a digitar
+  function limparErro() {
+    if (erro) setErro("");
+  }
+
+  // responsável por validar o que foi digitado e enviar para o backend
   const handleCadastro = async () => {
     setErro("");
 
-    // Validação de campos obrigatórios
+    // validação de campos obrigatórios
     if (!nome.trim() || !email.trim() || !senha.trim()) {
       setErro("Preencha todos os campos.");
       return;
     }
 
-    // Validação de e-mail
+    // validação de nome mínimo
+    if (nome.trim().length < 3) {
+      setErro("O nome deve ter no mínimo 3 caracteres.");
+      return;
+    }
+
+    // validação de e-mail
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim().toLowerCase())) {
       setErro("Informe um e-mail válido.");
       return;
     }
 
-    // Validação de senha mínima
+    // validação de senha mínima
     if (senha.trim().length < 6) {
       setErro("A senha deve ter no mínimo 6 caracteres.");
       return;
@@ -51,24 +75,18 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     setCarregando(true);
 
     try {
-      const resposta = await fetch("http://localhost:3000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nome.trim(),
-          email: email.trim().toLowerCase(),
-          password: senha.trim(),
-        }),
-      });
+      const resposta = await cadastrarApi(
+        nome.trim(),
+        email.trim().toLowerCase(),
+        senha.trim()
+      );
 
-      const dados = await resposta.json();
-
-      if (resposta.ok || dados.sucesso) {
-        Alert.alert("Sucesso", "Cadastro realizado! Faça login para continuar.", [
-          { text: "OK", onPress: () => navigation.navigate("Login") },
-        ]);
+      if (resposta.sucesso && resposta.dados) {
+        // cadastro funcionou: salva a sessão e vai direto para o app
+        salvarSessao(resposta.dados.token, resposta.dados.usuario);
+        navigation.replace("Tabs");
       } else {
-        setErro(dados.mensagem || dados.message || "Erro ao realizar cadastro.");
+        setErro(resposta.mensagem || "Erro ao realizar cadastro.");
       }
     } catch {
       setErro("Não foi possível conectar ao servidor.");
@@ -78,54 +96,95 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <ScrollView
+      style={styles.fundo}
+      contentContainerStyle={styles.scroll}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.container}>
-          <Text style={styles.titulo}>Criar Conta</Text>
+      {/* Cabeçalho igual ao login */}
+      <View style={styles.cabecalho}>
+        <View style={styles.iconeContainer}>
+          <Ionicons name="heart" size={38} color={COLORS.textInverse} />
+        </View>
+        <Text style={styles.titulo}>BabyGuard</Text>
+        <Text style={styles.subtitulo}>Monitoramento inteligente do seu bebê</Text>
+      </View>
 
-          {/* ERRO */}
-          {erro !== "" && (
-            <View style={styles.caixaErro}>
-              <Ionicons name="alert-circle-outline" size={16} color="#D9534F" />
-              <Text style={styles.textoErro}>{erro}</Text>
-            </View>
-          )}
+      {/* Formulário igual ao login */}
+      <View style={styles.formulario}>
+        <Text style={styles.tituloBemVindo}>Criar Conta</Text>
+        <Text style={styles.instrucao}>Preencha os dados para se cadastrar</Text>
 
-          {/* NOME */}
-          <TextInput
-            style={styles.input}
-            placeholder="Nome"
-            value={nome}
-            onChangeText={(v) => { setErro(""); setNome(v); }}
-            autoCapitalize="words"
-            returnKeyType="next"
-          />
+        {/* mensagem de erro */}
+        {erro !== "" && (
+          <View style={styles.caixaErro}>
+            <Ionicons name="alert-circle-outline" size={16} color="#D9534F" />
+            <Text style={styles.textoErro}>{erro}</Text>
+          </View>
+        )}
 
-          {/* EMAIL */}
-          <TextInput
-            style={styles.input}
-            placeholder="E-mail"
-            value={email}
-            onChangeText={(v) => { setErro(""); setEmail(v); }}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-            returnKeyType="next"
-          />
-
-          {/* SENHA */}
-          <View style={styles.campoSenha}>
+        {/* campo nome */}
+        <View style={styles.grupoCampo}>
+          <Text style={styles.label}>Nome completo</Text>
+          <View style={styles.campoComIcone}>
+            <Ionicons
+              name="person-outline"
+              size={18}
+              color={COLORS.textTertiary}
+              style={styles.iconeInput}
+            />
             <TextInput
-              style={styles.inputSenha}
-              placeholder="Senha (mínimo 6 caracteres)"
+              style={styles.input}
+              placeholder="Seu nome"
+              placeholderTextColor={COLORS.textTertiary}
+              value={nome}
+              onChangeText={(v) => { limparErro(); setNome(v); }}
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+          </View>
+        </View>
+
+        {/* campo email */}
+        <View style={styles.grupoCampo}>
+          <Text style={styles.label}>E-mail</Text>
+          <View style={styles.campoComIcone}>
+            <Ionicons
+              name="mail-outline"
+              size={18}
+              color={COLORS.textTertiary}
+              style={styles.iconeInput}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="seu@email.com"
+              placeholderTextColor={COLORS.textTertiary}
+              value={email}
+              onChangeText={(v) => { limparErro(); setEmail(v); }}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+          </View>
+        </View>
+
+        {/* campo senha */}
+        <View style={styles.grupoCampo}>
+          <Text style={styles.label}>Senha</Text>
+          <View style={styles.campoComIcone}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={18}
+              color={COLORS.textTertiary}
+              style={styles.iconeInput}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor={COLORS.textTertiary}
               value={senha}
-              onChangeText={(v) => { setErro(""); setSenha(v); }}
+              onChangeText={(v) => { limparErro(); setSenha(v); }}
               secureTextEntry={!senhaVisivel}
               autoCapitalize="none"
               autoCorrect={false}
@@ -134,63 +193,110 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             />
             <TouchableOpacity
               onPress={() => setSenhaVisivel((prev) => !prev)}
+              style={styles.botaoOlho}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons
                 name={senhaVisivel ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color="#888"
+                size={18}
+                color={COLORS.textTertiary}
               />
             </TouchableOpacity>
           </View>
-
-          {/* BOTÃO */}
-          <TouchableOpacity
-            style={[styles.botao, carregando && styles.botaoDesativado]}
-            activeOpacity={0.8}
-            onPress={handleCadastro}
-            disabled={carregando}
-          >
-            {carregando ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.textoBotao}>Cadastrar</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* VOLTAR PARA LOGIN */}
-          <View style={styles.rodape}>
-            <Text style={styles.textoRodape}>Já tem uma conta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.textoLink}>Entrar</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        {/* botão cadastrar */}
+        <TouchableOpacity
+          style={[styles.botaoEntrar, carregando && styles.botaoDesativado]}
+          onPress={handleCadastro}
+          disabled={carregando}
+          activeOpacity={0.85}
+        >
+          {carregando ? (
+            <ActivityIndicator color={COLORS.textInverse} />
+          ) : (
+            <Text style={styles.textoBotaoEntrar}>Cadastrar</Text>
+          )}
+        </TouchableOpacity>
+
+        {/* divisor */}
+        <View style={styles.divisor}>
+          <View style={styles.linhaDivisor} />
+          <Text style={styles.textoDivisor}>ou</Text>
+          <View style={styles.linhaDivisor} />
+        </View>
+
+        {/* link para login */}
+        <View style={styles.rodape}>
+          <Text style={styles.textoRodape}>Já tem uma conta? </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.textoCriarConta}>Entrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
+// estilos idênticos ao LoginScreen
 const styles = StyleSheet.create({
+  fundo: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   scroll: {
     flexGrow: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#FFFFFF",
   },
-
-  container: {
-    width: "100%",
+  cabecalho: {
+    alignItems: "center",
+    marginBottom: 32,
   },
-
+  iconeContainer: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 14,
+  },
   titulo: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 24,
-    textAlign: "center",
-    color: "#111111",
+    fontSize: 26,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 6,
   },
-
+  subtitulo: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textAlign: "center",
+  },
+  formulario: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
+    padding: 24,
+    shadowColor: COLORS.shadowColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  tituloBemVindo: {
+    fontSize: 19,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 4,
+  },
+  instrucao: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
+  },
   caixaErro: {
     flexDirection: "row",
     alignItems: "center",
@@ -202,74 +308,86 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#FACCCC",
   },
-
   textoErro: {
     flex: 1,
     fontSize: 13,
     color: "#D9534F",
   },
-
-  input: {
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 10,
-    padding: 14,
+  grupoCampo: {
     marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: "#F8F8F8",
   },
-
-  campoSenha: {
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+  },
+  campoComIcone: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: COLORS.inputBackground,
     borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    marginBottom: 16,
-    backgroundColor: "#F8F8F8",
+    borderColor: COLORS.inputBorder,
+    borderRadius: 12,
+    paddingHorizontal: 12,
   },
-
-  inputSenha: {
+  iconeInput: {
+    marginRight: 8,
+  },
+  input: {
     flex: 1,
-    paddingVertical: 14,
-    fontSize: 16,
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    paddingVertical: 13,
   },
-
-  botao: {
-    backgroundColor: "#0066FF",
-    padding: 16,
-    borderRadius: 10,
+  botaoOlho: {
+    padding: 4,
+  },
+  botaoEntrar: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
-    marginTop: 8,
-    marginBottom: 16,
+    marginTop: 6,
+    marginBottom: 14,
   },
-
   botaoDesativado: {
     opacity: 0.65,
   },
-
-  textoBotao: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 16,
+  textoBotaoEntrar: {
+    color: COLORS.textInverse,
+    fontSize: 15,
+    fontWeight: "700",
   },
-
+  divisor: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  linhaDivisor: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+  textoDivisor: {
+    marginHorizontal: 12,
+    fontSize: 12,
+    color: COLORS.textTertiary,
+  },
   rodape: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
   },
-
   textoRodape: {
     fontSize: 13,
-    color: "#555555",
+    color: COLORS.textSecondary,
   },
-
-  textoLink: {
+  textoCriarConta: {
     fontSize: 13,
-    color: "#0066FF",
+    color: COLORS.primaryDark,
     fontWeight: "700",
   },
 });
+
 export default RegisterScreen;

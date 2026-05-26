@@ -184,7 +184,7 @@ export default function MeusRobosScreen() {
   return (
     <SafeAreaView style={GLOBAL_STYLES.screen}>
       <View style={{ padding: SPACING.lg }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>  // botão de teste do CRUD no banco local (SQLite) - só para teste
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>  
           <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
 
 

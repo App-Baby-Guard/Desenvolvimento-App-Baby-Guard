@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   TextInput,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,98 +16,72 @@ import {
   BORDER_RADIUS,
 } from "../../shared/styles/globalStyles";
 
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
 
-import { useRobos } from "../../context/RoboContext";
-import { Robo } from "../../context/RoboContext";
+import { roboController } from "../../controllers/roboController";
+import { Dispositivo } from "../../models/Dispositivo";
 import Toast from "react-native-toast-message";
-
-import * as dispositivoService from "../../services/dispositivosService";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MeusRobosScreen() {
   const navigation = useNavigation<Nav>();
-  const { robos, addRobo, removeRobo } = useRobos();
+  const isFocused = useIsFocused();
   const [busca, setBusca] = useState("");
-
+  const [robos, setRobos] = useState<Dispositivo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Carrega os robôs do banco de dados SQLite ao abrir a tela
+  // Recarrega a lista sempre que a tela ganha foco (ex: ao voltar de NovoRobo)
   useEffect(() => {
-    async function loadDispositivos() {
-      try {
-        setLoading(true);
-        console.log('[SCREEN] MeusRobosScreen: Carregando dispositivos do banco SQLite...');
-
-        //busca dispositivos do banco
-        const dispositivos = await dispositivoService.listarDispositivos();
-        console.log(`[SCREEN] MeusRobosScreen: ${dispositivos.length} dispositivos encontrados no banco`);
-
-        // Adiciona os dispositivos como robôs no contexto
-        for (const disp of dispositivos) {
-          addRobo({
-            id: String(disp.id_dispositivo),
-            nome: disp.nome_dispositivo,
-            local: 'Sala', //mock
-            status: disp.status_dispositivo === 'online' ? 'conectado' : 'desconectado', ultimoSinal: new Date().toISOString()
-          });
-        }
-        setError(null);
-      } catch (err: any) {
-        console.error('[SCREEN] Erro ao carregar dispositivos:', err);
-        setError('Não foi possível carregar os robôs. Tente novamente mais tarde.');
-      } finally {
-        setLoading(false);
-      }
-
+    if (isFocused) {
+      carregarRobos();
     }
+  }, [isFocused]);
 
-    loadDispositivos();
-  }, []); // Executa apenas na montagem da tela
+  async function carregarRobos() {
+    try {
+      setLoading(true);
+      const dados = await roboController.listarRobos();
+      setRobos(dados);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  // TODO: Substituir dados mockados pelos recebidos da API (endpoint de robôs)
-  const robosMock: Robo[] = [
-    {
-      id: "ESP32-BD-001",
-      nome: "Quarto Sofia",
-      local: "Quarto",
-      status: "online",
-      ultimoSinal: "há 1 min",
-    },
-    {
-      id: "ESP32-BD-002",
-      nome: "Sala",
-      local: "Sala",
-      status: "offline",
-      ultimoSinal: "há 2h",
-    },
-  ];
-
-  const mockConfig = {
-    id: "new",
-    nome: "Novo Robô",
-    local: "",
-    status: "config",
-    ultimoSinal: "Aguardando configuração",
-  };
-
-  const listaCompleta = [
-    ...robosMock.filter((mock) => !robos.some((r) => r.id === mock.id)),  // mostra o mock apenas se não houver um robô com o mesmo ID vindo do banco
-    ...robos,
-    mockConfig,
-  ];
+  async function handleRemover(uuid: string, nome: string) {
+    try {
+      await roboController.removerRobo(uuid);
+      Toast.show({
+        type: "success",
+        text1: "Robô excluído!",
+        text2: `${nome} foi removido.`,
+        visibilityTime: 3000,
+      });
+      // Recarrega a lista após exclusão
+      carregarRobos();
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: "Erro ao excluir",
+        text2: error.message,
+      });
+    }
+  }
 
   function renderStatus(status: string) {
     const map: any = {
       online: { label: "Online", color: COLORS.success },
       offline: { label: "Offline", color: COLORS.textTertiary },
-      config: { label: "Config.", color: COLORS.warning },
     };
-    const estilo = map[status] || map["config"];
+    const estilo = map[status] || { label: "Config.", color: COLORS.warning };
     return (
       <View
         style={{
@@ -124,104 +99,84 @@ export default function MeusRobosScreen() {
     );
   }
 
-  function renderItem({ item }: { item: Robo }) {
-    const isConfig = item.id === "new";
-
+  function renderItem({ item }: { item: Dispositivo }) {
     return (
       <View style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg }]}>
-        <Text style={GLOBAL_STYLES.subtitle}>{item.nome}</Text>
-        <Text style={GLOBAL_STYLES.textMuted}>{item.id}</Text>
+        <Text style={GLOBAL_STYLES.subtitle}>{item.nome_dispositivo}</Text>
+        <Text style={GLOBAL_STYLES.textMuted}>{item.uuid_dispositivo}</Text>
 
         <View style={{ marginVertical: SPACING.sm }}>
-          {renderStatus(item.status)}
+          {renderStatus(item.status_dispositivo)}
         </View>
 
-        <Text style={GLOBAL_STYLES.textMuted}>{item.ultimoSinal}</Text>
-
-        {isConfig ? (
+        <View
+          style={{
+            flexDirection: "row",
+            marginTop: SPACING.lg,
+            gap: SPACING.lg,
+          }}
+        >
           <TouchableOpacity
-            style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.lg }]}
+            style={[GLOBAL_STYLES.buttonSecondary, { flex: 1 }]}
             onPress={() => {
-              navigation.getParent()?.navigate("NovoRobo");
+              navigation.getParent()?.navigate("RenomearRobo", {
+                id: item.uuid_dispositivo,
+                nome: item.nome_dispositivo,
+              });
             }}
           >
-            <Text style={GLOBAL_STYLES.buttonPrimaryText}>
-              Configurar agora
+            <Text style={GLOBAL_STYLES.buttonSecondaryText}>Renomear</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              GLOBAL_STYLES.buttonSecondary,
+              { flex: 1, backgroundColor: "#c0392b" },
+            ]}
+            onPress={() => handleRemover(item.uuid_dispositivo, item.nome_dispositivo)}
+          >
+            <Text style={[GLOBAL_STYLES.buttonPrimaryText, { color: "#fff" }]}>
+              Excluir
             </Text>
           </TouchableOpacity>
-        ) : (
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: SPACING.lg,
-              gap: SPACING.lg,
+
+          <TouchableOpacity
+            style={[GLOBAL_STYLES.buttonPrimary, { flex: 1 }]}
+            onPress={() => {
+              navigation.getParent()?.navigate("RoboDetalhes", {
+                id: item.uuid_dispositivo,
+                nome: item.nome_dispositivo,
+                local: undefined,
+              });
             }}
           >
-            {!item.id.startsWith("ESP32") && (
-              <>
-                <TouchableOpacity
-                  style={[GLOBAL_STYLES.buttonSecondary, { flex: 1 }]}
-                  onPress={() => {
-                    navigation.getParent()?.navigate("RenomearRobo", {
-                      id: item.id,
-                      nome: item.nome,
-                    });
-                  }}
-                >
-                  <Text style={GLOBAL_STYLES.buttonSecondaryText}>
-                    Renomear
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    GLOBAL_STYLES.buttonSecondary,
-                    { flex: 1, backgroundColor: "#c0392b" },
-                  ]}
-                  onPress={() => {
-                    removeRobo(item.id);
-                    Toast.show({
-                      type: "success",
-                      text1: "Robô excluído!",
-                      text2: `${item.nome} foi removido.`,
-                      visibilityTime: 3000,
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      GLOBAL_STYLES.buttonPrimaryText,
-                      { color: "#fff" },
-                    ]}
-                  >
-                    Excluir
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            <TouchableOpacity
-              style={[GLOBAL_STYLES.buttonPrimary, { flex: 1 }]}
-              onPress={() => {
-                navigation.getParent()?.navigate("RoboDetalhes", {
-                  id: item.id,
-                  nome: item.nome,
-                  local: item.local,
-                });
-              }}
-            >
-              <Text style={GLOBAL_STYLES.buttonPrimaryText}>
-                Ver detalhes
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+            <Text style={GLOBAL_STYLES.buttonPrimaryText}>Detalhes</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
-  const listaFiltrada = listaCompleta.filter((r) =>
-    r.nome.toLowerCase().includes(busca.toLowerCase())
+  // Card fixo para adicionar novo robô
+  function renderAddCard() {
+    return (
+      <View style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg }]}>
+        <Text style={GLOBAL_STYLES.subtitle}>Novo Robô</Text>
+        <Text style={GLOBAL_STYLES.textMuted}>Aguardando configuração</Text>
+        <TouchableOpacity
+          style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.lg }]}
+          onPress={() => {
+            navigation.getParent()?.navigate("NovoRobo");
+          }}
+        >
+          <Text style={GLOBAL_STYLES.buttonPrimaryText}>Configurar agora</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const listaFiltrada = robos.filter((r) =>
+    r.nome_dispositivo.toLowerCase().includes(busca.toLowerCase())
   );
 
   return (
@@ -241,12 +196,22 @@ export default function MeusRobosScreen() {
         />
       </View>
 
-      <FlatList
-        data={listaFiltrada}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => item.id || String(index)}  
-        contentContainerStyle={{ padding: SPACING.lg }}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
+            Conectando aos robôs...
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={listaFiltrada}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.uuid_dispositivo}
+          contentContainerStyle={{ padding: SPACING.lg }}
+          ListFooterComponent={renderAddCard}
+        />
+      )}
     </SafeAreaView>
   );
 }

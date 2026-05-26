@@ -1,9 +1,10 @@
 // src/views/screens/RoboDetalhesScreen.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 
 import {
@@ -16,7 +17,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
-import { useRobos } from "../../context/RoboContext";
+import { roboController } from "../../controllers/roboController";
+import { Dispositivo } from "../../models/Dispositivo";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Params = RouteProp<RootStackParamList, "RoboDetalhes">;
@@ -26,14 +28,40 @@ export default function RoboDetalhesScreen() {
   const route = useRoute<Params>();
 
   const { id } = route.params;
-  const { getRoboById } = useRobos();
 
-  const robo = getRoboById(id);
+  const [robo, setRobo] = useState<Dispositivo | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    carregarDetalhes();
+  }, [id]);
+
+  async function carregarDetalhes() {
+    try {
+      setLoading(true);
+      const detalhes = await roboController.buscarRobo(id);
+      setRobo(detalhes);
+    } catch (error: any) {
+      console.error("Erro ao carregar detalhes:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg, justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
+          Buscando dados do dispositivo...
+        </Text>
+      </View>
+    );
+  }
 
   if (!robo) {
     return (
       <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-        {/* Botão Voltar */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
@@ -44,7 +72,7 @@ export default function RoboDetalhesScreen() {
 
         <Text style={GLOBAL_STYLES.title}>Robô não encontrado</Text>
         <Text style={GLOBAL_STYLES.textMuted}>
-          Parece que este robô foi removido.
+          Parece que este robô foi removido ou está inacessível.
         </Text>
       </View>
     );
@@ -52,7 +80,6 @@ export default function RoboDetalhesScreen() {
 
   return (
     <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-      {/* Botão Voltar */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
@@ -61,44 +88,20 @@ export default function RoboDetalhesScreen() {
         <Text style={{ marginLeft: 8, color: COLORS.textPrimary }}>Voltar</Text>
       </TouchableOpacity>
 
-      {/* Nome */}
-      <Text style={GLOBAL_STYLES.title}>{robo.nome}</Text>
+      <Text style={GLOBAL_STYLES.title}>{robo.nome_dispositivo}</Text>
 
-      {/* ID */}
       <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.md }]}>
-        ID do dispositivo:
+        UUID do dispositivo:
       </Text>
-      <Text style={[GLOBAL_STYLES.subtitle, { marginTop: 4 }]}>{robo.id}</Text>
+      <Text style={[GLOBAL_STYLES.subtitle, { marginTop: 4 }]}>{robo.uuid_dispositivo}</Text>
 
-      {/* Local */}
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        Local:
-      </Text>
-      <Text style={[GLOBAL_STYLES.text, { marginTop: 4 }]}>
-        {robo.local || "Não informado"}
-      </Text>
-
-      {/* Status */}
       <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
         Status:
       </Text>
       <Text style={[GLOBAL_STYLES.text, { marginTop: 4 }]}>
-        {robo.status === "config"
-          ? "Em configuração"
-          : robo.status === "online"
-            ? "Online"
-            : "Offline"}
+        {robo.status_dispositivo === "online" ? "Online" : "Offline"}
       </Text>
 
-      {/* Último sinal */}
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        Último sinal:
-      </Text>
-      <Text style={[GLOBAL_STYLES.text, { marginTop: 4 }]}>
-        {robo.ultimoSinal || "—"}
-      </Text>
-
-      {/* Divisor */}
       <View
         style={{
           height: 1,
@@ -107,25 +110,25 @@ export default function RoboDetalhesScreen() {
         }}
       />
 
-      {/* Botão Renomear */}
       <TouchableOpacity
         style={[GLOBAL_STYLES.buttonPrimary, { marginBottom: SPACING.lg }]}
         onPress={() =>
           navigation.navigate("RenomearRobo", {
-            id: robo.id,
-            nome: robo.nome,
+            id: robo.uuid_dispositivo,
+            nome: robo.nome_dispositivo,
           })
         }
       >
         <Text style={GLOBAL_STYLES.buttonPrimaryText}>Renomear Robô</Text>
       </TouchableOpacity>
 
-      {/* Botão Ver Dados */}
       <TouchableOpacity
         style={[GLOBAL_STYLES.buttonSecondary]}
-        onPress={() => { }}
+        onPress={() => {
+          // TODO: Navegar para tela de leituras dos sensores
+        }}
       >
-        <Text style={GLOBAL_STYLES.buttonSecondaryText}>Ver dados</Text>
+        <Text style={GLOBAL_STYLES.buttonSecondaryText}>Ver Leituras dos Sensores</Text>
       </TouchableOpacity>
     </View>
   );

@@ -1,16 +1,15 @@
 //aqui estamos importando as bibliotecas e componentes necessários para o funcionamento do app. O React é a biblioteca principal
 //  para construir a interface, o Toast é usado para mostrar mensagens de feedback para o usuário, 
-// os providers de contexto (AuthProvider e RoboProvider) são usados para gerenciar o estado global de autenticação e robôs, 
+// os providers de contexto (AuthProvider) são usados para gerenciar o estado global de autenticação, 
 // o RootNavigator é o componente que gerencia a navegação entre as telas do app, e as funções initDatabase e createTables são
 //  usadas para configurar o banco de dados SQLite.
 import React, { useEffect } from "react";
 import Toast from "react-native-toast-message";
 import { AuthProvider } from "./context/AuthContext";
-import { RoboProvider } from "./context/RoboContext";
 import RootNavigator from "./routes/RootNavigator";
 import { initDatabase } from "./database/sqlite";
 import { createTables } from "./database/migrations/schema";
-//exportando o componente principal do app, onde configuramos o contexto de autenticação e o contexto de robôs, 
+//exportando o componente principal do app, onde configuramos o contexto de autenticação, 
 // além de inicializar o banco de dados SQLite e criar as tabelas necessárias. O RootNavigator é o componente que 
 // gerencia a navegação entre as telas do app, e o Toast é usado para mostrar mensagens de feedback para o usuário.
 export default function App() {
@@ -32,15 +31,13 @@ export default function App() {
     setupDatabase();
   }, []);
 //aqui vai retornar a estrutura do app, com os providers de contexto e o navigator.
-//  O AuthProvider e RoboProvider envolvem todo o app para fornecer acesso aos dados de autenticação e robôs em qualquer tela.
+//  O AuthProvider envolve todo o app para fornecer acesso aos dados de autenticação em qualquer tela.
 //  O RootNavigator gerencia as telas e a navegação, e o Toast é colocado no topo para mostrar mensagens de feedback em qualquer
 //  lugar do app.
   return (
     <AuthProvider>
-      <RoboProvider>
-        <RootNavigator />
-        <Toast />
-      </RoboProvider>
+      <RootNavigator />
+      <Toast />
     </AuthProvider>
   );
 }

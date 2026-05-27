@@ -1,3 +1,1 @@
-// MODIFICAR COM BASE NO IP DO PC
-export const API_URL = "http://192.168.18.2:3000";
-// EXEMPLO: "http://[MODIFIQUE AQUI]:3000"
+export const API_URL = "https://desenvolvimento-app-baby-guard.onrender.com";

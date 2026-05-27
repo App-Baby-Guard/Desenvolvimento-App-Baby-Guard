@@ -38,7 +38,7 @@ export default function NovoRoboScreen() {
       Toast.show({
         type: "success",
         text1: "Robô configurado!",
-        text2: "Sinal recebido. Dispositivo salvo no banco.",
+        text2: "Tudo pronto! Seu robô já está conectado à sua conta.",
         visibilityTime: 3000,
       });
 

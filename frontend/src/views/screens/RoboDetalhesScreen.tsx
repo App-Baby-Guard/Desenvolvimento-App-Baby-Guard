@@ -14,6 +14,7 @@ import {
 } from "../../shared/styles/globalStyles";
 
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
@@ -50,18 +51,18 @@ export default function RoboDetalhesScreen() {
 
   if (loading) {
     return (
-      <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg, justifyContent: "center", alignItems: "center" }]}>
+      <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg, justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
         <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
           Buscando dados do dispositivo...
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!robo) {
     return (
-      <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
+      <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
@@ -74,12 +75,12 @@ export default function RoboDetalhesScreen() {
         <Text style={GLOBAL_STYLES.textMuted}>
           Parece que este robô foi removido ou está inacessível.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
+    <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
@@ -130,6 +131,6 @@ export default function RoboDetalhesScreen() {
       >
         <Text style={GLOBAL_STYLES.buttonSecondaryText}>Ver Leituras dos Sensores</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

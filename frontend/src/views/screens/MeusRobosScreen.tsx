@@ -6,8 +6,10 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   GLOBAL_STYLES,
@@ -58,6 +60,21 @@ export default function MeusRobosScreen() {
     }
   }
 
+  function confirmarRemover(uuid: string, nome: string) {
+    Alert.alert(
+      "Excluir Robô",
+      `Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Excluir", 
+          style: "destructive", 
+          onPress: () => handleRemover(uuid, nome) 
+        }
+      ]
+    );
+  }
+
   async function handleRemover(uuid: string, nome: string) {
     try {
       await roboController.removerRobo(uuid);
@@ -103,23 +120,35 @@ export default function MeusRobosScreen() {
 
   function renderItem({ item }: { item: Dispositivo }) {
     return (
-      <View style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg }]}>
-        <Text style={GLOBAL_STYLES.subtitle}>{item.nome_dispositivo}</Text>
-        <Text style={GLOBAL_STYLES.textMuted}>{item.uuid_dispositivo}</Text>
+      <TouchableOpacity 
+        style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+        activeOpacity={0.7}
+        onPress={() => {
+          navigation.getParent()?.navigate("RoboDetalhes", {
+            id: item.uuid_dispositivo,
+            nome: item.nome_dispositivo,
+            local: undefined,
+          });
+        }}
+      >
+        {/* Informações principais do robô (Esquerda) */}
+        <View style={{ flex: 1, paddingRight: SPACING.md }}>
+          <Text style={GLOBAL_STYLES.subtitle} numberOfLines={1}>{item.nome_dispositivo}</Text>
+          <Text style={[GLOBAL_STYLES.textMuted, { fontSize: 12, marginTop: 2 }]} numberOfLines={1}>{item.uuid_dispositivo}</Text>
 
-        <View style={{ marginVertical: SPACING.sm }}>
-          {renderStatus(item.status_dispositivo)}
+          <View style={{ marginTop: SPACING.sm }}>
+            {renderStatus(item.status_dispositivo)}
+          </View>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            marginTop: SPACING.lg,
-            gap: SPACING.lg,
-          }}
-        >
+        {/* Ícones de ação (Direita) */}
+        <View style={{ flexDirection: "row", gap: SPACING.sm }}>
           <TouchableOpacity
-            style={[GLOBAL_STYLES.buttonSecondary, { flex: 1 }]}
+            style={{
+              width: 40, height: 40, borderRadius: 20, 
+              backgroundColor: '#e6f2ff', 
+              justifyContent: 'center', alignItems: 'center'
+            }}
             onPress={() => {
               navigation.getParent()?.navigate("RenomearRobo", {
                 id: item.uuid_dispositivo,
@@ -127,23 +156,15 @@ export default function MeusRobosScreen() {
               });
             }}
           >
-            <Text style={GLOBAL_STYLES.buttonSecondaryText}>Renomear</Text>
+            <Ionicons name="pencil" size={20} color={COLORS.primary} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              GLOBAL_STYLES.buttonSecondary,
-              { flex: 1, backgroundColor: "#c0392b" },
-            ]}
-            onPress={() => handleRemover(item.uuid_dispositivo, item.nome_dispositivo)}
-          >
-            <Text style={[GLOBAL_STYLES.buttonPrimaryText, { color: "#fff" }]}>
-              Excluir
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[GLOBAL_STYLES.buttonPrimary, { flex: 1 }]}
+            style={{
+              width: 40, height: 40, borderRadius: 20, 
+              backgroundColor: COLORS.primary, 
+              justifyContent: 'center', alignItems: 'center'
+            }}
             onPress={() => {
               navigation.getParent()?.navigate("RoboDetalhes", {
                 id: item.uuid_dispositivo,
@@ -152,10 +173,21 @@ export default function MeusRobosScreen() {
               });
             }}
           >
-            <Text style={GLOBAL_STYLES.buttonPrimaryText}>Detalhes</Text>
+            <Ionicons name="information-circle" size={22} color={COLORS.textInverse} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              width: 40, height: 40, borderRadius: 20, 
+              backgroundColor: '#ffeaea', 
+              justifyContent: 'center', alignItems: 'center'
+            }}
+            onPress={() => confirmarRemover(item.uuid_dispositivo, item.nome_dispositivo)}
+          >
+            <Ionicons name="trash" size={20} color="#c0392b" />
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 

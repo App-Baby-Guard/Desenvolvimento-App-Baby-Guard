@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   GLOBAL_STYLES,
@@ -57,7 +58,7 @@ export default function RenomearRoboScreen() {
   }
 
   return (
-    <View style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
+    <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
       <Text style={GLOBAL_STYLES.title}>Renomear Robô</Text>
 
       <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
@@ -108,6 +109,6 @@ export default function RenomearRoboScreen() {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

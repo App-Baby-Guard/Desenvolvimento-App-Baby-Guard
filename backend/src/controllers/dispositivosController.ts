@@ -146,7 +146,7 @@ export const atualizarDispositivo = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// DELETE (soft-delete de dispositivo apenas se pertencer ao usuário logado)
+// DELETE (hard-delete de dispositivo apenas se pertencer ao usuário logado)
 export const deletarDispositivo = async (req: AuthRequest, res: Response) => {
   try {
     const id_usuario = req.usuario?.id_usuario;
@@ -159,9 +159,8 @@ export const deletarDispositivo = async (req: AuthRequest, res: Response) => {
     }
 
     const { rows } = await pool.query(
-      `UPDATE dispositivos
-       SET ativo = false
-       WHERE uuid_dispositivo = $1 AND id_usuario = $2 AND ativo = true
+      `DELETE FROM dispositivos
+       WHERE uuid_dispositivo = $1 AND id_usuario = $2
        RETURNING id_dispositivo`,
       [uuid, id_usuario],
     );
@@ -176,7 +175,7 @@ export const deletarDispositivo = async (req: AuthRequest, res: Response) => {
         );
     }
 
-    return res.json(Respostas.sucesso(null, "Dispositivo removido com sucesso"));
+    return res.json(Respostas.sucesso(null, "Dispositivo removido com sucesso do banco de dados"));
   } catch (error: any) {
     return res.status(500).json(Respostas.erroInterno(error.message));
   }

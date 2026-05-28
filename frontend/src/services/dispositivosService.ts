@@ -41,30 +41,51 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
         console.log('[SERVICE] Sincronizando API -> SQLite local...');
 
         for (const disp of dispositivos) {
-            const local = await DispositivoRepository.getDispositivoByUUID(disp.uuid_dispositivo);
-            // Se existe, atualiza
-            if (local && local.id_dispositivo !== undefined) {
+            //busca dispositivo ativo ou inativo
+
+            const local = await DispositivoRepository.getDispositivoByUUIDFull(disp.uuid_dispositivo);
+            // Se existe, reativa e atualiza
+            if (local && typeof local.id_dispositivo === 'number') {
+                console.log(`[SERVICE] Atualizando dispositivo ${local.id_dispositivo} no SQLite...`);
                 await DispositivoRepository.updateDispositivo(local.id_dispositivo, {
                     nome_dispositivo: disp.nome_dispositivo,
                     status_dispositivo: disp.status_dispositivo,
-                    ativo: disp.ativo,
+                    ativo: 1, //reativa se estava inativo
                 });
             } else {
+                console.log(`[SERVICE] Criando dispositivo ${disp.uuid_dispositivo} no SQLite...`);
                 // Se não existe, cria
                 await DispositivoRepository.createDispositivo({
                     uuid_dispositivo: disp.uuid_dispositivo,
                     id_usuario: disp.id_usuario,
                     nome_dispositivo: disp.nome_dispositivo,
                     status_dispositivo: disp.status_dispositivo,
-                    ativo: disp.ativo
+                    ativo: 1,
                 });
             }
         }
-            console.log(`[SERVICE] dispositivosService.listarDispositivos: ${dispositivos.length} dispositivos encontrados`);
-            return dispositivos;
-        
+
+        //busca os locais atuais do SQLite para deletar os que não existem mais na API
+        const locaisAtuais = await DispositivoRepository.getAllDispositivos();
+
+        for (const local of locaisAtuais) {
+            const encontradoNaAPI = dispositivos.find(d => d.uuid_dispositivo === local.uuid_dispositivo);
+
+            //se não encontrado na API, deleta do local (soft delete)
+            if (!encontradoNaAPI && local.id_dispositivo !== undefined) {
+                console.log(`[SERVICE] Dispositivo fantasma detectado: ${local.nome_dispositivo}. Removendo localmente...`);
+                await DispositivoRepository.deleteDispositivo(
+                    local.id_dispositivo
+                );
+            }
+        }
+
+        console.log(`[SERVICE] dispositivosService.listarDispositivos: ${dispositivos.length} dispositivos encontrados`);
+
+        return dispositivos;
+
     } catch (error) {
-        //fallback: usa dados do SQLite local offline se a API falhar
+        //fallback(plano B): usa dados do SQLite local offline se a API falhar
         console.log('[SERVICE] API falhou, tentando fallback SQLite local...', error);
         return await DispositivoRepository.getAllDispositivos();
     }

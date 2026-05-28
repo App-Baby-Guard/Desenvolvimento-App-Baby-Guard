@@ -166,3 +166,20 @@ export async function countDispositivos(): Promise<number> {
     }
 }
 
+// Busca dispositivo pelo UUID incluindo registros inativos
+export async function getDispositivoByUUIDFull(uuid: string): Promise<Dispositivo | null> {
+    try {
+        console.log(`[REPO] DispositivoRepository.getDispositivoByUUIDFull(${uuid})`);
+
+        //remove o and ativo = 1 para buscar tanto ativos quanto inativos
+        const query = 'SELECT * FROM dispositivos WHERE uuid_dispositivo = ?';
+        const dispositivo = await executeSelectOne<Dispositivo>(query, [uuid]);
+
+        return dispositivo;
+
+    } catch (error) {
+        console.error(`[REPO] ERRO em getDispositivoByUUIDFull(${uuid}):`, error);
+        throw error;
+    }
+}
+

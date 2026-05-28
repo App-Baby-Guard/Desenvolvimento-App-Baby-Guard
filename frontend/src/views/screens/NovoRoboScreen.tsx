@@ -48,7 +48,7 @@ export default function NovoRoboScreen() {
     } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Erro na conexão",
+        text1: "Erro ao configurar robô",
         text2: error.message,
         visibilityTime: 3000,
       });

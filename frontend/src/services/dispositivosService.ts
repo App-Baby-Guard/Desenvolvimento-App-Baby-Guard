@@ -1,13 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/apiUrl";
 import { Dispositivo, CreateDispositivoInput, UpdateDispositivoInput } from '../models/Dispositivo';
+import * as DispositivoRepository from '../repositories/DispositivoRepository';
 
 
 // Listar todos os dispositivos ativos do usuário logado
 export async function listarDispositivos(): Promise<Dispositivo[]> {
     try {
-        console.log('[SERVICE] dispositivosService.listarDispositivos()');
-        
+        console.log('[SERVICE] dispositivosService.listarDispositivos() - Tentando API...');
         const token = await AsyncStorage.getItem("token");
         if (!token) {
             console.log('[SERVICE] Nenhum token JWT encontrado.');
@@ -22,9 +22,9 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
         });
 
         const resData = await response.json();
-        
+
         if (!response.ok) {
-            throw new Error(resData?.erro || resData?.mensagem || "Erro ao obter dispositivos do servidor");
+            throw new Error(resData?.erro || resData?.mensagem || "Erro ao obter dispositivos do servidor (API)");
         }
 
         const dispositivos: Dispositivo[] = (resData.dados || []).map((d: any) => ({
@@ -37,11 +37,36 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
             criado_em: d.criado_em,
         }));
 
-        console.log(`[SERVICE] dispositivosService.listarDispositivos: ${dispositivos.length} dispositivos encontrados`);
-        return dispositivos;
+        //sincornizar com o sqlite local
+        console.log('[SERVICE] Sincronizando API -> SQLite local...');
+
+        for (const disp of dispositivos) {
+            const local = await DispositivoRepository.getDispositivoByUUID(disp.uuid_dispositivo);
+            // Se existe, atualiza
+            if (local && local.id_dispositivo !== undefined) {
+                await DispositivoRepository.updateDispositivo(local.id_dispositivo, {
+                    nome_dispositivo: disp.nome_dispositivo,
+                    status_dispositivo: disp.status_dispositivo,
+                    ativo: disp.ativo,
+                });
+            } else {
+                // Se não existe, cria
+                await DispositivoRepository.createDispositivo({
+                    uuid_dispositivo: disp.uuid_dispositivo,
+                    id_usuario: disp.id_usuario,
+                    nome_dispositivo: disp.nome_dispositivo,
+                    status_dispositivo: disp.status_dispositivo,
+                    ativo: disp.ativo
+                });
+            }
+        }
+            console.log(`[SERVICE] dispositivosService.listarDispositivos: ${dispositivos.length} dispositivos encontrados`);
+            return dispositivos;
+        
     } catch (error) {
-        console.error('[SERVICE] Erro em listarDispositivos:', error);
-        throw error;
+        //fallback: usa dados do SQLite local offline se a API falhar
+        console.log('[SERVICE] API falhou, tentando fallback SQLite local...', error);
+        return await DispositivoRepository.getAllDispositivos();
     }
 }
 
@@ -99,7 +124,7 @@ export async function criarDispositivo(dados: CreateDispositivoInput): Promise<n
         });
 
         const resData = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(resData?.erro || resData?.mensagem || "Erro ao cadastrar dispositivo no servidor");
         }

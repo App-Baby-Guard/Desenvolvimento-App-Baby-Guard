@@ -1,6 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
 import MeusRobosScreen from "../views/screens/MeusRobosScreen";
 import DashboardScreen from "../views/screens/DashboardScreen";
@@ -10,12 +11,22 @@ import ConfiguracoesScreen from "../views/screens/ConfiguracoesScreen";
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
+  const { isDarkMode } = useTheme();
+
+  const tabBarBg = isDarkMode ? '#1a1a2e' : '#FFFFFF';
+  const activeColor = isDarkMode ? '#7EC8F8' : '#0066FF';
+  const inactiveColor = isDarkMode ? '#6b7280' : '#888';
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#0066FF",
-        tabBarInactiveTintColor: "#888",
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarStyle: {
+          backgroundColor: tabBarBg,
+          borderTopColor: isDarkMode ? '#2d2d44' : '#e5e5e5',
+        },
         tabBarIcon: ({ color, size }) => {
           let icon = "ellipse";
 

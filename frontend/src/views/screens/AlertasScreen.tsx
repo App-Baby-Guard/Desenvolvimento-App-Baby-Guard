@@ -7,7 +7,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY, GLOBAL_STYLES } from '../../shared/styles/globalStyles';
+import { COLORS, SPACING, GLOBAL_STYLES } from '../../shared/styles/globalStyles';
+import { useTheme } from '../../context/ThemeContext';
+import { getStyles } from '../../styles/alertasStyles';
 
 type EventoTipo = 'temperatura' | 'umidade' | 'movimento' | 'choro' | 'sistema' | 'conexao';
 
@@ -87,32 +89,32 @@ const EVENTOS: EventoHistorico[] = [
 
 const AlertasScreen: React.FC = () => {
     const [filtroAtivo, setFiltroAtivo] = useState<'Leituras' | 'Alertas'>('Alertas');
+    const { isDarkMode } = useTheme();
+    const styles = getStyles(isDarkMode);
 
     // TODO: Implementar lógica de filtro baseada em API quando integrada
     const eventosFiltrados = EVENTOS.filter((e) => {
-        if (filtroAtivo === 'Alertas')
-            return !e.resolvido;
-        if (filtroAtivo === 'Leituras')
-            return true;
+        if (filtroAtivo === 'Alertas') return !e.resolvido;
+        if (filtroAtivo === 'Leituras') return true;
         return true;
     });
 
     const datasUnicas = [...new Set(eventosFiltrados.map((e) => e.dataLabel))];
 
     const renderCard = (item: EventoHistorico) => (
-        <View key={item.id} style={[GLOBAL_STYLES.eventCard, !item.resolvido && GLOBAL_STYLES.eventCardUnresolved]}>
+        <View key={item.id} style={[styles.eventCard, !item.resolvido && styles.eventCardUnresolved]}>
             <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.barColor }]} />
             <View style={[GLOBAL_STYLES.iconCircle, { backgroundColor: item.iconBg }]}>
                 <Ionicons name={item.iconName as any} size={20} color={item.iconColor} />
             </View>
             <View style={{ flex: 1, paddingVertical: SPACING.md, paddingRight: SPACING.sm }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
-                    <Text style={[GLOBAL_STYLES.eventTitle, item.resolvido && GLOBAL_STYLES.eventTitleRead]} numberOfLines={1}>
+                    <Text style={[styles.eventTitle, item.resolvido && styles.eventTitleRead]} numberOfLines={1}>
                         {item.titulo}
                     </Text>
-                    <Text style={GLOBAL_STYLES.eventTime}>{item.hora}</Text>
+                    <Text style={styles.eventTime}>{item.hora}</Text>
                 </View>
-                <Text style={[GLOBAL_STYLES.eventDescription, item.resolvido && GLOBAL_STYLES.eventDescriptionRead]} numberOfLines={2}>
+                <Text style={[styles.eventDescription, item.resolvido && styles.eventDescriptionRead]} numberOfLines={2}>
                     {item.descricao}
                 </Text>
                 {!item.resolvido && (
@@ -121,42 +123,53 @@ const AlertasScreen: React.FC = () => {
                     </View>
                 )}
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#CCCCCC" style={{ paddingHorizontal: SPACING.md }} />
+            <Ionicons name="chevron-forward" size={14} color={styles.iconColor.color as string} style={{ paddingHorizontal: SPACING.md }} />
         </View>
     );
 
     return (
-        <SafeAreaView style={GLOBAL_STYLES.screen}>
-            <View style={GLOBAL_STYLES.header}>
-                <Text style={GLOBAL_STYLES.title}>Alertas</Text>
-                <Ionicons name="notifications-outline" size={22} color={COLORS.textSecondary} />
+        <SafeAreaView style={styles.screen}>
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.title}>Alertas</Text>
+                <Ionicons name="notifications-outline" size={22} color={styles.iconColor.color as string} />
             </View>
-            <View style={GLOBAL_STYLES.filterContainer}>
+
+            {/* Filtros */}
+            <View style={styles.filterContainer}>
                 {(['Leituras', 'Alertas'] as const).map((f) => (
                     <TouchableOpacity
                         key={f}
-                        style={[GLOBAL_STYLES.filterButton, filtroAtivo === f && GLOBAL_STYLES.filterButtonActive]}
+                        style={[
+                            styles.filterButton,
+                            filtroAtivo === f && styles.filterButtonActive,
+                        ]}
                         onPress={() => setFiltroAtivo(f)}
                     >
-                        <Text style={[GLOBAL_STYLES.filterText, filtroAtivo === f && GLOBAL_STYLES.filterTextActive]}>
+                        <Text style={[
+                            styles.filterText,
+                            filtroAtivo === f && styles.filterTextActive,
+                        ]}>
                             {f}
                         </Text>
                     </TouchableOpacity>
                 ))}
             </View>
-            <ScrollView style={GLOBAL_STYLES.list} showsVerticalScrollIndicator={false}>
+
+            {/* Lista de alertas */}
+            <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
                 {eventosFiltrados.length === 0 ? (
                     <View style={GLOBAL_STYLES.emptyState}>
                         <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
-                        <Text style={GLOBAL_STYLES.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
-                        <Text style={GLOBAL_STYLES.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
+                        <Text style={styles.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
+                        <Text style={styles.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
                     </View>
                 ) : (
                     datasUnicas.map((label) => {
                         const grupo = eventosFiltrados.filter((e) => e.dataLabel === label);
                         return (
                             <View key={label}>
-                                <Text style={GLOBAL_STYLES.secaoLabel}>{label.toUpperCase()}</Text>
+                                <Text style={styles.secaoLabel}>{label.toUpperCase()}</Text>
                                 {grupo.map(renderCard)}
                             </View>
                         );

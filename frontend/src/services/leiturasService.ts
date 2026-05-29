@@ -64,3 +64,110 @@ export async function deletar(id: number): Promise<number> {
     throw error;
   }
 }
+
+// ─── Funções de API (usadas pelo Dashboard e Alertas) ───────────────
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../config/apiUrl";
+
+export interface LeituraSensor {
+  id_sensor: number;
+  tipo_sensor: string;
+  unidade_medida: string | null;
+  nome_sensor: string | null;
+  valor: number | null;
+  valor_booleano: boolean | null;
+  movimento: boolean | null;
+  data_hora: string;
+}
+
+// Buscar as últimas leituras de cada sensor de um dispositivo via API
+export async function buscarUltimasLeiturasPorDispositivo(id_dispositivo: number): Promise<LeituraSensor[]> {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return [];
+
+    const response = await fetch(`${API_URL}/leituras/dispositivo/${id_dispositivo}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(resData?.erro || resData?.mensagem || "Erro ao buscar leituras");
+    }
+
+    return resData.dados?.leituras || [];
+  } catch (error) {
+    console.error("[SERVICE] Erro em buscarUltimasLeiturasPorDispositivo:", error);
+    return [];
+  }
+}
+
+// Buscar eventos/alertas do banco de dados via API
+export async function buscarEventos(): Promise<any[]> {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return [];
+
+    const response = await fetch(`${API_URL}/eventos`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(resData?.erro || resData?.mensagem || "Erro ao buscar eventos");
+    }
+
+    return resData.dados || [];
+  } catch (error) {
+    console.error("[SERVICE] Erro em buscarEventos:", error);
+    return [];
+  }
+}
+
+// Limpar todo o histórico de leituras e eventos do usuário
+export async function limparHistoricoGeral(): Promise<void> {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) throw new Error("Usuário não autenticado");
+
+    // Limpa eventos
+    const respEventos = await fetch(`${API_URL}/eventos/limpar/todos`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!respEventos.ok) {
+      const errData = await respEventos.json();
+      throw new Error(errData?.erro || "Erro ao limpar eventos");
+    }
+
+    // Limpa leituras
+    const respLeituras = await fetch(`${API_URL}/leituras/limpar/todos`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!respLeituras.ok) {
+      const errData = await respLeituras.json();
+      throw new Error(errData?.erro || "Erro ao limpar leituras");
+    }
+
+    console.log("[SERVICE] Histórico geral limpo com sucesso");
+  } catch (error) {
+    console.error("[SERVICE] Erro em limparHistoricoGeral:", error);
+    throw error;
+  }
+}

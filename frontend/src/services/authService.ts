@@ -1,9 +1,7 @@
+import { API_URL } from '../config/apiUrl';
 
 // Esse arquivo é responsável por fazer as chamadas HTTP para a API de autenticação , Cada função 
 // representa uma ação: login, cadastro, logout e validação do token.
-
-// Endereço base da API. Se você mudar a porta, muda aqui.
-const API_URL = 'http://localhost:3000';
 
 // Esses tipos descrevem o formato dos dados que a API retorna.
 

@@ -7,12 +7,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import {
-  GLOBAL_STYLES,
-  SPACING,
-  COLORS,
-} from "../../shared/styles/globalStyles";
-
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -20,6 +14,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
 import { roboController } from "../../controllers/roboController";
 import { Dispositivo } from "../../models/Dispositivo";
+import { COLORS, SPACING } from "../../shared/styles/globalStyles";
+import { useTheme } from "../../context/ThemeContext";
+import { getStyles } from "../../styles/roboDetalhesStyles";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Params = RouteProp<RootStackParamList, "RoboDetalhes">;
@@ -27,11 +24,12 @@ type Params = RouteProp<RootStackParamList, "RoboDetalhes">;
 export default function RoboDetalhesScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Params>();
-
   const { id } = route.params;
 
   const [robo, setRobo] = useState<Dispositivo | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDarkMode } = useTheme();
+  const styles = getStyles(isDarkMode);
 
   useEffect(() => {
     carregarDetalhes();
@@ -51,86 +49,88 @@ export default function RoboDetalhesScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg, justifyContent: "center", alignItems: "center" }]}>
+      <SafeAreaView style={[styles.screen, { justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
-          Buscando dados do dispositivo...
-        </Text>
+        <Text style={styles.loadingText}>Buscando dados do dispositivo...</Text>
       </SafeAreaView>
     );
   }
 
   if (!robo) {
     return (
-      <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
-        >
-          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
-          <Text style={{ marginLeft: 8, color: COLORS.textPrimary }}>Voltar</Text>
-        </TouchableOpacity>
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.container}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backRow}
+          >
+            <Ionicons name="arrow-back" size={24} color={styles.backText.color as string} />
+            <Text style={styles.backText}>Voltar</Text>
+          </TouchableOpacity>
 
-        <Text style={GLOBAL_STYLES.title}>Robô não encontrado</Text>
-        <Text style={GLOBAL_STYLES.textMuted}>
-          Parece que este robô foi removido ou está inacessível.
-        </Text>
+          <Text style={styles.title}>Robô não encontrado</Text>
+          <Text style={styles.uuidText}>
+            Parece que este robô foi removido ou está inacessível.
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.lg }}
-      >
-        <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
-        <Text style={{ marginLeft: 8, color: COLORS.textPrimary }}>Voltar</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.container}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backRow}
+        >
+          <Ionicons name="arrow-back" size={24} color={styles.backText.color as string} />
+          <Text style={styles.backText}>Voltar</Text>
+        </TouchableOpacity>
 
-      <Text style={GLOBAL_STYLES.title}>{robo.nome_dispositivo}</Text>
+        <Text style={styles.title}>{robo.nome_dispositivo}</Text>
 
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.md }]}>
-        UUID do dispositivo:
-      </Text>
-      <Text style={[GLOBAL_STYLES.subtitle, { marginTop: 4 }]}>{robo.uuid_dispositivo}</Text>
+        <Text style={styles.statusLabel}>UUID do dispositivo:</Text>
+        <Text style={styles.subtitle}>{robo.uuid_dispositivo}</Text>
 
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        Status:
-      </Text>
-      <Text style={[GLOBAL_STYLES.text, { marginTop: 4 }]}>
-        {robo.status_dispositivo === "online" ? "Online" : "Offline"}
-      </Text>
+        <Text style={styles.statusLabel}>Status:</Text>
+        <Text style={styles.statusText}>
+          {robo.status_dispositivo === "online" ? "Online" : "Offline"}
+        </Text>
 
-      <View
-        style={{
-          height: 1,
-          backgroundColor: COLORS.border,
-          marginVertical: SPACING.xxl,
-        }}
-      />
+        <View style={styles.divider} />
 
-      <TouchableOpacity
-        style={[GLOBAL_STYLES.buttonPrimary, { marginBottom: SPACING.lg }]}
-        onPress={() =>
-          navigation.navigate("RenomearRobo", {
-            id: robo.uuid_dispositivo,
-            nome: robo.nome_dispositivo,
-          })
-        }
-      >
-        <Text style={GLOBAL_STYLES.buttonPrimaryText}>Renomear Robô</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: COLORS.primary,
+            paddingVertical: SPACING.md,
+            paddingHorizontal: SPACING.xl,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: SPACING.lg,
+          }}
+          onPress={() =>
+            navigation.navigate("RenomearRobo", {
+              id: robo.uuid_dispositivo,
+              nome: robo.nome_dispositivo,
+            })
+          }
+        >
+          <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
+            Renomear Robô
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[GLOBAL_STYLES.buttonSecondary]}
-        onPress={() => {
-          // TODO: Navegar para tela de leituras dos sensores
-        }}
-      >
-        <Text style={GLOBAL_STYLES.buttonSecondaryText}>Ver Leituras dos Sensores</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buttonSecondary}
+          onPress={() => {
+            // TODO: Navegar para tela de leituras dos sensores
+          }}
+        >
+          <Text style={styles.buttonSecondaryText}>Ver Leituras dos Sensores</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }

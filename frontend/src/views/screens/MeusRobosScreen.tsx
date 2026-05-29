@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-import {
-  GLOBAL_STYLES,
-  COLORS,
-  SPACING,
-  BORDER_RADIUS,
-} from "../../shared/styles/globalStyles";
+import { COLORS, SPACING, BORDER_RADIUS } from "../../shared/styles/globalStyles";
+import { getStyles } from "../../styles/meusRobosStyles";
 
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -25,8 +21,9 @@ import { RootStackParamList } from "../../routes/RootNavigator";
 import { roboController } from "../../controllers/roboController";
 import { Dispositivo } from "../../models/Dispositivo";
 import Toast from "react-native-toast-message";
-
+import { useTheme } from "../../context/ThemeContext";
 import * as dispositivosService from "../../services/dispositivosService";
+
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,6 +33,8 @@ export default function MeusRobosScreen() {
   const [busca, setBusca] = useState("");
   const [robos, setRobos] = useState<Dispositivo[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isDarkMode } = useTheme();
+  const styles = getStyles(isDarkMode);
 
   // Recarrega a lista sempre que a tela ganha foco (ex: ao voltar de NovoRobo)
   useEffect(() => {
@@ -66,11 +65,11 @@ export default function MeusRobosScreen() {
       `Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`,
       [
         { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Excluir", 
-          style: "destructive", 
-          onPress: () => handleRemover(uuid, nome) 
-        }
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => handleRemover(uuid, nome),
+        },
       ]
     );
   }
@@ -84,7 +83,6 @@ export default function MeusRobosScreen() {
         text2: `${nome} foi removido.`,
         visibilityTime: 3000,
       });
-      // Recarrega a lista após exclusão
       carregarRobos();
     } catch (error: any) {
       Toast.show({
@@ -120,8 +118,8 @@ export default function MeusRobosScreen() {
 
   function renderItem({ item }: { item: Dispositivo }) {
     return (
-      <TouchableOpacity 
-        style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+      <TouchableOpacity
+        style={styles.card}
         activeOpacity={0.7}
         onPress={() => {
           navigation.getParent()?.navigate("RoboDetalhes", {
@@ -133,9 +131,12 @@ export default function MeusRobosScreen() {
       >
         {/* Informações principais do robô (Esquerda) */}
         <View style={{ flex: 1, paddingRight: SPACING.md }}>
-          <Text style={GLOBAL_STYLES.subtitle} numberOfLines={1}>{item.nome_dispositivo}</Text>
-          <Text style={[GLOBAL_STYLES.textMuted, { fontSize: 12, marginTop: 2 }]} numberOfLines={1}>{item.uuid_dispositivo}</Text>
-
+          <Text style={styles.cardName} numberOfLines={1}>
+            {item.nome_dispositivo}
+          </Text>
+          <Text style={styles.cardUuid} numberOfLines={1}>
+            {item.uuid_dispositivo}
+          </Text>
           <View style={{ marginTop: SPACING.sm }}>
             {renderStatus(item.status_dispositivo)}
           </View>
@@ -144,11 +145,7 @@ export default function MeusRobosScreen() {
         {/* Ícones de ação (Direita) */}
         <View style={{ flexDirection: "row", gap: SPACING.sm }}>
           <TouchableOpacity
-            style={{
-              width: 40, height: 40, borderRadius: 20, 
-              backgroundColor: '#e6f2ff', 
-              justifyContent: 'center', alignItems: 'center'
-            }}
+            style={styles.actionBtnEdit}
             onPress={() => {
               navigation.getParent()?.navigate("RenomearRobo", {
                 id: item.uuid_dispositivo,
@@ -161,9 +158,12 @@ export default function MeusRobosScreen() {
 
           <TouchableOpacity
             style={{
-              width: 40, height: 40, borderRadius: 20, 
-              backgroundColor: COLORS.primary, 
-              justifyContent: 'center', alignItems: 'center'
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: COLORS.primary,
+              justifyContent: "center",
+              alignItems: "center",
             }}
             onPress={() => {
               navigation.getParent()?.navigate("RoboDetalhes", {
@@ -177,11 +177,7 @@ export default function MeusRobosScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={{
-              width: 40, height: 40, borderRadius: 20, 
-              backgroundColor: '#ffeaea', 
-              justifyContent: 'center', alignItems: 'center'
-            }}
+            style={styles.actionBtnDelete}
             onPress={() => confirmarRemover(item.uuid_dispositivo, item.nome_dispositivo)}
           >
             <Ionicons name="trash" size={20} color="#c0392b" />
@@ -194,16 +190,25 @@ export default function MeusRobosScreen() {
   // Card fixo para adicionar novo robô
   function renderAddCard() {
     return (
-      <View style={[GLOBAL_STYLES.card, { marginBottom: SPACING.lg }]}>
-        <Text style={GLOBAL_STYLES.subtitle}>Novo Robô</Text>
-        <Text style={GLOBAL_STYLES.textMuted}>Aguardando configuração</Text>
+      <View style={styles.addCard}>
+        <Text style={styles.addCardTitle}>Novo Robô</Text>
+        <Text style={styles.addCardSubtitle}>Aguardando configuração</Text>
         <TouchableOpacity
-          style={[GLOBAL_STYLES.buttonPrimary, { marginTop: SPACING.lg }]}
+          style={{
+            backgroundColor: COLORS.primary,
+            paddingVertical: SPACING.md,
+            paddingHorizontal: SPACING.xl,
+            borderRadius: BORDER_RADIUS.md,
+            alignItems: "center",
+            marginTop: SPACING.lg,
+          }}
           onPress={() => {
             navigation.getParent()?.navigate("NovoRobo");
           }}
         >
-          <Text style={GLOBAL_STYLES.buttonPrimaryText}>Configurar agora</Text>
+          <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
+            Configurar agora
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -214,40 +219,32 @@ export default function MeusRobosScreen() {
   );
 
   return (
-    <SafeAreaView style={GLOBAL_STYLES.screen}>
-      <View style={{ padding: SPACING.lg }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>  
-          <Text style={GLOBAL_STYLES.title}>Meus Robôs</Text>
-
-
-        </View>
-
-        <TextInput
-          placeholder="Buscar robô..."
-          placeholderTextColor={COLORS.textTertiary}
-          style={[
-            GLOBAL_STYLES.input,
-            { marginTop: SPACING.lg, borderRadius: BORDER_RADIUS.lg },
-          ]}
-          value={busca}
-          onChangeText={setBusca}
-        />
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Meus Robôs</Text>
       </View>
 
+      <TextInput
+        placeholder="Buscar robô..."
+        placeholderTextColor={getStyles(isDarkMode).loadingText.color as string}
+        style={styles.searchInput}
+        value={busca}
+        onChangeText={setBusca}
+      />
+
       {loading ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: getStyles(isDarkMode).screen.backgroundColor }}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
-            Conectando aos robôs...
-          </Text>
+          <Text style={styles.loadingText}>Conectando aos robôs...</Text>
         </View>
       ) : (
         <FlatList
           data={listaFiltrada}
           renderItem={renderItem}
           keyExtractor={(item) => item.uuid_dispositivo}
-          contentContainerStyle={{ padding: SPACING.lg }}
+          contentContainerStyle={styles.listContent}
           ListFooterComponent={renderAddCard}
+          style={styles.list}
         />
       )}
     </SafeAreaView>

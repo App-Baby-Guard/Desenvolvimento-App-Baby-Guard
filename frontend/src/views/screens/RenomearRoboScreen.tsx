@@ -7,19 +7,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import {
-  GLOBAL_STYLES,
-  SPACING,
-  COLORS,
-  BORDER_RADIUS,
-} from "../../shared/styles/globalStyles";
-
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
+import { COLORS } from "../../shared/styles/globalStyles";
 import { roboController } from "../../controllers/roboController";
 import Toast from "react-native-toast-message";
+import { useTheme } from "../../context/ThemeContext";
+import { getStyles } from "../../styles/renomearRoboStyles";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Params = RouteProp<RootStackParamList, "RenomearRobo">;
@@ -27,10 +22,11 @@ type Params = RouteProp<RootStackParamList, "RenomearRobo">;
 export default function RenomearRoboScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Params>();
-
   const { id, nome } = route.params;
   const [novoNome, setNovoNome] = useState(nome);
   const [loading, setLoading] = useState(false);
+  const { isDarkMode } = useTheme();
+  const styles = getStyles(isDarkMode);
 
   async function handleSalvar() {
     try {
@@ -58,56 +54,52 @@ export default function RenomearRoboScreen() {
   }
 
   return (
-    <SafeAreaView style={[GLOBAL_STYLES.screen, { padding: SPACING.lg }]}>
-      <Text style={GLOBAL_STYLES.title}>Renomear Robô</Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Renomear Robô</Text>
 
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.lg }]}>
-        NOME DO DISPOSITIVO
-      </Text>
+        <Text style={styles.label}>NOME DO DISPOSITIVO</Text>
+        <TextInput
+          value={novoNome}
+          onChangeText={setNovoNome}
+          style={styles.input}
+          editable={!loading}
+        />
 
-      <TextInput
-        value={novoNome}
-        onChangeText={setNovoNome}
-        style={[
-          GLOBAL_STYLES.input,
-          { marginTop: SPACING.sm, borderRadius: BORDER_RADIUS.lg },
-        ]}
-        editable={!loading}
-      />
+        <Text style={styles.uuid}>UUID: {id}</Text>
 
-      <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
-        UUID: {id}
-      </Text>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={styles.buttonSecondary}
+            onPress={() => navigation.goBack()}
+            disabled={loading}
+          >
+            <Text style={styles.buttonSecondaryText}>Cancelar</Text>
+          </TouchableOpacity>
 
-      <View
-        style={{
-          flexDirection: "row",
-          marginTop: SPACING.xxl,
-          gap: SPACING.lg,
-        }}
-      >
-        <TouchableOpacity
-          style={[GLOBAL_STYLES.buttonSecondary, { flex: 1 }]}
-          onPress={() => navigation.goBack()}
-          disabled={loading}
-        >
-          <Text style={GLOBAL_STYLES.buttonSecondaryText}>Cancelar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            GLOBAL_STYLES.buttonPrimary,
-            { flex: 1, opacity: loading ? 0.7 : 1 },
-          ]}
-          onPress={handleSalvar}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={COLORS.textInverse} />
-          ) : (
-            <Text style={GLOBAL_STYLES.buttonPrimaryText}>Salvar e Enviar</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: COLORS.primary,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: loading ? 0.7 : 1,
+            }}
+            onPress={handleSalvar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORS.textInverse} />
+            ) : (
+              <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
+                Salvar e Enviar
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );

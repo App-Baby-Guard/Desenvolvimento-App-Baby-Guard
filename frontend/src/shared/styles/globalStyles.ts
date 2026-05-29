@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-// CORES PRINCIPAIS
+// CORES PRINCIPAIS — TEMA CLARO (padrão)
 export const COLORS = {
   primary: "#7EC8F8",
   primaryDark: "#5AB6F3",
@@ -29,6 +29,37 @@ export const COLORS = {
   inputBorder: "#D6EAF8",
   inputFocus: "#7EC8F8",
   cardBackground: "#FFFFFF",
+};
+
+// CORES DO TEMA ESCURO
+export const DARK_COLORS = {
+  primary: "#7EC8F8",
+  primaryDark: "#5AB6F3",
+  primaryLight: "#1e3a5f",
+  secondary: "#1e3a5f",
+  secondaryLight: "#162840",
+  background: "#0f0f23",
+  surface: "#1a1a2e",
+  surfaceSoft: "#1e293b",
+  textPrimary: "#e2e8f0",
+  textSecondary: "#94a3b8",
+  textTertiary: "#64748b",
+  textInverse: "#FFFFFF",
+  success: "#7ED6A7",
+  warning: "#eebc5e",
+  error: "#FF9EAA",
+  info: "#8ED1FC",
+  border: "#2d2d44",
+  borderStrong: "#3d3d5c",
+  shadowColor: "rgba(0, 0, 0, 0.4)",
+  buttonPrimary: "#7EC8F8",
+  buttonPrimaryPressed: "#5AB6F3",
+  buttonSecondary: "#1e293b",
+  buttonSecondaryPressed: "#253347",
+  inputBackground: "#16213e",
+  inputBorder: "#2d2d44",
+  inputFocus: "#7EC8F8",
+  cardBackground: "#16213e",
 };
 
 // TIPOGRAFIA

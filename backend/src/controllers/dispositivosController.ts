@@ -100,12 +100,14 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// PATCH (atualiza/renomeia dispositivo apenas se pertencer ao usuário logado)
+// PATCH (atualiza/renomeia dispositivo e muda status de conexão)
 export const atualizarDispositivo = async (req: AuthRequest, res: Response) => {
   try {
     const id_usuario = req.usuario?.id_usuario;
     const { uuid } = req.params;
-    const { nome_dispositivo } = req.body;
+    
+    // Agora aceitamos tanto o nome quanto o status do dispositivo
+    const { nome_dispositivo, status_dispositivo } = req.body;
 
     if (!id_usuario) {
       return res
@@ -113,19 +115,41 @@ export const atualizarDispositivo = async (req: AuthRequest, res: Response) => {
         .json(Respostas.naoAutorizado("Usuário não autenticado"));
     }
 
-    if (!nome_dispositivo) {
+    if (!nome_dispositivo && !status_dispositivo) {
       return res
         .status(400)
-        .json(Respostas.validacaoFalhou(["Nome do dispositivo é obrigatório"]));
+        .json(Respostas.validacaoFalhou(["Nenhum dado para atualizar"]));
     }
+
+    // [QUERY BUILDER DINÂMICO]
+    // Eu implementei isso porque percebi que o usuário pode querer apenas renomear o robô pelo app,
+    // OU o dispositivo de hardware (placa) pode querer apenas avisar que ficou 'online'/'offline'.
+    // Para evitar a criação de duas rotas separadas fazendo quase a mesma coisa, eu construí a query SQL 
+    // "sob medida", montando os campos de atualização dinamicamente baseados no que foi recebido.
+    let updates = [];
+    let params = [];
+    let i = 1; // Contador para os $1, $2 do Postgres
+
+    if (nome_dispositivo) {
+      updates.push(`nome_dispositivo = $${i++}`);
+      params.push(Validacao.sanitizarString(nome_dispositivo));
+    }
+    if (status_dispositivo) {
+      updates.push(`status_dispositivo = $${i++}`);
+      params.push(status_dispositivo);
+    }
+
+    // Adiciona os filtros obrigatórios no final do array de parâmetros
+    params.push(uuid);
+    params.push(id_usuario);
 
     const { rows } = await pool.query<Dispositivo>(
       `UPDATE dispositivos
-       SET nome_dispositivo = $1
-       WHERE uuid_dispositivo = $2 AND id_usuario = $3 AND ativo = true
+       SET ${updates.join(", ")}
+       WHERE uuid_dispositivo = $${i} AND id_usuario = $${i + 1} AND ativo = true
        RETURNING id_dispositivo, uuid_dispositivo, id_usuario, nome_dispositivo,
                  token_dispositivo, status_dispositivo, ativo, criado_em`,
-      [Validacao.sanitizarString(nome_dispositivo), uuid, id_usuario],
+      params,
     );
 
     if (rows.length === 0) {

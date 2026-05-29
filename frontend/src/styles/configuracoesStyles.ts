@@ -1,182 +1,262 @@
 import { StyleSheet } from "react-native";
-
 import {
   COLORS,
+  DARK_COLORS,
   SPACING,
   BORDER_RADIUS,
   SHADOWS,
   TYPOGRAPHY,
 } from "../shared/styles/globalStyles";
 
-export const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    textAlign: "center",
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 22,
-  },
+export function getStyles(isDarkMode: boolean) {
+  const C = isDarkMode ? DARK_COLORS : COLORS;
 
-  sectionCard: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-    borderRadius: BORDER_RADIUS.xl,
-    overflow: "hidden",
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.soft,
-  },
+  return StyleSheet.create({
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: C.textPrimary,
+      textAlign: "center",
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 22,
+    },
 
-  sensorRow: {
-    backgroundColor: COLORS.surface,
-  },
+    sectionCard: {
+      marginHorizontal: SPACING.lg,
+      marginBottom: SPACING.lg,
+      borderRadius: BORDER_RADIUS.xl,
+      overflow: "hidden",
+      backgroundColor: C.cardBackground,
+      borderWidth: 1,
+      borderColor: C.border,
+      ...SHADOWS.soft,
+    },
 
-  accountRow: {
-    minHeight: 88,
-    backgroundColor: COLORS.surface,
-  },
+    sensorRow: {
+      backgroundColor: C.surface,
+    },
 
-  accountAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.full,
-    marginRight: SPACING.md,
-    borderWidth: 3,
-    borderColor: COLORS.primaryLight,
-  },
+    accountRow: {
+      minHeight: 88,
+      backgroundColor: C.cardBackground,
+    },
 
-  avatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.surfaceSoft,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: SPACING.md,
-    borderWidth: 3,
-    borderColor: COLORS.primaryLight,
-  },
+    accountAvatar: {
+      width: 56,
+      height: 56,
+      borderRadius: BORDER_RADIUS.full,
+      marginRight: SPACING.md,
+      borderWidth: 3,
+      borderColor: C.primaryLight,
+    },
 
-  userName: {
-    fontSize: TYPOGRAPHY.size.md,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    color: COLORS.textPrimary,
-    marginBottom: 2,
-  },
+    avatarPlaceholder: {
+      width: 56,
+      height: 56,
+      borderRadius: BORDER_RADIUS.full,
+      backgroundColor: C.surfaceSoft,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: SPACING.md,
+      borderWidth: 3,
+      borderColor: isDarkMode ? C.border : COLORS.primaryLight,
+    },
 
-  userEmail: {
-    fontSize: TYPOGRAPHY.size.sm,
-    color: COLORS.textSecondary,
-  },
+    userName: {
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.bold,
+      color: C.textPrimary,
+      marginBottom: 2,
+    },
 
-  logoutRow: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: SPACING.lg,
-    backgroundColor: "#FFF7F8",
-  },
+    userEmail: {
+      fontSize: TYPOGRAPHY.size.sm,
+      color: C.textSecondary,
+    },
 
-  logoutContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    logoutRow: {
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: SPACING.lg,
+      backgroundColor: isDarkMode ? "#1f1215" : "#FFF7F8",
+    },
 
-  logoutText: {
-    marginLeft: SPACING.sm,
-    fontSize: TYPOGRAPHY.size.md,
-    fontWeight: TYPOGRAPHY.weight.semiBold,
-    color: COLORS.error,
-  },
+    logoutContent: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  activeBadge: {
-    backgroundColor: COLORS.success,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
-    borderRadius: BORDER_RADIUS.full,
-  },
+    logoutText: {
+      marginLeft: SPACING.sm,
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: C.error,
+    },
 
-  activeBadgeText: {
-    color: COLORS.textInverse,
-    fontSize: TYPOGRAPHY.size.xs,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    letterSpacing: 0.6,
-  },
+    activeBadge: {
+      backgroundColor: C.success,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: 4,
+      borderRadius: BORDER_RADIUS.full,
+    },
 
-  fieldValueDisp: {
-    fontSize: TYPOGRAPHY.size.md,
-    fontWeight: TYPOGRAPHY.weight.semiBold,
-    color: COLORS.textPrimary,
-  },
+    activeBadgeText: {
+      color: C.textInverse,
+      fontSize: TYPOGRAPHY.size.xs,
+      fontWeight: TYPOGRAPHY.weight.bold,
+      letterSpacing: 0.6,
+    },
 
-  sensorRange: {
-    backgroundColor: COLORS.surfaceSoft,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.full,
-  },
+    fieldValueDisp: {
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: C.textPrimary,
+    },
 
-  sensorRangeText: {
-    fontSize: TYPOGRAPHY.size.sm,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    color: COLORS.textPrimary,
-  },
+    sensorRange: {
+      backgroundColor: C.surfaceSoft,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      borderRadius: BORDER_RADIUS.full,
+    },
 
-  toggleContent: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
+    sensorRangeText: {
+      fontSize: TYPOGRAPHY.size.sm,
+      fontWeight: TYPOGRAPHY.weight.bold,
+      color: C.textPrimary,
+    },
 
-  toggleLabel: {
-    fontSize: TYPOGRAPHY.size.md,
-    fontWeight: TYPOGRAPHY.weight.medium,
-    color: COLORS.textPrimary,
-  },
+    toggleContent: {
+      flex: 1,
+      marginLeft: SPACING.md,
+    },
 
-  toggleDescription: {
-    fontSize: TYPOGRAPHY.size.sm,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
+    toggleLabel: {
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.medium,
+      color: C.textPrimary,
+    },
 
-  firmwareRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+    toggleDescription: {
+      fontSize: TYPOGRAPHY.size.sm,
+      color: C.textSecondary,
+      marginTop: 2,
+    },
 
-  refreshButton: {
-    width: 34,
-    height: 34,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.surfaceSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    firmwareRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
 
-  deviceStatus: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: SPACING.xs,
-  },
+    refreshButton: {
+      width: 34,
+      height: 34,
+      borderRadius: BORDER_RADIUS.full,
+      backgroundColor: C.surfaceSoft,
+      alignItems: "center",
+      justifyContent: "center",
+    },
 
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.success,
-    marginRight: 6,
-  },
+    deviceStatus: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: SPACING.xs,
+    },
 
-  statusText: {
-    fontSize: TYPOGRAPHY.size.sm,
-    color: COLORS.textSecondary,
-  },
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: BORDER_RADIUS.full,
+      backgroundColor: C.success,
+      marginRight: 6,
+    },
 
-  footerSpacing: {
-    height: SPACING.xxxl,
-  },
-});
+    statusText: {
+      fontSize: TYPOGRAPHY.size.sm,
+      color: C.textSecondary,
+    },
+
+    footerSpacing: {
+      height: SPACING.xxxl,
+    },
+
+    // Estilos de layout dinâmicos usados no screen
+    screen: {
+      flex: 1,
+      backgroundColor: C.background,
+    },
+
+    safeArea: {
+      flex: 1,
+      backgroundColor: C.background,
+    },
+
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: SPACING.xs,
+      minHeight: 64,
+      backgroundColor: C.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: C.border,
+    },
+
+    rowWithBorder: {
+      borderBottomColor: C.border,
+    },
+
+    cardWithTheme: {
+      backgroundColor: C.cardBackground,
+      borderColor: C.border,
+    },
+
+    fieldLabelThemed: {
+      fontSize: TYPOGRAPHY.size.xs,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: C.textTertiary,
+      letterSpacing: 0.6,
+      marginBottom: 2,
+    },
+
+    fieldValueThemed: {
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.medium,
+      color: C.textPrimary,
+    },
+
+    footerThemed: {
+      textAlign: "center",
+      marginTop: SPACING.xxl,
+      fontSize: TYPOGRAPHY.size.xs,
+      color: C.textTertiary,
+    },
+
+    iconColor: {
+      color: C.textTertiary,
+    },
+
+    titleThemed: {
+      fontSize: 28,
+      fontWeight: "700",
+      color: C.textPrimary,
+      textAlign: "center",
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 22,
+    },
+
+    deviceFieldBorder: {
+      borderBottomColor: C.border,
+    },
+
+    rowBackground: {
+      backgroundColor: C.cardBackground,
+      borderBottomColor: C.border,
+    },
+  });
+}

@@ -17,11 +17,12 @@ import {
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
-import { styles } from "../../styles/perfilStyles";
+import { COLORS } from "../../shared/styles/globalStyles";
+import { getStyles } from "../../styles/perfilStyles";
 import { usePerfil } from "../../hooks/usePerfil";
 // pego os dados do usuário logado do contexto de autenticação
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 
 // ROW
 const InfoRow = ({
@@ -29,34 +30,41 @@ const InfoRow = ({
   value,
   icon,
   isLast = false,
+  styles,
 }: {
   label: string;
   value: string;
   icon: keyof typeof Ionicons.glyphMap;
   isLast?: boolean;
+  styles: ReturnType<typeof getStyles>;
 }) => (
   <View
     style={[
-      GLOBAL_STYLES.row,
-      GLOBAL_STYLES.rowPadding,
-      !isLast && GLOBAL_STYLES.rowBorder,
+      styles.infoRowBg,
+      { flexDirection: "row", alignItems: "center" },
+      { paddingHorizontal: 16, paddingVertical: 12 },
+      !isLast && styles.rowBorderThemed,
     ]}
   >
     <View
       style={[
-        GLOBAL_STYLES.iconWrap,
         {
-          backgroundColor: COLORS.surfaceSoft,
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          alignItems: "center",
+          justifyContent: "center",
           marginRight: 12,
         },
+        styles.iconWrapBg,
       ]}
     >
       <Ionicons name={icon} size={18} color={COLORS.primary} />
     </View>
 
     <View style={{ flex: 1 }}>
-      <Text style={GLOBAL_STYLES.fieldLabel}>{label}</Text>
-      <Text style={GLOBAL_STYLES.fieldValue}>{value}</Text>
+      <Text style={styles.infoRowLabel}>{label}</Text>
+      <Text style={styles.infoRowValue}>{value}</Text>
     </View>
   </View>
 );
@@ -65,6 +73,8 @@ const InfoRow = ({
 export default function PerfilScreen({ navigation }: { navigation?: any }) {
   // agora pego os dados do usuário do AuthContext em vez do AsyncStorage
   const { usuario: usuarioAuth } = useAuth();
+  const { isDarkMode } = useTheme();
+  const styles = getStyles(isDarkMode);
 
   const [usuario, setUsuario] = useState(usuarioAuth);
   const [nome, setNome] = useState(usuarioAuth?.nome || "");
@@ -130,37 +140,30 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
 
   return (
     //aqui criei a tela de perfil do usuário, onde ele pode visualizar e editar suas informações pessoais, como nome, email e telefone.
-    //  O usuário também pode alterar sua senha através de um modal dedicado. A tela é organizada em seções para facilitar a navegação,
-    //  e cada campo tem um estilo consistente para melhorar a experiência do usuário. O botão de salvar alterações fica desativado 
-    // enquanto as alterações estão sendo salvas para evitar ações duplicadas, e o usuário recebe feedback visual sobre o status da ação.
-    <SafeAreaView style={GLOBAL_STYLES.safeArea}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView
-        style={GLOBAL_STYLES.screen}
-        contentContainerStyle={GLOBAL_STYLES.scrollContent}
+        style={styles.screen}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 36 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* aqui no header da tela de perfil, com um botão de voltar para retornar à tela anterior e o título "Perfil".
-         O header é estilizado para se destacar do restante do conteúdo e fornecer uma navegação clara para o usuário. O botão de 
-         voltar tem um ícone representativo e uma área de toque adequada para facilitar a interação. */}
-        <View style={GLOBAL_STYLES.header}>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation?.goBack()}
-            style={GLOBAL_STYLES.backBtn}
+            style={{ padding: 12, marginRight: 8 }}
             activeOpacity={0.7}
           >
             <Ionicons
               name="chevron-back"
               size={22}
-              color={COLORS.textPrimary}
+              color={styles.headerTitle.color as string}
             />
           </TouchableOpacity>
 
-          <Text style={[GLOBAL_STYLES.title, styles.headerTitle]}>Perfil</Text>
+          <Text style={styles.headerTitle}>Perfil</Text>
         </View>
 
-        {/* o avatar do usuário, que exibe a foto de perfil se disponível ou um ícone genérico caso contrário. O nome e email do
-         usuário são exibidos abaixo do avatar, com estilos distintos para destacar as informações. O layout é centralizado para 
-         criar uma apresentação visualmente agradável e fácil de ler. */}
+        {/* Avatar e dados do usuário */}
         <View style={styles.avatarSection}>
           {usuario?.foto_perfil ? (
             <Image
@@ -179,54 +182,42 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           </Text>
         </View>
 
-        {/*aqui tem as informações do perfil, como nome, email e telefone. O nome e telefone são editáveis, enquanto o email é 
-        apenas leitura. Cada campo tem um ícone representativo e um estilo consistente para facilitar a leitura e a interação.
-         O usuário pode clicar em cada campo para editar as informações, e as alterações são salvas quando o usuário clica no botão
-          "Salvar alterações".*/}
-        <View style={[GLOBAL_STYLES.cardNoPadding, styles.sectionContainer]}>
-          {/*aqui o nome, que é editável. O usuário pode clicar no campo de nome para editar seu nome, e as alterações são salvas 
-          quando o usuário clica no botão "Salvar alterações". O campo de nome tem um ícone representativo e um estilo consistente
-           para facilitar a leitura e a interação.*/}
-          <View style={[GLOBAL_STYLES.rowPadding, GLOBAL_STYLES.rowBorder]}>
-            <Text style={GLOBAL_STYLES.fieldLabel}>Nome</Text>
+        {/* Campos editáveis: nome e telefone */}
+        <View style={styles.sectionContainer}>
+          <View style={[styles.rowPaddingThemed, styles.rowBorderThemed]}>
+            <Text style={styles.fieldLabel}>Nome</Text>
             <TextInput
               value={nome}
               onChangeText={setNome}
               placeholder="Seu nome"
-              placeholderTextColor={COLORS.textTertiary}
-              style={[GLOBAL_STYLES.input, styles.input]}
+              placeholderTextColor={styles.fieldLabel.color as string}
+              style={styles.input}
             />
           </View>
 
-          {/* aqui o email, que é apenas leitura. O campo de email exibe o email do usuário, mas não pode ser editado. Ele tem um 
-          ícone representativo e um estilo consistente para facilitar a leitura. Se o email não estiver disponível, será exibido 
-          um texto padrão. */}
+          {/* Email apenas leitura */}
           <InfoRow
             label="Email"
             value={usuario?.email || "-"}
             icon="mail-outline"
+            styles={styles}
           />
 
-          {/*aqui o telefone, que é editável. O usuário pode clicar no campo de telefone para editar seu número de telefone, e as 
-          alterações são salvas quando o usuário clica no botão "Salvar alterações". O campo de telefone tem um ícone representativo 
-          e um estilo consistente para facilitar a leitura e a interação. O teclado é configurado para entrada de telefone,
-           facilitando a digitação do número.*/}
-          <View style={GLOBAL_STYLES.rowPadding}>
-            <Text style={GLOBAL_STYLES.fieldLabel}>Telefone</Text>
+          {/* Telefone editável */}
+          <View style={styles.rowPaddingThemed}>
+            <Text style={styles.fieldLabel}>Telefone</Text>
             <TextInput
               value={telefone}
               onChangeText={setTelefone}
               placeholder="Seu telefone"
-              placeholderTextColor={COLORS.textTertiary}
+              placeholderTextColor={styles.fieldLabel.color as string}
               keyboardType="phone-pad"
-              style={[GLOBAL_STYLES.input, styles.input]}
+              style={styles.input}
             />
           </View>
         </View>
 
-        {/* temos o botão "Salvar alterações", que o usuário pode clicar para salvar as alterações feitas no perfil. O botão tem um 
-        ícone de checkmark e um texto, e fica com uma opacidade reduzida enquanto as alterações estão sendo salvas para indicar que
-         a ação está em andamento. Se o usuário clicar no botão, será exibido um alerta de confirmação antes de salvar as alterações. */}
+        {/* Botão salvar */}
         <TouchableOpacity
           style={[styles.saveButton, salvando && { opacity: 0.7 }]}
           activeOpacity={0.85}
@@ -248,9 +239,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           )}
         </TouchableOpacity>
 
-        {/* aqui no modal de alteração de senha, onde o usuário pode digitar uma nova senha para sua conta. O modal tem um título, 
-        uma descrição e um campo de entrada para a nova senha. O usuário pode cancelar a ação ou salvar a nova senha, e enquanto a 
-        senha está sendo salva, o botão de salvar fica desativado e exibe um indicador de carregamento. */}
+        {/* Modal de alteração de senha */}
         <Modal
           visible={senhaModalVisivel}
           transparent
@@ -278,9 +267,9 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
                 value={novaSenha}
                 onChangeText={setNovaSenha}
                 placeholder="Digite a nova senha"
-                placeholderTextColor={COLORS.textTertiary}
+                placeholderTextColor={styles.fieldLabel.color as string}
                 secureTextEntry
-                style={[GLOBAL_STYLES.input, styles.input, { marginBottom: 16 }]}
+                style={[styles.input, { marginBottom: 16 }]}
               />
 
               <View style={styles.modalActions}>
@@ -305,16 +294,14 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           </View>
         </Modal>
 
-        {/*temos as ações adicionais, como alterar senha e excluir conta. Essas ações são apresentadas em um card separado para 
-        destacar sua importância. O botão de alterar senha abre um modal onde o usuário pode digitar uma nova senha, e o botão de 
-        excluir conta pode ser implementado para solicitar confirmação antes de excluir a conta do usuário. Enquanto as ações estão 
-        sendo processadas, os botões ficam desativados e exibem um indicador de carregamento para informar o usuário. */}
+        {/* Ações: alterar senha e excluir conta */}
         <View style={styles.actionCard}>
           <TouchableOpacity
             style={[
-              GLOBAL_STYLES.row,
-              GLOBAL_STYLES.rowPadding,
-              GLOBAL_STYLES.rowBorder,
+              { flexDirection: "row", alignItems: "center" },
+              { paddingHorizontal: 16, paddingVertical: 12 },
+              styles.actionRowBorder,
+              { borderBottomWidth: 1 },
               salvando && { opacity: 0.6 },
             ]}
             activeOpacity={0.7}
@@ -324,13 +311,16 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
             <Ionicons
               name="lock-closed-outline"
               size={18}
-              color={COLORS.textPrimary}
+              color={styles.actionText.color as string}
             />
             <Text style={styles.actionText}>Alterar senha</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[GLOBAL_STYLES.row, GLOBAL_STYLES.rowPadding]}
+            style={[
+              { flexDirection: "row", alignItems: "center" },
+              { paddingHorizontal: 16, paddingVertical: 12 },
+            ]}
             activeOpacity={0.7}
           >
             <Ionicons name="trash-outline" size={18} color={COLORS.error} />
@@ -338,9 +328,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           </TouchableOpacity>
         </View>
 
-        {/* aqui o rodapé da tela de perfil, com o nome e versão do aplicativo. O rodapé é estilizado para se destacar do 
-        restante do conteúdo e fornecer informações importantes sobre a versão do app. */}
-        <Text style={GLOBAL_STYLES.footer}>Gerenciamento de conta</Text>
+        <Text style={styles.footer}>Gerenciamento de conta</Text>
       </ScrollView>
     </SafeAreaView>
   );

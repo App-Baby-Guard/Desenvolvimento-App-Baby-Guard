@@ -5,6 +5,8 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
+  Platform,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -44,6 +46,36 @@ export default function RoboDetalhesScreen() {
       console.error("Erro ao carregar detalhes:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deletarRobo() {
+    try {
+      setLoading(true);
+      await roboController.removerRobo(id);
+      // Volta para a tela anterior (MeusRobosScreen) após deletar
+      navigation.goBack();
+    } catch (error: any) {
+      console.error("Erro ao excluir robô:", error);
+      Alert.alert("Erro", error.message || "Não foi possível excluir o robô.");
+      setLoading(false);
+    }
+  }
+
+  function confirmarExclusao() {
+    if (Platform.OS === 'web') {
+      if (window.confirm("Tem certeza que deseja excluir este robô permanentemente? Todo o histórico de eventos e sensores associados serão perdidos.")) {
+        deletarRobo();
+      }
+    } else {
+      Alert.alert(
+        "Excluir Robô",
+        "Tem certeza que deseja excluir este robô permanentemente? Todo o histórico de eventos e sensores associados serão perdidos.",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Excluir", style: "destructive", onPress: deletarRobo }
+        ]
+      );
     }
   }
 
@@ -125,10 +157,18 @@ export default function RoboDetalhesScreen() {
         <TouchableOpacity
           style={styles.buttonSecondary}
           onPress={() => {
-            // TODO: Navegar para tela de leituras dos sensores
+            // Navega para a aba Início (Dashboard) para ver os sensores em tempo real
+            navigation.navigate("Tabs" as any, { screen: "Início" });
           }}
         >
           <Text style={styles.buttonSecondaryText}>Ver Leituras dos Sensores</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.buttonSecondary, { borderColor: "#E53935", marginTop: 24 }]}
+          onPress={confirmarExclusao}
+        >
+          <Text style={[styles.buttonSecondaryText, { color: "#E53935" }]}>Excluir Robô</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

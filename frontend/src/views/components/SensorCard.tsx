@@ -12,6 +12,7 @@ interface SensorCardProps {
   status: string;
   statusColor?: string;
   iconColor?: string;
+  progress?: number; // 0-100, reflete o valor real do sensor
 }
 
 const SensorCard: React.FC<SensorCardProps> = ({
@@ -21,6 +22,7 @@ const SensorCard: React.FC<SensorCardProps> = ({
   status,
   statusColor = '#4CAF50',
   iconColor = '#0066FF',
+  progress = 75,
 }) => {
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
@@ -44,9 +46,9 @@ const SensorCard: React.FC<SensorCardProps> = ({
         <View
           style={[
             styles.progressBarFill,
-            {
-              width: '75%', // Valor fixo simulando
-              backgroundColor: statusColor,
+            { 
+              width: `${Math.max(0, Math.min(100, progress))}%`,
+              backgroundColor: statusColor 
             },
           ]}
         />

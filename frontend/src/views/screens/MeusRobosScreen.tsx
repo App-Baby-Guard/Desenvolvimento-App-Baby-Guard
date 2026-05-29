@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -60,18 +61,29 @@ export default function MeusRobosScreen() {
   }
 
   function confirmarRemover(uuid: string, nome: string) {
-    Alert.alert(
-      "Excluir Robô",
-      `Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: () => handleRemover(uuid, nome),
-        },
-      ]
-    );
+    // [COMPATIBILIDADE MULTIPLATAFORMA]
+    // Eu identifiquei um erro grave aqui: o componente `Alert.alert` do React Native 
+    // trava a aplicação quando tentamos rodar o app direto no Navegador (Web).
+    // Por conta disso, eu criei essa condição onde, se o sistema operacional for 'web', chamamos a função nativa do 
+    // Javascript (window.confirm). Se for um celular de verdade, mantive o balão padrão do Alert.
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`)) {
+        handleRemover(uuid, nome);
+      }
+    } else {
+      Alert.alert(
+        "Excluir Robô",
+        `Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          { 
+            text: "Excluir", 
+            style: "destructive", 
+            onPress: () => handleRemover(uuid, nome) 
+          }
+        ]
+      );
+    }
   }
 
   async function handleRemover(uuid: string, nome: string) {

@@ -37,7 +37,20 @@ const MAPA_PINOS: Record<string, string> = {
 // Vai no Blynk, busca os pinos e salva as variações na tabela leituras
 export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
   const dadosBlynk = await testarConexaoBlynk(tokenBlynk);
-  if (!dadosBlynk) return null;
+  
+  if (!dadosBlynk) {
+    try {
+      // Atualiza status para offline se a API do Blynk falhar (Timeout ou Erro)
+      await pool.query(
+        `UPDATE dispositivos SET status_dispositivo = 'offline' WHERE token_dispositivo = $1`,
+        [tokenBlynk]
+      );
+      console.log(`[BLYNK SYNC] Dispositivo com token ${tokenBlynk} marcado como OFFLINE.`);
+    } catch (err: any) {
+      console.error("[BLYNK SYNC] Erro ao atualizar status para offline:", err.message);
+    }
+    return null;
+  }
 
   try {
     // Descobre qual dispositivo do banco é dono deste token
@@ -52,6 +65,12 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
     }
 
     const id_dispositivo = dispositivos[0].id_dispositivo;
+
+    // Atualiza status para online pois a comunicação foi bem-sucedida
+    await pool.query(
+      `UPDATE dispositivos SET status_dispositivo = 'online' WHERE id_dispositivo = $1`,
+      [id_dispositivo]
+    );
 
     // Pega todos os sensores atrelados a este dispositivo
     const { rows: sensores } = await pool.query(
@@ -96,4 +115,34 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
   }
 
   return dadosBlynk;
+};
+
+// Função para buscar todos os dispositivos ativos e sincronizar
+export const sincronizarTodosDispositivos = async () => {
+  try {
+    const { rows: dispositivos } = await pool.query(
+      `SELECT token_dispositivo FROM dispositivos WHERE ativo = true AND token_dispositivo IS NOT NULL AND token_dispositivo != '' AND token_dispositivo != 'null'`
+    );
+
+    if (dispositivos.length === 0) {
+      return; //  para não poluir os logs quando não há robôs
+    }
+
+    for (const dispositivo of dispositivos) {
+      await sincronizarBlynkPorToken(dispositivo.token_dispositivo);
+    }
+  } catch (error: any) {
+    console.error("[WORKER BLYNK] Erro no ciclo de sincronização:", error.message);
+  }
+};
+
+// Orquestrador de Sincronização Automática (Loop de 60s)
+export const iniciarSincronizacaoAutomatica = async () => {
+  const INTERVALO_MS = 60000; // 60 segundos
+  try {
+    await sincronizarTodosDispositivos();
+  } finally {
+    // Usa setTimeout recursivo para evitar concorrência e sobreposição
+    setTimeout(iniciarSincronizacaoAutomatica, INTERVALO_MS);
+  }
 };

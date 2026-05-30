@@ -107,7 +107,7 @@ function tempoDesdeUltimaLeitura(leituras: LeituraSensor[]): string {
 }
 
 // ─── Componente Principal ───────────────────────────────────────────
-const INTERVALO_POLLING = 5000; // 5 segundos
+const INTERVALO_POLLING = 60000; // 60 segundos (Sincronizado com o Worker do Backend)
 
 const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

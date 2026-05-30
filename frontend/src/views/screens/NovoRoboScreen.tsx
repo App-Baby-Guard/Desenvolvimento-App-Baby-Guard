@@ -64,7 +64,7 @@ export default function NovoRoboScreen() {
           <Text style={styles.backText}>Voltar</Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>Configurar Novo Robô</Text>
+        <Text style={styles.title}>Conectar Novo Robô</Text>
 
         <Text style={styles.label}>NOME DO ROBÔ</Text>
         <TextInput
@@ -76,9 +76,12 @@ export default function NovoRoboScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>ID DO DISPOSITIVO (ESP32 UUID)</Text>
+        <Text style={[styles.label, { marginTop: 16 }]}>CÓDIGO DE PAREAMENTO</Text>
+        <Text style={{ fontSize: 13, color: COLORS.textSecondary, marginBottom: 12, lineHeight: 18 }}>
+          Encontre o código único impresso na etiqueta localizada na parte inferior do seu BabyGuard ou na caixa do produto.
+        </Text>
         <TextInput
-          placeholder="Ex: ESP32-BD-001"
+          placeholder="Ex: SIM-ESP32-001"
           placeholderTextColor={styles.label.color as string}
           value={id}
           onChangeText={setId}
@@ -104,7 +107,7 @@ export default function NovoRoboScreen() {
             <ActivityIndicator color={COLORS.textInverse} />
           ) : (
             <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
-              Sincronizar e Registrar
+              Conectar Robô
             </Text>
           )}
         </TouchableOpacity>

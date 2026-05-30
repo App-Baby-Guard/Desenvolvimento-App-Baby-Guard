@@ -7,6 +7,7 @@ import dispositivosRoutes from "./routes/dispositivosRoutes";
 import sensoresRoutes from "./routes/sensoresRoutes";
 import leiturasRoutes from "./routes/leiturasRoutes";
 import eventosRoutes from "./routes/eventosRoutes";
+import blynkRoutes from "./routes/blynkRoutes";
 
 import { autenticacao } from "./middleware/autenticacao";
 
@@ -34,6 +35,10 @@ app.get("/", (_, res) =>
 );
 
 app.use("/auth", authRoutes);
+
+// Rota isolada para testar o MVP do Blynk (Antes da autenticação)
+app.use("/blynk", blynkRoutes);
+
 app.use(autenticacao);
 app.use("/usuarios", usuariosRoutes);
 app.use("/dispositivos", dispositivosRoutes);

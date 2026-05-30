@@ -96,6 +96,11 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => { //usei react.FC pa
   };
 
   return (
+    // KeyboardAvoidingView impede que o botão fique escondido atrás do teclado
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
     <ScrollView
       style={styles.fundo}
       contentContainerStyle={styles.scroll}
@@ -238,6 +243,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => { //usei react.FC pa
         </View>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

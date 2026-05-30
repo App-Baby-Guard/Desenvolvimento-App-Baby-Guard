@@ -12,6 +12,8 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  KeyboardAvoidingView, // adicionado para evitar que o botão fique atrás do teclado
+  Platform,             // necessário para diferenciar comportamento iOS/Android
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../shared/styles/globalStyles'; 
@@ -43,6 +45,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   return (
+    // KeyboardAvoidingView impede que o botão fique escondido atrás do teclado
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
     <ScrollView
       style={styles.fundo}
       contentContainerStyle={styles.scroll}
@@ -223,6 +230,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

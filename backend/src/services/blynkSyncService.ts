@@ -1,4 +1,5 @@
 import axios from "axios";
+import { pool } from "../config/database";
 
 // para testar a comunicação com o Blynk
 export const testarConexaoBlynk = async (tokenBlynk: string) => {
@@ -23,4 +24,66 @@ export const testarConexaoBlynk = async (tokenBlynk: string) => {
         console.error("[BLYNK TESTE] Falha ao comunicar com a API do Blynk:", erro.message);
         return null;
     }
+};
+
+// Relaciona o pino que vem do Blynk com o nome do sensor cadastrado na tabela
+const MAPA_PINOS: Record<string, string> = {
+  v3: "temperatura",
+  v4: "umidade",
+  v5: "luminosidade",
+  v6: "distancia",
+};
+
+// Vai no Blynk, busca os pinos e salva as variações na tabela leituras
+export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
+  const dadosBlynk = await testarConexaoBlynk(tokenBlynk);
+  if (!dadosBlynk) return null;
+
+  try {
+    // Descobre qual dispositivo do banco é dono deste token
+    const { rows: dispositivos } = await pool.query(
+      `SELECT id_dispositivo FROM dispositivos WHERE token_dispositivo = $1 AND ativo = true`,
+      [tokenBlynk]
+    );
+
+    if (dispositivos.length === 0) {
+      console.warn(`[BLYNK SYNC] Aviso: Nenhum dispositivo ativo cadastrado com o token: ${tokenBlynk}`);
+      return dadosBlynk; // Retorna para exibir na tela de teste, mas não salva no BD
+    }
+
+    const id_dispositivo = dispositivos[0].id_dispositivo;
+
+    // Pega todos os sensores atrelados a este dispositivo
+    const { rows: sensores } = await pool.query(
+      `SELECT id_sensor, tipo_sensor FROM sensores WHERE id_dispositivo = $1`,
+      [id_dispositivo]
+    );
+
+    // Passa por cada valor recebido da API (ex: v3, v4)
+    for (const [pino, valorString] of Object.entries(dadosBlynk)) {
+      const tipoEsperado = MAPA_PINOS[pino.toLowerCase()];
+      if (!tipoEsperado) continue;
+
+      const sensor = sensores.find((s) => s.tipo_sensor === tipoEsperado);
+      if (sensor) {
+        const valorNumerico = parseFloat(valorString as string);
+        
+        // Trava de segurança: se o Blynk mandar lixo, não quebra a coluna NUMERIC do Postgres
+        if (isNaN(valorNumerico)) {
+          console.warn(`[BLYNK SYNC] Valor inválido recebido para o pino ${pino}: ${valorString}`);
+          continue;
+        }
+
+        await pool.query(
+          `INSERT INTO leituras (id_sensor, valor) VALUES ($1, $2)`,
+          [sensor.id_sensor, valorNumerico]
+        );
+        console.log(`[BLYNK DB] Leitura gravada -> Sensor: ${tipoEsperado} | Valor: ${valorNumerico}`);
+      }
+    }
+  } catch (error: any) {
+    console.error("[BLYNK DB] Erro ao salvar dados no PostgreSQL:", error.message);
+  }
+
+  return dadosBlynk;
 };

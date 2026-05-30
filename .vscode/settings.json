@@ -1,0 +1,12 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "connectString": "postgresql://postgres.acawiachompmgnmosgak:babyguard_secret@aws-1-us-east-2.pooler.supabase.com:5432/postgres",
+            "name": "Conexão com o PGAdmin/Supabase Babyguard"
+        }
+    ]
+}

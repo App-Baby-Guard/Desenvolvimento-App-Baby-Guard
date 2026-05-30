@@ -31,7 +31,7 @@ const MAPA_PINOS: Record<string, string> = {
   v3: "temperatura",
   v4: "umidade",
   v5: "luminosidade",
-  v6: "distancia",
+  v6: "movimento", // Mapeado para 'movimento' respeitando o banco de dados atual
 };
 
 // Vai no Blynk, busca os pinos e salva as variações na tabela leituras
@@ -74,11 +74,21 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
           continue;
         }
 
+        // Preserva o dado bruto (distância) e gera o booleano (movimento)
+        let flagMovimento: boolean | null = null;
+
+        if (tipoEsperado === "movimento") {
+          // Limiar de 50cm: Obstáculos a menos de 50cm indicam presença/movimentação no berço
+          const LIMIAR_BERCO_CM = 50.0;
+          flagMovimento = valorNumerico < LIMIAR_BERCO_CM;
+        }
+
+        // O INSERT preenche ambas as colunas. Para temperatura/umidade, flagMovimento será nulo.
         await pool.query(
-          `INSERT INTO leituras (id_sensor, valor) VALUES ($1, $2)`,
-          [sensor.id_sensor, valorNumerico]
+          `INSERT INTO leituras (id_sensor, valor, movimento) VALUES ($1, $2, $3)`,
+          [sensor.id_sensor, valorNumerico, flagMovimento]
         );
-        console.log(`[BLYNK DB] Leitura gravada -> Sensor: ${tipoEsperado} | Valor: ${valorNumerico}`);
+        console.log(`[BLYNK DB] Leitura gravada -> Sensor: ${tipoEsperado} | Valor: ${valorNumerico} | Movimento: ${flagMovimento}`);
       }
     }
   } catch (error: any) {

@@ -51,6 +51,12 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
         .json(Respostas.validacaoFalhou(["Nome do dispositivo é obrigatório"]));
     }
 
+    if (!uuid_dispositivo) {
+      return res
+        .status(400)
+        .json(Respostas.validacaoFalhou(["Código do dispositivo (UUID) é obrigatório"]));
+    }
+
     const usuario = await pool.query(
       `SELECT 1 FROM usuarios WHERE id_usuario = $1`,
       [id_usuario],
@@ -62,39 +68,32 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
         .json(Respostas.naoEncontrado("Usuário não encontrado"));
     }
 
-    // Se o cliente enviou uuid_dispositivo, inserimos ele explicitamente
-    let query = `
-      INSERT INTO dispositivos (id_usuario, nome_dispositivo, token_dispositivo, status_dispositivo, ativo, uuid_dispositivo)
-      VALUES ($1, $2, $3, 'offline', true, $4)
-      RETURNING id_dispositivo, uuid_dispositivo, id_usuario, nome_dispositivo,
-                token_dispositivo, status_dispositivo, ativo, criado_em
-    `;
-    let params = [
-      id_usuario,
-      Validacao.sanitizarString(nome_dispositivo),
-      token_dispositivo || null,
-      uuid_dispositivo || null,
-    ];
+    // Busca o dispositivo pelo UUID fornecido pelo aplicativo
+    const dispositivoExistente = await pool.query(
+      `SELECT id_dispositivo FROM dispositivos WHERE uuid_dispositivo = $1`,
+      [uuid_dispositivo]
+    );
 
-    if (!uuid_dispositivo) {
-      query = `
-        INSERT INTO dispositivos (id_usuario, nome_dispositivo, token_dispositivo, status_dispositivo, ativo)
-        VALUES ($1, $2, $3, 'offline', true)
-        RETURNING id_dispositivo, uuid_dispositivo, id_usuario, nome_dispositivo,
-                  token_dispositivo, status_dispositivo, ativo, criado_em
-      `;
-      params = [
-        id_usuario,
-        Validacao.sanitizarString(nome_dispositivo),
-        token_dispositivo || null,
-      ];
+    // Se não existir, impede o cadastro dinâmico
+    if (dispositivoExistente.rows.length === 0) {
+      return res
+        .status(404)
+        .json(Respostas.naoEncontrado("Código do dispositivo inválido ou não reconhecido pela fábrica."));
     }
 
-    const { rows } = await pool.query<Dispositivo>(query, params);
+    // CLAIM DEVICE: Associa o usuário ao hardware já existente
+    const { rows } = await pool.query<Dispositivo>(
+      `UPDATE dispositivos
+       SET id_usuario = $1, nome_dispositivo = $2
+       WHERE uuid_dispositivo = $3
+       RETURNING id_dispositivo, uuid_dispositivo, id_usuario, nome_dispositivo,
+                 token_dispositivo, status_dispositivo, ativo, criado_em`,
+      [id_usuario, Validacao.sanitizarString(nome_dispositivo), uuid_dispositivo]
+    );
 
     return res
       .status(201)
-      .json(Respostas.sucesso(rows[0], "Dispositivo criado com sucesso"));
+      .json(Respostas.sucesso(rows[0], "Dispositivo pareado com sucesso"));
   } catch (error: any) {
     return res.status(500).json(Respostas.erroInterno(error.message));
   }

@@ -146,7 +146,7 @@ const DashboardScreen: React.FC = () => {
     }, INTERVALO_POLLING);
 
     return () => clearInterval(interval);
-  }, [isFocused, dispositivoAtivo]);
+  }, [isFocused, dispositivoAtivo?.id_dispositivo]);
 
   async function carregarDispositivos() {
     try {
@@ -173,8 +173,10 @@ const DashboardScreen: React.FC = () => {
   }
 
   function selecionarDispositivo(disp: Dispositivo) {
+    // Evita recarregar a tela, perder estado e fazer requests inúteis se for o mesmo robô
+    if (dispositivoAtivo?.uuid_dispositivo === disp.uuid_dispositivo) return;
+
     setDispositivoAtivo(disp);
-    setLeituras([]); // Limpar leituras ao trocar
   }
 
   // Dados dinâmicos dos sensores baseados na API:

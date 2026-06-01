@@ -30,10 +30,17 @@ export const listarLeituras = async (_: Request, res: Response) => {
   try {
     const { rows } = await pool.query(
       `
-      SELECT l.*, s.nome_sensor, s.tipo_sensor, s.unidade_medida
-      FROM leituras l
-      JOIN sensores s ON s.id_sensor = l.id_sensor
-      ORDER BY l.data_hora DESC
+      SELECT 
+         date_trunc('minute', l.data_hora) as data_hora,
+         MAX(CASE WHEN s.tipo_sensor = 'temperatura' THEN l.valor END) as temperatura,
+         MAX(CASE WHEN s.tipo_sensor = 'umidade' THEN l.valor END) as umidade,
+         MAX(CASE WHEN s.tipo_sensor = 'luminosidade' THEN l.valor END) as luminosidade,
+         bool_or(l.movimento) as movimento
+       FROM leituras l
+       JOIN sensores s ON s.id_sensor = l.id_sensor
+       GROUP BY date_trunc('minute', l.data_hora)
+       ORDER BY data_hora DESC
+       LIMIT 50
       `,
     );
     return ok(res, rows, "Leituras listadas com sucesso");

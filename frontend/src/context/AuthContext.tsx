@@ -15,6 +15,7 @@ interface AuthContextType {
   carregandoSessao: boolean;    // true enquanto o app verifica se há sessão salva
   salvarSessao: (token: string, usuario: DadosUsuario) => void; // Salva login
   limparSessao: () => void;     // Limpa logout
+  atualizarUsuario: (usuario: DadosUsuario) => void;
 }
 
 //criação do contexto
@@ -75,8 +76,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUsuario(null);
   }
 
+  function atualizarUsuario(
+  usuarioAtualizado: DadosUsuario,
+) {
+  setUsuario(usuarioAtualizado);
+
+  AsyncStorage.setItem(
+    "usuario",
+    JSON.stringify(usuarioAtualizado),
+  );
+}
+
   return (
-    <AuthContext.Provider value={{ token, usuario, estaLogado, carregandoSessao, salvarSessao, limparSessao }}>
+    <AuthContext.Provider value={{ token, usuario, estaLogado, carregandoSessao, salvarSessao, limparSessao, atualizarUsuario }}>
       {children}
     </AuthContext.Provider>
   );

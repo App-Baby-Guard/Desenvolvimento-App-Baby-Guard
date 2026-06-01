@@ -56,7 +56,7 @@ export function useLogin(onSuccess: (token: string, usuario: DadosUsuario) => vo
 
       const data = await response.json();
 
-      console.log("RESPOSTA API:", data);
+      console.log("RESPOSTA API (Mensagem):", data.mensagem);
 
       if (!response.ok) {
         throw new Error(data?.mensagem || "Erro ao realizar login");

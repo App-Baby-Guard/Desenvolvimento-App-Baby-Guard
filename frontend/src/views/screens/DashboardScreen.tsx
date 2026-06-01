@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ import { getStyles } from "../../styles/dashboardStyles";
 import { listarDispositivos } from "../../services/dispositivosService";
 import { buscarUltimasLeiturasPorDispositivo, LeituraSensor } from "../../services/leiturasService";
 import { Dispositivo } from "../../models/Dispositivo";
+import { useAuth } from "../../context/AuthContext";
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -119,6 +121,8 @@ const DashboardScreen: React.FC = () => {
   const [dispositivoAtivo, setDispositivoAtivo] = useState<Dispositivo | null>(null);
   const [leituras, setLeituras] = useState<LeituraSensor[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { usuario } = useAuth();
 
   // [ATUALIZAÇÃO EM TEMPO REAL]
   // Aqui eu resolvi o problema de "dados antigos". Antes, se eu criasse um robô
@@ -229,8 +233,33 @@ const DashboardScreen: React.FC = () => {
             activeOpacity={0.7}
             onPress={() => navigation.navigate("Perfil")}
           >
-            <View style={GLOBAL_STYLES.avatar}>
-              <Ionicons name="person" size={24} color={COLORS.textInverse} />
+            <View style={styles.headerUser}>
+              {usuario?.foto_perfil ? (
+                <Image
+                  source={{ uri: usuario.foto_perfil }}
+                  style={[
+                    GLOBAL_STYLES.avatar,
+                    styles.headerAvatar,
+                  ]}
+                />
+              ) : (
+                <View
+                  style={[
+                    GLOBAL_STYLES.avatar,
+                    styles.headerAvatar,
+                  ]}
+                >
+                  <Ionicons
+                    name="person"
+                    size={24}
+                    color={COLORS.textInverse}
+                  />
+                </View>
+              )}
+
+              <Text style={styles.userName}>
+                {usuario?.nome || "Usuário"}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -288,8 +317,8 @@ const DashboardScreen: React.FC = () => {
           <Text style={styles.title}>{statusGeral.texto}</Text>
           <Text style={styles.textMuted}>{ultimaLeitura}</Text>
 
-          {leituras.length === 0 && dispositivoAtivo && (
-            <View style={{ marginTop: SPACING.md, alignItems: "center" }}>
+            {leituras.length === 0 && dispositivoAtivo && (
+            <View style={styles.noDataContainer}>
               <Ionicons name="cloud-offline-outline" size={40} color={COLORS.textTertiary} />
               <Text style={[styles.textMuted, { marginTop: SPACING.sm, textAlign: "center" }]}>
                 Nenhuma leitura recebida ainda.{"\n"}Aguardando conexão com o dispositivo...
@@ -387,7 +416,7 @@ const DashboardScreen: React.FC = () => {
           </View>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={styles.footerSpacing} />
       </ScrollView>
     </SafeAreaView>
   );

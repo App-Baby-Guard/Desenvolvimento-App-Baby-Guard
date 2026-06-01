@@ -35,7 +35,7 @@ export function getStyles(isDarkMode: boolean) {
     },
 
     sensorRow: {
-      backgroundColor: C.surface,
+      backgroundColor: C.cardBackground,
     },
 
     accountRow: {
@@ -183,7 +183,6 @@ export function getStyles(isDarkMode: boolean) {
       height: SPACING.xxxl,
     },
 
-    // Estilos de layout dinâmicos usados no screen
     screen: {
       flex: 1,
       backgroundColor: C.background,
@@ -257,6 +256,103 @@ export function getStyles(isDarkMode: boolean) {
     rowBackground: {
       backgroundColor: C.cardBackground,
       borderBottomColor: C.border,
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    modalContainer: {
+      width: "85%",
+      borderRadius: BORDER_RADIUS.xl,
+      padding: SPACING.lg,
+      backgroundColor: C.cardBackground,
+      borderWidth: 1,
+      borderColor: C.border,
+      ...SHADOWS.soft,
+    },
+
+    modalTitle: {
+      fontSize: TYPOGRAPHY.size.md,
+      fontWeight: TYPOGRAPHY.weight.bold,
+      color: C.textPrimary,
+      marginBottom: SPACING.lg,
+      textAlign: "center",
+    },
+
+    modalInputSection: {
+      marginBottom: SPACING.md,
+    },
+
+    modalInputSectionTitle: {
+      fontSize: TYPOGRAPHY.size.sm,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: isDarkMode ? COLORS.primaryLight : COLORS.primary,
+      marginBottom: 6,
+    },
+
+    modalRowInputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+
+    modalInputGroup: {
+      flex: 1,
+    },
+
+    modalInputLabel: {
+      color: C.textSecondary,
+      fontSize: TYPOGRAPHY.size.xs,
+    },
+
+    modalTextInput: {
+      borderWidth: 1,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.sm,
+      paddingHorizontal: SPACING.md,
+      marginTop: 4,
+      fontSize: TYPOGRAPHY.size.md,
+      textAlign: "center",
+      color: C.textPrimary,
+      borderColor: C.border,
+      backgroundColor: C.surface,
+    },
+
+    modalActionButtons: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: SPACING.md,
+    },
+
+    modalBtnCancel: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: BORDER_RADIUS.md,
+      alignItems: "center",
+      marginHorizontal: 5,
+      backgroundColor: isDarkMode ? "#3A3A3C" : "#E5E5EA",
+    },
+
+    modalBtnSave: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: BORDER_RADIUS.md,
+      alignItems: "center",
+      marginHorizontal: 5,
+      backgroundColor: isDarkMode ? COLORS.primary : COLORS.primary,
+    },
+
+    modalBtnTextCancel: {
+      color: isDarkMode ? "#FFFFFF" : "#000000",
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+    },
+
+    modalBtnTextSave: {
+      color: "#FFFFFF",
+      fontWeight: TYPOGRAPHY.weight.semiBold,
     },
   });
 }

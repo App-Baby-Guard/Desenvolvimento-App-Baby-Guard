@@ -1,6 +1,8 @@
 import React from "react";
+import { View, ActivityIndicator } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../context/AuthContext";
 
 import LoginScreen from "../views/screens/LoginScreen";
 import RegisterScreen from "../views/screens/RegisterScreen";
@@ -23,14 +25,25 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const { estaLogado, carregandoSessao } = useAuth();
+
+  // enquanto o app verifica se há sessão salva no AsyncStorage, exibe um loading
+  if (carregandoSessao) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
-        initialRouteName="Login"
-        //initialRouteName="Tabs"  pra rodar sem login, trocar initialRouteName para "Tabs":   
+        // se já está logado, vai direto para Tabs; caso contrário, vai para Login
+        initialRouteName={estaLogado ? "Tabs" : "Login"}
       >
-        {/* Auth (sem validação real) */}
+        {/* Auth */}
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
 

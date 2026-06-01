@@ -23,6 +23,7 @@ import { usePerfil } from "../../hooks/usePerfil";
 // pego os dados do usuário logado do contexto de autenticação
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import * as ImagePicker from "expo-image-picker";
 
 // ROW
 const InfoRow = ({
@@ -91,7 +92,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
 
   const handleSalvarPerfil = async () => {
     try {
-      await salvarPerfil(nome, telefone);
+      await salvarPerfil(nome, telefone, fotoPerfil);
 
       Alert.alert(
         "Salvar alterações",
@@ -138,6 +139,39 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
     }
   };
 
+  const [fotoPerfil, setFotoPerfil] = useState(
+  usuarioAuth?.foto_perfil || "",
+);
+
+  const selecionarFoto = async () => {
+  const permissao =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permissao.granted) {
+    Alert.alert(
+      "Permissão necessária",
+      "Permita acesso à galeria.",
+    );
+    return;
+  }
+
+  const resultado = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.5,
+    base64: true,
+  });
+
+  if (!resultado.canceled) {
+    const imagem = resultado.assets[0];
+
+    setFotoPerfil(
+      `data:image/jpeg;base64,${imagem.base64}`,
+    );
+  }
+};
+
   return (
     //aqui criei a tela de perfil do usuário, onde ele pode visualizar e editar suas informações pessoais, como nome, email e telefone.
     <SafeAreaView style={styles.safeArea}>
@@ -165,22 +199,32 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
 
         {/* Avatar e dados do usuário */}
         <View style={styles.avatarSection}>
-          {usuario?.foto_perfil ? (
-            <Image
-              source={{ uri: usuario.foto_perfil }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={42} color={COLORS.primaryDark} />
-            </View>
-          )}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={selecionarFoto}
+          >
+            {fotoPerfil ? (
+              <Image
+                source={{ uri: fotoPerfil }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons
+                  name="person"
+                  size={42}
+                  color={COLORS.primaryDark}
+                />
+              </View>
+            )}
+          </TouchableOpacity>
 
           <Text style={styles.userName}>{nome || "Usuário"}</Text>
           <Text style={styles.userEmail}>
             {usuario?.email || "Email não encontrado"}
           </Text>
-        </View>
+
+          </View>
 
         {/* Campos editáveis: nome e telefone */}
         <View style={styles.sectionContainer}>

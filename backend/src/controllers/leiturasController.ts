@@ -19,13 +19,22 @@ export const listarLeituras = async (req: AuthRequest, res: Response) => {
     // Para resolver, eu adicionei dois JOINs (com 'sensores' e 'dispositivos') para checar 
     // o dono real do aparelho. Assim, o WHERE garante que as leituras enviadas 
     // são exclusivas do id_usuario que fez a requisição.
-    const { rows } = await pool.query<Leitura>(
-      `SELECT l.id_leitura, l.id_sensor, l.valor, l.valor_booleano, l.movimento, l.data_hora
+
+    //Pivot (tabela dinamica): O banco de dados agora junta os sensores que dispararam no mesmo minuto e os transforma em uma única linha. 
+    const { rows } = await pool.query(
+      `SELECT 
+         date_trunc('minute', l.data_hora) as data_hora, 
+         MAX(CASE WHEN s.tipo_sensor = 'temperatura' THEN l.valor END) as temperatura,
+         MAX(CASE WHEN s.tipo_sensor = 'umidade' THEN l.valor END) as umidade,
+         MAX(CASE WHEN s.tipo_sensor = 'luminosidade' THEN l.valor END) as luminosidade,
+         bool_or(l.movimento) as movimento
        FROM leituras l
        JOIN sensores s ON s.id_sensor = l.id_sensor
        JOIN dispositivos d ON d.id_dispositivo = s.id_dispositivo
        WHERE d.id_usuario = $1
-       ORDER BY l.data_hora DESC`,
+       GROUP BY date_trunc('minute', l.data_hora)
+       ORDER BY data_hora DESC
+       LIMIT 50`,
        [id_usuario]
     );
 

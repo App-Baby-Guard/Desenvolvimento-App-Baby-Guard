@@ -23,7 +23,8 @@ export const listarLeituras = async (req: AuthRequest, res: Response) => {
     //Pivot (tabela dinamica): O banco de dados agora junta os sensores que dispararam no mesmo minuto e os transforma em uma única linha. 
     const { rows } = await pool.query(
       `SELECT 
-         date_trunc('minute', l.data_hora) as data_hora, 
+         -- O AT TIME ZONE 'UTC' impede que o Node.js adicione 3 horas indevidamente ao serializar o JSON
+         (date_trunc('minute', l.data_hora) AT TIME ZONE 'UTC') as data_hora, 
          MAX(CASE WHEN s.tipo_sensor = 'temperatura' THEN l.valor END) as temperatura,
          MAX(CASE WHEN s.tipo_sensor = 'umidade' THEN l.valor END) as umidade,
          MAX(CASE WHEN s.tipo_sensor = 'luminosidade' THEN l.valor END) as luminosidade,

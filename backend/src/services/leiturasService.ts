@@ -31,7 +31,8 @@ export const listarLeituras = async (_: Request, res: Response) => {
     const { rows } = await pool.query(
       `
       SELECT 
-         date_trunc('minute', l.data_hora) as data_hora,
+         -- Garante que o Node.js respeite o horário original do banco e não faça dupla conversão
+         (date_trunc('minute', l.data_hora) AT TIME ZONE 'UTC') as data_hora,
          MAX(CASE WHEN s.tipo_sensor = 'temperatura' THEN l.valor END) as temperatura,
          MAX(CASE WHEN s.tipo_sensor = 'umidade' THEN l.valor END) as umidade,
          MAX(CASE WHEN s.tipo_sensor = 'luminosidade' THEN l.valor END) as luminosidade,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    ScrollView,
+    SectionList,
     TouchableOpacity,
     ActivityIndicator,
     Alert,
@@ -14,7 +14,7 @@ import { COLORS, SPACING, GLOBAL_STYLES } from '../../shared/styles/globalStyles
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
-import { buscarEventos, limparHistoricoGeral } from '../../services/leiturasService';
+import { buscarEventos, limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
 
 type EventoTipo = 'temperatura' | 'umidade' | 'movimento' | 'choro' | 'sistema' | 'conexao' | 'luminosidade';
 
@@ -32,47 +32,80 @@ interface EventoHistorico {
     resolvido: boolean;
 }
 
-// ─── Mapear evento da API para o formato visual ─────────────────────
+function formatarDataLabel(data: Date): string {
+    const hoje = new Date();
+    const ontem = new Date(hoje);
+    ontem.setDate(ontem.getDate() - 1);
+
+    if (data.toDateString() === hoje.toDateString()) return "Hoje";
+    if (data.toDateString() === ontem.toDateString()) return "Ontem";
+    return data.toLocaleDateString("pt-BR");
+}
+
+// Interpreta a data crua do banco e garante que o celular a trate como UTC (Universal)
+function parseDataUTC(dataString: string): Date {
+    // Como o PostgreSQL guarda a data sem o fuso (timestamp without time zone), 
+    // a API envia uma string crua como "2026-06-02 01:09:57".
+    // Se o JS ler isso direto, ele acha que já é horário do Brasil e não subtrai as 3 horas.
+    // A solução limpa na UI é forçar o formato ISO com "Z" (Zulu/UTC).
+    let isoString = dataString.trim().replace(' ', 'T');
+    if (!isoString.includes('Z') && !isoString.match(/[+-]\d{2}:\d{2}$/)) {
+        isoString += 'Z';
+    }
+    return new Date(isoString);
+}
+
+// Extrai a hora local garantindo que os zeros à esquerda sejam mantidos (ex: 09:05)
+function formatarHoraLocal(data: Date): string {
+    const horas = String(data.getHours()).padStart(2, '0');
+    const minutos = String(data.getMinutes()).padStart(2, '0');
+    return `${horas}:${minutos}`;
+}
+
+//  Mapear evento da API para o formato visual 
 function mapearEvento(evento: any): EventoHistorico {
     const tipo_evento: string = evento.tipo_evento || "";
     const nivel: string = evento.nivel_criticidade || "baixo";
-    const data = new Date(evento.data_evento);
+    
+    // Padroniza a data para UTC antes de qualquer cálculo de UI
+    const dataLocal = parseDataUTC(evento.data_evento);
 
     // Determinar tipo visual
     let tipo: EventoTipo = "sistema";
     let iconName = "settings";
-    let iconColor = "#0288D1";
-    let iconBg = "#E1F5FE";
-    let barColor = "#0288D1";
+    let iconColor = COLORS.primary;
+    let iconBg = COLORS.surfaceSoft || "#E1F5FE";
+    let barColor = COLORS.primary;
     let descricao = tipo_evento;
 
+    // Padrão de cores espelhado com a DashboardScreen para consistência visual
     if (tipo_evento.toLowerCase().includes("temperatura")) {
         tipo = "temperatura";
         iconName = "thermometer";
-        iconColor = "#E53935";
+        iconColor = "#FF6B6B";
         iconBg = "#FFEBEE";
-        barColor = "#E53935";
+        barColor = "#FF6B6B";
         descricao = "Valor acima do limite configurado.";
     } else if (tipo_evento.toLowerCase().includes("umidade")) {
         tipo = "umidade";
         iconName = "water";
-        iconColor = "#F59E0B";
-        iconBg = "#FFFBEB";
-        barColor = "#F59E0B";
+        iconColor = "#4ECDC4";
+        iconBg = "#E0F2F1";
+        barColor = "#4ECDC4";
         descricao = "Caiu abaixo do limite seguro.";
     } else if (tipo_evento.toLowerCase().includes("luminosidade")) {
         tipo = "luminosidade";
         iconName = "sunny";
-        iconColor = "#F59E0B";
+        iconColor = "#FFD93D";
         iconBg = "#FFFBEB";
-        barColor = "#F59E0B";
+        barColor = "#FFD93D";
         descricao = "Ambiente muito claro para o bebê.";
     } else if (tipo_evento.toLowerCase().includes("movimento")) {
         tipo = "movimento";
         iconName = "walk";
-        iconColor = "#1565C0";
-        iconBg = "#E3F2FD";
-        barColor = "#1565C0";
+        iconColor = "#A78BFA";
+        iconBg = "#F3E8FF";
+        barColor = "#A78BFA";
         descricao = "Atividade identificada próximo ao berço.";
     } else if (tipo_evento.toLowerCase().includes("choro")) {
         tipo = "choro";
@@ -84,27 +117,15 @@ function mapearEvento(evento: any): EventoHistorico {
     } else if (tipo_evento.toLowerCase().includes("conexão") || tipo_evento.toLowerCase().includes("conexao")) {
         tipo = "conexao";
         iconName = "wifi";
-        iconColor = "#2E7D32";
+        iconColor = COLORS.success;
         iconBg = "#E8F5E9";
-        barColor = "#2E7D32";
+        barColor = COLORS.success;
     }
 
-    // Formatar hora
-    const hora = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    // O JS do celular agora subtrai as horas automaticamente baseado no fuso do aparelho
+    const hora = formatarHoraLocal(dataLocal);
 
-    // Formatar data label
-    const hoje = new Date();
-    const ontem = new Date(hoje);
-    ontem.setDate(ontem.getDate() - 1);
-
-    let dataLabel: string;
-    if (data.toDateString() === hoje.toDateString()) {
-        dataLabel = "Hoje";
-    } else if (data.toDateString() === ontem.toDateString()) {
-        dataLabel = "Ontem";
-    } else {
-        dataLabel = data.toLocaleDateString("pt-BR");
-    }
+    const dataLabel = formatarDataLabel(dataLocal);
 
     // Criticidade alta/critico = não resolvido
     const resolvido = nivel === "baixo";
@@ -124,32 +145,68 @@ function mapearEvento(evento: any): EventoHistorico {
     };
 }
 
+//  Mapear leitura bruta da API para o formato visual esperado, colocando os sensores no mesmo card
+function mapearLeitura(leitura: any): EventoHistorico {
+
+    const dataLocal = parseDataUTC(leitura.data_hora);
+    
+    const hora = formatarHoraLocal(dataLocal);
+    
+    // Formata a descrição com base nos sensores disponíveis naquela leitura
+    const temp = leitura.temperatura !== null && leitura.temperatura !== undefined ? `${Number(leitura.temperatura).toFixed(1)} °C` : '--';
+    const umid = leitura.umidade !== null && leitura.umidade !== undefined ? `${Number(leitura.umidade).toFixed(0)} %` : '--';
+    const luz = leitura.luminosidade !== null && leitura.luminosidade !== undefined ? `${Number(leitura.luminosidade).toFixed(0)} Lux` : '--';
+    const mov = leitura.movimento === true ? "Detectado" : (leitura.movimento === false ? "Calmo" : "--");
+
+    const descricao = `Temperatura: ${temp}\nUmidade: ${umid}\nLuminosidade: ${luz}\nMovimento: ${mov}`;
+    const dataLabel = formatarDataLabel(dataLocal);
+
+    return {
+        id: dataLocal.getTime(), // Usa o timestamp (milissegundos) da leitura como um ID único, seguro e imutável
+        tipo: "sistema",
+        iconName: "reader-outline",
+        iconColor: COLORS.primary,
+        iconBg: COLORS.surfaceSoft || "#E0E7FF",
+        barColor: COLORS.primary,
+        titulo: "Leitura do Ambiente",
+        descricao,
+        hora,
+        dataLabel,
+        resolvido: true, // Leituras não têm tag de "Não resolvido"
+    };
+}
+
 const AlertasScreen: React.FC = () => {
     const isFocused = useIsFocused();
     const [filtroAtivo, setFiltroAtivo] = useState<'Leituras' | 'Alertas'>('Alertas');
     const { isDarkMode } = useTheme();
     const styles = getStyles(isDarkMode);
     
-    // [REMOÇÃO DE MOCKS]
-    // A lista fixa com as informações falsas de alertas que ficava aqui foi removida,
-    // pois agora estamos integrando a lógica oficial da robótica puxando direto da API.
     const [eventos, setEventos] = useState<EventoHistorico[]>([]);
+    const [leituras, setLeituras] = useState<EventoHistorico[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (isFocused) {
-            carregarEventos();
+            carregarDados();
         }
     }, [isFocused]);
 
-    async function carregarEventos() {
+    async function carregarDados() {
         try {
             setLoading(true);
-            const dados = await buscarEventos();
-            const eventosFormatados = dados.map(mapearEvento);
-            setEventos(eventosFormatados);
+            
+            // Busca os dois juntos (API Leituras e API Eventos)
+            const [dadosEventos, dadosLeituras] = await Promise.all([
+                buscarEventos(),
+                buscarHistoricoLeituras()
+            ]);
+            
+            setEventos(dadosEventos.map(mapearEvento));
+            // garantir que não tenha mais de 50 itens mapeados
+            setLeituras(dadosLeituras.slice(0, 50).map((l: any) => mapearLeitura(l)));
         } catch (error) {
-            console.error("Erro ao carregar eventos:", error);
+            console.error("Erro ao carregar dados:", error);
         } finally {
             setLoading(false);
         }
@@ -160,6 +217,7 @@ const AlertasScreen: React.FC = () => {
             setLoading(true);
             await limparHistoricoGeral();
             setEventos([]);
+            setLeituras([]);
         } catch (error) {
             console.error("Erro ao limpar histórico:", error);
             Alert.alert("Erro", "Não foi possível limpar o histórico.");
@@ -169,10 +227,8 @@ const AlertasScreen: React.FC = () => {
     }
 
     function confirmarLimpeza() {
-        // [UX - REGRA DE NEGÓCIO]
-        // Eu implementei essa trava para que, se o usuário clicar em apagar e a lista já estiver vazia, não façamos uma requisição inútil para a API.
-        // Em vez disso, eu exibo apenas um aviso visual (UX amigável).
-        if (eventos.length === 0) {
+        // Evita requisições à API caso o histórico já esteja vazio.
+        if (eventos.length === 0 && leituras.length === 0) {
             if (Platform.OS === 'web') {
                 window.alert("Não há registros de leituras ou alertas para apagar.");
             } else {
@@ -181,10 +237,7 @@ const AlertasScreen: React.FC = () => {
             return;
         }
 
-        // [COMPATIBILIDADE MULTIPLATAFORMA]
-        // Assim como eu fiz na exclusão do robô, notei que o 'Alert' trava na web.
-        // Por isso, eu adicionei essa verificação do Platform.OS para usar o window.confirm 
-        // e garantir que o app funcione perfeitamente nos navegadores de desktop.
+        // Fallback para Web: A API Alert.alert causa travamento em navegadores, utilizando window.confirm como alternativa.
         if (Platform.OS === 'web') {
             if (window.confirm("Tem certeza que deseja limpar todo o histórico de alertas e leituras? Esta ação não pode ser desfeita.")) {
                 limparTudo();
@@ -201,17 +254,16 @@ const AlertasScreen: React.FC = () => {
         }
     }
 
-    const eventosFiltrados = eventos.filter((e) => {
-        if (filtroAtivo === 'Alertas')
-            return !e.resolvido;
-        if (filtroAtivo === 'Leituras')
-            return true;
-        if (filtroAtivo === 'Leituras')
-            return true;
-        return true;
-    });
+    // Se o filtro for Alertas, pega o estado 'eventos' mostrando só os não resolvidos.
+    // Se o filtro for Leituras, pega direto o estado 'leituras'.
+    const listaExibicao = filtroAtivo === 'Alertas' ? eventos.filter(e => !e.resolvido) : leituras;
 
-    const datasUnicas = [...new Set(eventosFiltrados.map((e) => e.dataLabel))];
+    const datasUnicas = [...new Set(listaExibicao.map((e) => e.dataLabel))];
+
+    const secoes = datasUnicas.map((label) => ({
+        title: label,
+        data: listaExibicao.filter((e) => e.dataLabel === label),
+    }));
 
     const renderCard = (item: EventoHistorico) => (
         <View key={item.id} style={[styles.eventCard, !item.resolvido && styles.eventCardUnresolved]}>
@@ -226,7 +278,7 @@ const AlertasScreen: React.FC = () => {
                     </Text>
                     <Text style={styles.eventTime}>{item.hora}</Text>
                 </View>
-                <Text style={[styles.eventDescription, item.resolvido && styles.eventDescriptionRead]} numberOfLines={2}>
+                <Text style={[styles.eventDescription, item.resolvido && styles.eventDescriptionRead]} numberOfLines={4}>
                     {item.descricao}
                 </Text>
                 {!item.resolvido && (
@@ -268,38 +320,38 @@ const AlertasScreen: React.FC = () => {
                     ))}
                 </View>
                 <TouchableOpacity onPress={confirmarLimpeza} style={{ paddingVertical: SPACING.xs }}>
-                    <Text style={{ color: "#E53935", fontSize: 13, fontWeight: 'bold' }}>Apagar Histórico</Text>
+                    <Text style={{ color: COLORS.error, fontSize: 13, fontWeight: 'bold' }}>Apagar Histórico</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Lista de alertas */}
-            <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-                {loading ? (
-                    <View style={{ padding: SPACING.xxl, alignItems: "center" }}>
-                        <ActivityIndicator size="large" color={COLORS.primary} />
-                        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
-                            Carregando alertas...
-                        </Text>
-                    </View>
-                ) : eventosFiltrados.length === 0 ? (
-                    <View style={GLOBAL_STYLES.emptyState}>
-                        <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
-                        <Text style={styles.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
-                        <Text style={styles.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
-                    </View>
-                ) : (
-                    datasUnicas.map((label) => {
-                        const grupo = eventosFiltrados.filter((e) => e.dataLabel === label);
-                        return (
-                            <View key={label}>
-                                <Text style={styles.secaoLabel}>{label.toUpperCase()}</Text>
-                                {grupo.map(renderCard)}
-                            </View>
-                        );
-                    })
+            <SectionList
+                style={styles.list}
+                showsVerticalScrollIndicator={false}
+                sections={loading || listaExibicao.length === 0 ? [] : secoes}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => renderCard(item)}
+                renderSectionHeader={({ section: { title } }) => (
+                    <Text style={styles.secaoLabel}>{title.toUpperCase()}</Text>
                 )}
-                <View style={{ height: 32 }} />
-            </ScrollView>
+                ListEmptyComponent={
+                    loading ? (
+                        <View style={{ padding: SPACING.xxl, alignItems: "center" }}>
+                            <ActivityIndicator size="large" color={COLORS.primary} />
+                            <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
+                                Carregando alertas...
+                            </Text>
+                        </View>
+                    ) : (
+                        <View style={GLOBAL_STYLES.emptyState}>
+                            <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
+                            <Text style={styles.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
+                            <Text style={styles.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
+                        </View>
+                    )
+                }
+                ListFooterComponent={<View style={{ height: 32 }} />}
+            />
         </SafeAreaView>
     );
 };

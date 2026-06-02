@@ -133,6 +133,32 @@ export async function buscarEventos(): Promise<any[]> {
   }
 }
 
+// Buscar o histórico geral de leituras agrupadas via API
+export async function buscarHistoricoLeituras(): Promise<any[]> {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return [];
+
+    const response = await fetch(`${API_URL}/leituras`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(resData?.erro || resData?.mensagem || "Erro ao buscar histórico de leituras");
+    }
+
+    return resData.dados?.leituras || resData.dados || [];
+  } catch (error) {
+    console.error("[SERVICE] Erro em buscarHistoricoLeituras:", error);
+    return [];
+  }
+}
+
 // Limpar todo o histórico de leituras e eventos do usuário
 export async function limparHistoricoGeral(): Promise<void> {
   try {
@@ -170,4 +196,4 @@ export async function limparHistoricoGeral(): Promise<void> {
     console.error("[SERVICE] Erro em limparHistoricoGeral:", error);
     throw error;
   }
-}
+}

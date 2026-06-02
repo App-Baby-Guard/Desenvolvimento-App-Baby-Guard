@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// AsyncStorage removido daqui — o AuthContext agora é responsável por salvar o token
 import { API_URL } from "../config/apiUrl";
 import { DadosUsuario } from "../services/authService";
 
@@ -56,7 +56,7 @@ export function useLogin(onSuccess: (token: string, usuario: DadosUsuario) => vo
 
       const data = await response.json();
 
-      console.log("RESPOSTA API:", data);
+      console.log("RESPOSTA API (Mensagem):", data.mensagem);
 
       if (!response.ok) {
         throw new Error(data?.mensagem || "Erro ao realizar login");
@@ -65,10 +65,7 @@ export function useLogin(onSuccess: (token: string, usuario: DadosUsuario) => vo
       const token = data.dados.token;
       const usuario = data.dados.usuario;
 
-      await AsyncStorage.setItem("token", token);
-
-      await AsyncStorage.setItem("usuario", JSON.stringify(usuario));
-
+      // salvamento do token removido daqui — o AuthContext cuida disso via salvarSessao
       onSuccess(token, usuario);
     } catch (error: any) {
       console.log(error);

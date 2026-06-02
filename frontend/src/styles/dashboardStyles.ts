@@ -72,5 +72,45 @@ export function getStyles(isDarkMode: boolean) {
       fontSize: TYPOGRAPHY.size.md,
       fontWeight: TYPOGRAPHY.weight.semiBold,
     },
+
+    headerUser: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    headerAvatar: {
+      borderWidth: 2,
+      borderColor: COLORS.primary,
+    },
+
+    userName: {
+      marginTop: SPACING.xs,
+      fontSize: TYPOGRAPHY.size.sm,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: C.textPrimary,
+      textAlign: "center",
+      maxWidth: 90,
+    },
+
+    avatarBorder: {
+      borderWidth: 3,
+      borderColor: COLORS.primary,
+      borderRadius: 999,
+      padding: 3,
+    },
+
+    userEmail: {
+      fontSize: TYPOGRAPHY.size.sm,
+      color: C.textSecondary,
+    },
+
+    noDataContainer: {
+      marginTop: SPACING.md,
+      alignItems: "center",
+    },
+
+    footerSpacing: {
+      height: SPACING.xl,
+    },
   });
 }

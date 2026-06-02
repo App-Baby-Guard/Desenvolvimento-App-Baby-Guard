@@ -19,9 +19,9 @@ export function usePerfil({
   const [salvandoSenha, setSalvandoSenha] = useState(false);
 
   // pega o token do contexto de autenticação em vez do AsyncStorage
-  const { token } = useAuth();
+  const { token, atualizarUsuario } = useAuth();
 
-  const atualizarPerfil = async (nome: string, telefone: string) => {
+const atualizarPerfil = async (nome: string,telefone: string, foto_perfil?: string) => {
     if (!usuario?.id_usuario) {
       throw new Error("Usuário não encontrado.");
     }
@@ -37,7 +37,7 @@ export function usePerfil({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ nome, telefone }),
+          body: JSON.stringify({ nome, telefone, foto_perfil }),
         },
       );
 
@@ -50,6 +50,7 @@ export function usePerfil({
       const usuarioAtualizado = data?.dados || data;
 
       setUsuario(usuarioAtualizado);
+      atualizarUsuario(usuarioAtualizado);
       if (setNome) setNome(usuarioAtualizado.nome || "");
       if (setTelefone) setTelefone(usuarioAtualizado.telefone || "");
 

@@ -9,6 +9,8 @@ import {
   Switch,
   Alert,
   Image,
+  Modal,
+  TextInput
 } from "react-native";
 import { Switch as PaperSwitch } from "react-native-paper";
 
@@ -29,7 +31,9 @@ interface SensorLimit {
   icon: keyof typeof Ionicons.glyphMap;
   iconColor: string;
   iconBg: string;
-  range: string;
+  min: number;
+  max: number;
+  unit: string;
   description: string;
 }
 
@@ -40,7 +44,9 @@ const SENSOR_LIMITS: SensorLimit[] = [
     icon: "thermometer-outline",
     iconColor: "#F5A623",
     iconBg: "#FFF4E0",
-    range: "20°C – 26°C",
+    min: 20,
+    max: 26,
+    unit: "°C",
     description: "Faixa ideal de segurança",
   },
   {
@@ -48,7 +54,9 @@ const SENSOR_LIMITS: SensorLimit[] = [
     icon: "water-outline",
     iconColor: "#4A90E2",
     iconBg: "#E6F0FA",
-    range: "40% – 60%",
+    min: 40,
+    max: 60,
+    unit: "%",
     description: "Nível de conforto",
   },
 ];
@@ -141,49 +149,55 @@ const ToggleRow = ({
 );
 
 // SENSOR
-const SensorLimitRow = ({
-  item,
-  isLast = false,
-  styles,
-}: {
-  item: SensorLimit;
-  isLast?: boolean;
-  styles: ReturnType<typeof getStyles>;
-}) => (
-  <View
-    style={[
-      { flexDirection: "row", alignItems: "center" },
-      styles.sensorRow,
-      { paddingHorizontal: 16, paddingVertical: 12 },
-      !isLast && styles.rowWithBorder,
-    ]}
-  >
-    <View
-      style={[
-        {
-          width: 36,
-          height: 36,
-          borderRadius: 8,
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 12,
-        },
-        { backgroundColor: item.iconBg },
-      ]}
-    >
-      <Ionicons name={item.icon} size={18} color={item.iconColor} />
-    </View>
+    const SensorLimitRow = ({
+      item,
+      isLast = false,
+      styles,
+    }: {
+      item: SensorLimit;
+      isLast?: boolean;
+      styles: ReturnType<typeof getStyles>;
+    }) => (
+      <View
+        style={[
+          { flexDirection: "row", alignItems: "center" },
+          styles.sensorRow,
+          { paddingHorizontal: 16, paddingVertical: 12 },
+          !isLast && styles.rowWithBorder,
+        ]}
+      >
+        <View
+          style={[
+            {
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 12,
+            },
+            { backgroundColor: item.iconBg },
+          ]}
+        >
+          <Ionicons name={item.icon} size={18} color={item.iconColor} />
+        </View>
 
-    <View style={{ flex: 1 }}>
-      <Text style={styles.userName}>{item.label}</Text>
-      <Text style={styles.userEmail}>{item.description}</Text>
-    </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.userName}>{item.label}</Text>
+          <Text style={styles.userEmail}>{item.description}</Text>
+        </View>
 
-    <View style={styles.sensorRange}>
-      <Text style={styles.sensorRangeText}>{item.range}</Text>
-    </View>
-  </View>
-);
+        <View style={styles.sensorRange}>
+          <Text style={styles.sensorRangeText}>
+            {item.min}
+            {item.unit}
+            {" - "}
+            {item.max}
+            {item.unit}
+          </Text>
+        </View>
+      </View>
+    );
 
 // SCREEN
 export default function ConfiguracoesScreen({
@@ -194,6 +208,18 @@ export default function ConfiguracoesScreen({
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  const [limitesSensores, setLimitesSensores] =
+    useState<SensorLimit[]>(SENSOR_LIMITS);
+
+  const [modalLimitesVisible, setModalLimitesVisible] = useState(false);
+
+  const [sensorSelecionado, setSensorSelecionado] =
+    useState<SensorLimit | null>(null);
+
+  const [valorMinimo, setValorMinimo] = useState("");
+
+  const [valorMaximo, setValorMaximo] = useState("");
+
   // pego o token, usuário e função de limpar sessão do contexto de autenticação
   const { token, usuario, limparSessao } = useAuth();
 
@@ -201,6 +227,46 @@ export default function ConfiguracoesScreen({
 
   // todos os estilos vêm do arquivo separado, nenhum inline style no screen
   const styles = getStyles(isDarkMode);
+
+  const abrirEdicaoLimite = (sensor: SensorLimit) => {
+  setSensorSelecionado(sensor);
+  setValorMinimo(String(sensor.min));
+  setValorMaximo(String(sensor.max));
+};
+
+const salvarLimite = () => {
+  if (!sensorSelecionado) return;
+
+  const minimo = Number(valorMinimo);
+  const maximo = Number(valorMaximo);
+
+  if (isNaN(minimo) || isNaN(maximo)) {
+    Alert.alert("Erro", "Informe valores válidos.");
+    return;
+  }
+
+  if (minimo > maximo) {
+    Alert.alert(
+      "Erro",
+      "O valor mínimo não pode ser maior que o máximo."
+    );
+    return;
+  }
+
+  setLimitesSensores((prev) =>
+    prev.map((sensor) =>
+      sensor.label === sensorSelecionado.label
+        ? {
+            ...sensor,
+            min: minimo,
+            max: maximo,
+          }
+        : sensor
+    )
+  );
+  setSensorSelecionado(null);
+  setModalLimitesVisible(false);
+};
 
   // função de logout: invalida o token na API e limpa a sessão local
   const handleLogout = () => {
@@ -329,17 +395,18 @@ export default function ConfiguracoesScreen({
         <SectionHeader
           title="LIMITES DOS SENSORES"
           actionLabel="Ajustar"
-          onAction={() => {}}
+          onAction={() => setModalLimitesVisible(true)}
         />
 
         <View style={styles.sectionCard}>
-          {SENSOR_LIMITS.map((item, idx) => (
-            <SensorLimitRow
-              key={item.label}
-              item={item}
-              isLast={idx === SENSOR_LIMITS.length - 1}
-              styles={styles}
-            />
+          {limitesSensores.map((item, idx) => (
+            <View key={item.label}>
+              <SensorLimitRow
+                item={item}
+                isLast={idx === limitesSensores.length - 1}
+                styles={styles}
+              />
+            </View>
           ))}
         </View>
 
@@ -395,7 +462,90 @@ export default function ConfiguracoesScreen({
         </View>
 
         {/* FOOTER */}
-        <Text style={styles.footerThemed}>BabyGuard v1.4.0 (2026)</Text>
+      <Text style={styles.footerThemed}>BabyGuard v1.4.0 (2026)</Text>
+
+      {/* MODAL LISTA DE SENSORES */}
+      <Modal
+        visible={modalLimitesVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setModalLimitesVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={GLOBAL_STYLES.spaceBetween}>
+              <Text style={styles.modalTitle}>Ajustar Limites</Text>
+              <TouchableOpacity onPress={() => setModalLimitesVisible(false)}>
+                <Ionicons name="close" size={22} color={styles.headerTitle.color as string} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView>
+              {limitesSensores.map((item, idx) => (
+                <TouchableOpacity
+                  key={item.label}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    abrirEdicaoLimite(item);
+                    setModalLimitesVisible(false);
+                  }}
+                >
+                  <SensorLimitRow item={item} isLast={idx === limitesSensores.length - 1} styles={styles} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={!!sensorSelecionado}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setSensorSelecionado(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Editar Limite</Text>
+
+            <View style={styles.modalInputSection}>
+              <Text style={styles.modalInputSectionTitle}>{sensorSelecionado?.label}</Text>
+
+              <View style={styles.modalRowInputContainer}>
+                <View style={styles.modalInputGroup}>
+                  <Text style={styles.modalInputLabel}>Mínimo ({sensorSelecionado?.unit})</Text>
+                  <TextInput
+                    value={valorMinimo}
+                    onChangeText={setValorMinimo}
+                    keyboardType="numeric"
+                    style={styles.modalTextInput}
+                  />
+                </View>
+
+                <View style={styles.modalInputGroup}>
+                  <Text style={styles.modalInputLabel}>Máximo ({sensorSelecionado?.unit})</Text>
+                  <TextInput
+                    value={valorMaximo}
+                    onChangeText={setValorMaximo}
+                    keyboardType="numeric"
+                    style={styles.modalTextInput}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.modalActionButtons}>
+              <TouchableOpacity onPress={() => setSensorSelecionado(null)} style={styles.modalBtnCancel}>
+                <Text style={styles.modalBtnTextCancel}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => salvarLimite()} style={styles.modalBtnSave}>
+                <Text style={styles.modalBtnTextSave}>Salvar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       </ScrollView>
     </SafeAreaView>
   );

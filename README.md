@@ -1,3 +1,5 @@
+![Logo do Projeto](frontend/src/assets/imagemBG.png)
+
 # BabyGuard: Amor, Cuidado e Proteção em Tempo Real
 
 O BabyGuard nasceu do desejo de oferecer tranquilidade aos pais e proteção absoluta aos bebês. Muito mais do que uma babá eletrônica, o sistema funciona como um guardião digital zeloso, monitorando o microclima do berço e o bem-estar da criança. Através da união entre hardware delicadamente calibrado, uma infraestrutura em nuvem acolhedora e um aplicativo móvel intuitivo, o BabyGuard transforma dados ambientais em paz de espírito para a sua família.

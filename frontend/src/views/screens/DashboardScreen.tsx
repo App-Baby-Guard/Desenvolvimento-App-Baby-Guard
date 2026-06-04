@@ -225,42 +225,23 @@ const DashboardScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              GLOBAL_STYLES.row,
-              GLOBAL_STYLES.rowPadding,
-              GLOBAL_STYLES.rowBorder,
-            ]}
             activeOpacity={0.7}
             onPress={() => navigation.navigate("Perfil")}
           >
-            <View style={styles.headerUser}>
-              {usuario?.foto_perfil ? (
-                <Image
-                  source={{ uri: usuario.foto_perfil }}
-                  style={[
-                    GLOBAL_STYLES.avatar,
-                    styles.headerAvatar,
-                  ]}
+            {usuario?.foto_perfil ? (
+              <Image
+                source={{ uri: usuario.foto_perfil }}
+                style={styles.headerAvatar}
+              />
+            ) : (
+              <View style={styles.headerAvatar}>
+                <Ionicons
+                  name="person"
+              size={24}
+                  color={COLORS.textInverse}
                 />
-              ) : (
-                <View
-                  style={[
-                    GLOBAL_STYLES.avatar,
-                    styles.headerAvatar,
-                  ]}
-                >
-                  <Ionicons
-                    name="person"
-                    size={24}
-                    color={COLORS.textInverse}
-                  />
-                </View>
-              )}
-
-              <Text style={styles.userName}>
-                {usuario?.nome || "Usuário"}
-              </Text>
-            </View>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -314,7 +295,7 @@ const DashboardScreen: React.FC = () => {
 
         {/* Card de status */}
         <View style={styles.card}>
-          <Text style={styles.title}>{statusGeral.texto}</Text>
+          <Text style={styles.statusTitle}>{statusGeral.texto}</Text>
           <Text style={styles.textMuted}>{ultimaLeitura}</Text>
 
             {leituras.length === 0 && dispositivoAtivo && (

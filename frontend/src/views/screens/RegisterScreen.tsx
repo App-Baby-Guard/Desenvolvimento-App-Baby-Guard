@@ -19,7 +19,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../routes/RootNavigator";
 import { cadastrarApi } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
-import { COLORS } from "../../shared/styles/globalStyles";
+import { COLORS, SPACING, TYPOGRAPHY, BORDER_RADIUS, SHADOWS } from "../../shared/styles/globalStyles";
 //aqui definimos os tipos de navegação para a tela de cadastro, indicando que ela faz parte do stack de navegação e 
 // pode navegar para outras telas como "Login" ou "Tabs".
 type Props = {
@@ -256,50 +256,47 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: "center",
-    padding: 24,
+    padding: SPACING.xl,
   },
   cabecalho: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: SPACING.xxl,
   },
   iconeContainer: {
     width: 76,
     height: 76,
-    borderRadius: 38,
+    borderRadius: SPACING.xxxl,
     backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: SPACING.lg,
   },
   titulo: {
-    fontSize: 26,
+    fontSize: TYPOGRAPHY.size.xxl,
     fontWeight: "700",
     color: COLORS.textPrimary,
-    marginBottom: 6,
+    marginBottom: SPACING.sm,
   },
   subtitulo: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.textSecondary,
     textAlign: "center",
   },
   formulario: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    padding: 24,
-    shadowColor: COLORS.shadowColor,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.14,
-    shadowRadius: 10,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.xl,
+    ...SHADOWS.soft,
     elevation: 4,
   },
   tituloBemVindo: {
-    fontSize: 19,
+    fontSize: TYPOGRAPHY.size.lg,
     fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 4,
   },
   instrucao: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.textSecondary,
     marginBottom: 20,
   },
@@ -307,8 +304,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFF0F0",
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: BORDER_RADIUS.sm,
+    padding: SPACING.md,
     marginBottom: 16,
     gap: 8,
     borderWidth: 1,
@@ -316,17 +313,17 @@ const styles = StyleSheet.create({
   },
   textoErro: {
     flex: 1,
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     color: "#D9534F",
   },
   grupoCampo: {
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     fontWeight: "600",
     color: COLORS.textPrimary,
-    marginBottom: 8,
+    marginBottom: SPACING.xs,
   },
   campoComIcone: {
     flexDirection: "row",
@@ -334,35 +331,35 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.inputBackground,
     borderWidth: 1,
     borderColor: COLORS.inputBorder,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.md,
   },
   iconeInput: {
     marginRight: 8,
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.textPrimary,
-    paddingVertical: 13,
+    paddingVertical: SPACING.md,
   },
   botaoOlho: {
     padding: 4,
   },
   botaoEntrar: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 15,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.lg,
     alignItems: "center",
-    marginTop: 6,
-    marginBottom: 14,
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   botaoDesativado: {
     opacity: 0.65,
   },
   textoBotaoEntrar: {
     color: COLORS.textInverse,
-    fontSize: 15,
+    fontSize: TYPOGRAPHY.size.md,
     fontWeight: "700",
   },
   divisor: {
@@ -386,11 +383,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textoRodape: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.textSecondary,
   },
   textoCriarConta: {
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.primaryDark,
     fontWeight: "700",
   },

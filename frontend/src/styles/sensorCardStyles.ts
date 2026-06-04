@@ -4,6 +4,8 @@ import {
   DARK_COLORS,
   SPACING,
   BORDER_RADIUS,
+  SHADOWS,
+  TYPOGRAPHY,
 } from "../shared/styles/globalStyles";
 
 export function getStyles(isDarkMode: boolean) {
@@ -16,11 +18,8 @@ export function getStyles(isDarkMode: boolean) {
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.lg,
       backgroundColor: C.cardBackground,
-      borderRadius: BORDER_RADIUS.md,
-      shadowColor: C.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
+      borderRadius: BORDER_RADIUS.lg,
+      ...SHADOWS.soft,
       elevation: 3,
     },
     iconContainer: {
@@ -31,13 +30,13 @@ export function getStyles(isDarkMode: boolean) {
       marginBottom: SPACING.md,
     },
     valueText: {
-      fontSize: 18,
+      fontSize: TYPOGRAPHY.size.lg,
       fontWeight: "bold",
       color: C.textPrimary,
       marginBottom: SPACING.xs,
     },
     labelText: {
-      fontSize: 14,
+      fontSize: TYPOGRAPHY.size.sm,
       color: C.textSecondary,
       fontWeight: "500",
     },
@@ -49,7 +48,7 @@ export function getStyles(isDarkMode: boolean) {
       marginBottom: SPACING.md,
     },
     statusText: {
-      fontSize: 12,
+      fontSize: TYPOGRAPHY.size.xs,
       fontWeight: "600",
       color: COLORS.textInverse,
     },

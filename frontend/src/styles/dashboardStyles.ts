@@ -24,14 +24,20 @@ export function getStyles(isDarkMode: boolean) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: SPACING.xs,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
       minHeight: 64,
-      backgroundColor: C.surface,
+      backgroundColor: C.background,
       borderBottomWidth: 1,
       borderBottomColor: C.border,
     },
     title: {
       fontSize: TYPOGRAPHY.size.xxl,
+      fontWeight: TYPOGRAPHY.weight.bold,
+      color: C.textPrimary,
+    },
+    statusTitle: {
+      fontSize: TYPOGRAPHY.size.xl,
       fontWeight: TYPOGRAPHY.weight.bold,
       color: C.textPrimary,
     },
@@ -73,23 +79,15 @@ export function getStyles(isDarkMode: boolean) {
       fontWeight: TYPOGRAPHY.weight.semiBold,
     },
 
-    headerUser: {
+    headerAvatar: {
+      width:50,
+      height: 50,
+      borderRadius: 16,
+      backgroundColor: COLORS.primary,
       alignItems: "center",
       justifyContent: "center",
-    },
-
-    headerAvatar: {
       borderWidth: 2,
-      borderColor: COLORS.primary,
-    },
-
-    userName: {
-      marginTop: SPACING.xs,
-      fontSize: TYPOGRAPHY.size.sm,
-      fontWeight: TYPOGRAPHY.weight.semiBold,
-      color: C.textPrimary,
-      textAlign: "center",
-      maxWidth: 90,
+      borderColor: isDarkMode ? C.border : COLORS.primaryLight,
     },
 
     avatarBorder: {

@@ -13,20 +13,15 @@ export function getStyles(isDarkMode: boolean) {
 
   return StyleSheet.create({
     headerTitle: {
-      fontSize: 20,
-      fontWeight: "700",
+      fontSize: TYPOGRAPHY.size.xxl,
+      fontWeight: TYPOGRAPHY.weight.bold,
       color: C.textPrimary,
-      textAlign: "center",
-      position: "absolute",
-      left: 0,
-      right: 0,
-      top: 22,
     },
 
     sectionCard: {
       marginHorizontal: SPACING.lg,
       marginBottom: SPACING.lg,
-      borderRadius: BORDER_RADIUS.xl,
+      borderRadius: BORDER_RADIUS.lg,
       overflow: "hidden",
       backgroundColor: C.cardBackground,
       borderWidth: 1,
@@ -80,7 +75,7 @@ export function getStyles(isDarkMode: boolean) {
       justifyContent: "center",
       alignItems: "center",
       paddingVertical: SPACING.lg,
-      backgroundColor: isDarkMode ? "#1f1215" : "#FFF7F8",
+      backgroundColor: C.surfaceSoft,
     },
 
     logoutContent: {
@@ -196,10 +191,10 @@ export function getStyles(isDarkMode: boolean) {
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      padding: SPACING.xs,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
       minHeight: 64,
-      backgroundColor: C.surface,
+      backgroundColor: C.background,
       borderBottomWidth: 1,
       borderBottomColor: C.border,
     },
@@ -242,11 +237,6 @@ export function getStyles(isDarkMode: boolean) {
       fontSize: 28,
       fontWeight: "700",
       color: C.textPrimary,
-      textAlign: "center",
-      position: "absolute",
-      left: 0,
-      right: 0,
-      top: 22,
     },
 
     deviceFieldBorder: {
@@ -333,7 +323,7 @@ export function getStyles(isDarkMode: boolean) {
       borderRadius: BORDER_RADIUS.md,
       alignItems: "center",
       marginHorizontal: 5,
-      backgroundColor: isDarkMode ? "#3A3A3C" : "#E5E5EA",
+      backgroundColor: C.surfaceSoft,
     },
 
     modalBtnSave: {
@@ -346,7 +336,7 @@ export function getStyles(isDarkMode: boolean) {
     },
 
     modalBtnTextCancel: {
-      color: isDarkMode ? "#FFFFFF" : "#000000",
+      color: C.textPrimary,
       fontWeight: TYPOGRAPHY.weight.semiBold,
     },
 

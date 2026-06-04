@@ -17,7 +17,7 @@ import {
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../shared/styles/globalStyles";
+import { COLORS, SPACING, BORDER_RADIUS } from "../../shared/styles/globalStyles";
 import { getStyles } from "../../styles/perfilStyles";
 import { usePerfil } from "../../hooks/usePerfil";
 // pego os dados do usuário logado do contexto de autenticação
@@ -43,7 +43,7 @@ const InfoRow = ({
     style={[
       styles.infoRowBg,
       { flexDirection: "row", alignItems: "center" },
-      { paddingHorizontal: 16, paddingVertical: 12 },
+      { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
       !isLast && styles.rowBorderThemed,
     ]}
   >
@@ -52,10 +52,10 @@ const InfoRow = ({
         {
           width: 36,
           height: 36,
-          borderRadius: 8,
+          borderRadius: BORDER_RADIUS.sm,
           alignItems: "center",
           justifyContent: "center",
-          marginRight: 12,
+          marginRight: SPACING.md,
         },
         styles.iconWrapBg,
       ]}
@@ -184,7 +184,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation?.goBack()}
-            style={{ padding: 12, marginRight: 8 }}
+            style={{ padding: SPACING.md, marginRight: SPACING.sm }}
             activeOpacity={0.7}
           >
             <Ionicons
@@ -343,7 +343,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           <TouchableOpacity
             style={[
               { flexDirection: "row", alignItems: "center" },
-              { paddingHorizontal: 16, paddingVertical: 12 },
+              { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
               styles.actionRowBorder,
               { borderBottomWidth: 1 },
               salvando && { opacity: 0.6 },
@@ -363,7 +363,7 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
           <TouchableOpacity
             style={[
               { flexDirection: "row", alignItems: "center" },
-              { paddingHorizontal: 16, paddingVertical: 12 },
+              { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
             ]}
             activeOpacity={0.7}
           >

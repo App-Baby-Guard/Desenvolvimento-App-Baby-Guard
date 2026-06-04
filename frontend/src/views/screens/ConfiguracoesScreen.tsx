@@ -6,7 +6,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Alert,
   Image,
   Modal,
@@ -16,7 +15,7 @@ import { Switch as PaperSwitch } from "react-native-paper";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, GLOBAL_STYLES } from "../../shared/styles/globalStyles";
+import { COLORS, GLOBAL_STYLES, SPACING, BORDER_RADIUS } from "../../shared/styles/globalStyles";
 import { getStyles } from "../../styles/configuracoesStyles";
 // importei o contexto de autenticação para pegar o token e os dados do usuário logado
 import { useAuth } from '../../context/AuthContext';
@@ -90,7 +89,6 @@ const ToggleRow = ({
   value,
   onToggle,
   isLast = false,
-  usePaperSwitch = false,
   styles,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
@@ -99,13 +97,12 @@ const ToggleRow = ({
   value: boolean;
   onToggle: (v: boolean) => void;
   isLast?: boolean;
-  usePaperSwitch?: boolean;
   styles: ReturnType<typeof getStyles>;
 }) => (
   <View
     style={[
       { flexDirection: "row", alignItems: "center" },
-      { paddingHorizontal: 16, paddingVertical: 12 },
+      { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
       !isLast && styles.rowWithBorder,
       styles.rowBackground,
     ]}
@@ -115,10 +112,10 @@ const ToggleRow = ({
         {
           width: 36,
           height: 36,
-          borderRadius: 8,
+          borderRadius: BORDER_RADIUS.sm,
           alignItems: "center",
           justifyContent: "center",
-          marginRight: 12,
+          marginRight: SPACING.md,
         },
       ]}
     >
@@ -127,24 +124,11 @@ const ToggleRow = ({
 
     <Text style={[styles.toggleLabel, { flex: 1 }]}>{label}</Text>
 
-    {usePaperSwitch ? (
-      <PaperSwitch
-        value={value}
-        onValueChange={onToggle}
-        color={COLORS.primary}
-      />
-    ) : (
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{
-          false: COLORS.border,
-          true: COLORS.primary,
-        }}
-        thumbColor={COLORS.surface}
-        ios_backgroundColor={COLORS.border}
-      />
-    )}
+    <PaperSwitch
+      value={value}
+      onValueChange={onToggle}
+      color={COLORS.primary}
+    />
   </View>
 );
 
@@ -162,7 +146,7 @@ const ToggleRow = ({
         style={[
           { flexDirection: "row", alignItems: "center" },
           styles.sensorRow,
-          { paddingHorizontal: 16, paddingVertical: 12 },
+          { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
           !isLast && styles.rowWithBorder,
         ]}
       >
@@ -171,10 +155,10 @@ const ToggleRow = ({
             {
               width: 36,
               height: 36,
-              borderRadius: 8,
+              borderRadius: BORDER_RADIUS.sm,
               alignItems: "center",
               justifyContent: "center",
-              marginRight: 12,
+              marginRight: SPACING.md,
             },
             { backgroundColor: item.iconBg },
           ]}
@@ -302,18 +286,6 @@ const salvarLimite = () => {
       >
         {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation?.goBack()}
-            style={GLOBAL_STYLES.backBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={22}
-              color={styles.headerTitle.color as string}
-            />
-          </TouchableOpacity>
-
           <Text style={styles.headerTitle}>Configurações</Text>
         </View>
 
@@ -325,7 +297,7 @@ const salvarLimite = () => {
             style={[
               { flexDirection: "row", alignItems: "center" },
               styles.accountRow,
-              { paddingHorizontal: 16, paddingVertical: 12 },
+              { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
               styles.rowWithBorder,
               styles.rowBackground,
             ]}
@@ -386,7 +358,6 @@ const salvarLimite = () => {
             value={isDarkMode}
             onToggle={toggleDarkMode}
             isLast
-            usePaperSwitch
             styles={styles}
           />
         </View>
@@ -448,7 +419,7 @@ const salvarLimite = () => {
             style={[
               { flexDirection: "row", alignItems: "center" },
               styles.logoutRow,
-              { paddingHorizontal: 16 },
+              { paddingHorizontal: SPACING.lg },
             ]}
             activeOpacity={0.7}
             onPress={handleLogout}

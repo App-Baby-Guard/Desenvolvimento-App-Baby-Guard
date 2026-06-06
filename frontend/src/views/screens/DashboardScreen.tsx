@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import { listarDispositivos } from "../../services/dispositivosService";
 import { buscarUltimasLeiturasPorDispositivo, buscarHistoricoLeituras, LeituraSensor } from "../../services/leiturasService";
 import { Dispositivo } from "../../models/Dispositivo";
 import { useAuth } from "../../context/AuthContext";
+import { LineChart } from "react-native-chart-kit";
 
 // Tipagem precisa para substituir o uso de "any[]" no histórico do gráfico
 export interface LeituraHistorico {
@@ -214,6 +216,70 @@ const DashboardScreen: React.FC = () => {
   const statusGeral = calcularStatusGeral(leituras);
   const ultimaLeitura = tempoDesdeUltimaLeitura(leituras);
 
+  // Função responsável por renderizar o gráfico histórico de temperatura
+  const renderGrafico = () => {
+    // Filtra nulls e inverter a ordem (cronológico: mais antigo -> mais novo)
+    const validData = [...historicoLeituras]
+      .reverse()
+      .filter((l) => l.temperatura !== null && l.temperatura !== undefined);
+
+    // se falta de dados
+    if (validData.length < 2) {
+      return (
+        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}>
+          <Text style={styles.textMuted}>Sem leituras suficientes para o gráfico</Text>
+        </View>
+      );
+    }
+
+    const labels: string[] = [];
+    const data: number[] = [];
+    const step = Math.ceil(validData.length / 5); // Distribui os labels de hora em 5 pontos para não poluir o eixo X
+
+    validData.forEach((item, index) => {
+      // converte string para number, garantindo a compatibilidade matemática
+      data.push(Number(item.temperatura));
+
+      // UTC (usado no serviço de Alertas)
+      let isoString = String(item.data_hora).trim().replace(' ', 'T');
+      if (!isoString.includes('Z') && !isoString.match(/[+-]\d{2}:\d{2}$/)) {
+        isoString += 'Z';
+      }
+      const dataLocal = new Date(isoString);
+      const horaFormatada = `${String(dataLocal.getHours()).padStart(2, '0')}:${String(dataLocal.getMinutes()).padStart(2, '0')}`;
+
+      // Insere o texto apenas nas posições calculadas. Os demais ficam em branco (mas o ponto no eixo Y existe)
+      if (index === 0 || index === validData.length - 1 || index % step === 0) {
+        labels.push(horaFormatada);
+      } else {
+        labels.push(""); 
+      }
+    });
+
+    return (
+      <View style={{ marginTop: SPACING.md, alignItems: "center" }}>
+        <LineChart
+          data={{ labels, datasets: [{ data }] }}
+          width={Dimensions.get("window").width - 64} // Compensa os paddings de tela e de Card
+          height={180}
+          yAxisSuffix="°"
+          chartConfig={{
+            backgroundColor: "transparent",
+            backgroundGradientFromOpacity: 0,
+            backgroundGradientToOpacity: 0,
+            decimalPlaces: 1,
+            color: (opacity = 1) => `rgba(255, 107, 107, ${opacity})`, // Cor baseada na temperatura do SensorCard (#FF6B6B)
+            labelColor: () => styles.textMuted.color as string,
+            propsForDots: { r: "3", strokeWidth: "2", stroke: "#FF6B6B" },
+            propsForBackgroundLines: { stroke: styles.textMuted.color as string, strokeOpacity: 0.2 },
+          }}
+          bezier // Transforma os ângulos duros em curvas suaves e fluídas
+          style={{ marginVertical: 8, borderRadius: 16 }}
+        />
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[GLOBAL_STYLES.safeArea, { justifyContent: "center", alignItems: "center" }]}>
@@ -373,43 +439,9 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.card}>
           <View style={GLOBAL_STYLES.spaceBetween}>
             <Text style={styles.subtitle}>Variação de temperatura</Text>
-
-            <View style={GLOBAL_STYLES.row}>
-              {["1h", "6h", "24h"].map((period) => (
-                <TouchableOpacity
-                  key={period}
-                  style={[
-                    styles.btnSec,
-                    period === "1h" && GLOBAL_STYLES.buttonPrimary,
-                    { marginLeft: 6 },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.btnSecText,
-                      period === "1h" && GLOBAL_STYLES.buttonPrimaryText,
-                    ]}
-                  >
-                    {period}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
 
-          <View style={[GLOBAL_STYLES.centerContent, { height: 140 }]}>
-            <Text style={styles.textMuted}>[Gráfico de linha aqui]</Text>
-          </View>
-
-          <View style={GLOBAL_STYLES.spaceBetween}>
-            {["14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h"].map(
-              (hour) => (
-                <Text key={hour} style={styles.textMuted}>
-                  {hour}
-                </Text>
-              ),
-            )}
-          </View>
+          {renderGrafico()}
         </View>
 
         <View style={styles.footerSpacing} />

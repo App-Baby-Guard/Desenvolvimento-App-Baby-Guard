@@ -16,7 +16,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { getStyles } from "../../styles/dashboardStyles";
 
 import { listarDispositivos } from "../../services/dispositivosService";
-import { buscarUltimasLeiturasPorDispositivo, LeituraSensor } from "../../services/leiturasService";
+import { buscarUltimasLeiturasPorDispositivo, buscarHistoricoLeituras, LeituraSensor } from "../../services/leiturasService";
 import { Dispositivo } from "../../models/Dispositivo";
 import { useAuth } from "../../context/AuthContext";
 
@@ -120,6 +120,7 @@ const DashboardScreen: React.FC = () => {
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [dispositivoAtivo, setDispositivoAtivo] = useState<Dispositivo | null>(null);
   const [leituras, setLeituras] = useState<LeituraSensor[]>([]);
+  const [historicoLeituras, setHistoricoLeituras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { usuario } = useAuth();
@@ -169,8 +170,13 @@ const DashboardScreen: React.FC = () => {
 
   async function buscarLeituras(id_dispositivo: number) {
     try {
-      const dados = await buscarUltimasLeiturasPorDispositivo(id_dispositivo);
-      setLeituras(dados);
+      // Promise.all permite buscar o tempo real e o histórico ao mesmo tempo, sem lentidão.
+      const [dadosUltimas, dadosHistorico] = await Promise.all([
+        buscarUltimasLeiturasPorDispositivo(id_dispositivo),
+        buscarHistoricoLeituras()
+      ]);
+      setLeituras(dadosUltimas);
+      setHistoricoLeituras(dadosHistorico);
     } catch (error) {
       console.error("Erro ao buscar leituras:", error);
     }

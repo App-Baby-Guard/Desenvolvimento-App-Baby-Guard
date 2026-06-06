@@ -20,6 +20,15 @@ import { buscarUltimasLeiturasPorDispositivo, buscarHistoricoLeituras, LeituraSe
 import { Dispositivo } from "../../models/Dispositivo";
 import { useAuth } from "../../context/AuthContext";
 
+// Tipagem precisa para substituir o uso de "any[]" no histórico do gráfico
+export interface LeituraHistorico {
+  data_hora: string;
+  temperatura: number | string | null;
+  umidade: number | string | null;
+  luminosidade: number | string | null;
+  movimento: boolean | null;
+}
+
 type RootStackParamList = {
   Dashboard: undefined;
   Configuracoes: undefined;
@@ -120,7 +129,7 @@ const DashboardScreen: React.FC = () => {
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [dispositivoAtivo, setDispositivoAtivo] = useState<Dispositivo | null>(null);
   const [leituras, setLeituras] = useState<LeituraSensor[]>([]);
-  const [historicoLeituras, setHistoricoLeituras] = useState<any[]>([]);
+  const [historicoLeituras, setHistoricoLeituras] = useState<LeituraHistorico[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { usuario } = useAuth();

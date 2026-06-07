@@ -24,6 +24,8 @@ import { usePerfil } from "../../hooks/usePerfil";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
+// log padronizado pra registrar quando o seletor de imagem der algum erro
+import { logErro } from "../../shared/utils/logger";
 
 // ROW
 const InfoRow = ({
@@ -143,32 +145,41 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
   usuarioAuth?.foto_perfil || "",
 );
 
+  // coloquei tudo dentro de um try/catch porque o seletor de imagem mexe com
+  // permissão e com a galeria do celular, e isso pode falhar (ex: erro do
+  // sistema operacional). Sem o try/catch, esse erro derrubaria o app.
   const selecionarFoto = async () => {
-  const permissao =
-    await ImagePicker.requestMediaLibraryPermissionsAsync();
+  try {
+    const permissao =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  if (!permissao.granted) {
-    Alert.alert(
-      "Permissão necessária",
-      "Permita acesso à galeria.",
-    );
-    return;
-  }
+    if (!permissao.granted) {
+      Alert.alert(
+        "Permissão necessária",
+        "Permita acesso à galeria.",
+      );
+      return;
+    }
 
-  const resultado = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images"],
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.5,
-    base64: true,
-  });
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
 
-  if (!resultado.canceled) {
-    const imagem = resultado.assets[0];
+    if (!resultado.canceled) {
+      const imagem = resultado.assets[0];
 
-    setFotoPerfil(
-      `data:image/jpeg;base64,${imagem.base64}`,
-    );
+      setFotoPerfil(
+        `data:image/jpeg;base64,${imagem.base64}`,
+      );
+    }
+  } catch (error) {
+    // loga pra investigar depois e avisa o usuário com uma mensagem simples
+    logErro("PerfilScreen", "Erro ao selecionar foto de perfil", error);
+    Alert.alert("Erro", "Não foi possível selecionar a imagem. Tente novamente.");
   }
 };
 

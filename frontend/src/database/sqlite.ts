@@ -1,21 +1,24 @@
 //Inicialização do SQLite: gerencia o banco de dados, abre, inicializa e gerencia conexões com SQLite
 
 import * as SQLite from 'expo-sqlite';
+// troquei os console.log/console.error daqui pelo logger, que já coloca o
+// prefixo "[DB]" sozinho e separa log de informação de log de erro
+import { logInfo, logErro } from '../shared/utils/logger';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
 // abre o arquivo do abnco de dados SQLite, se não existir, ele será criado automaticamente
 export async function initDatabase(): Promise<void> {
   try {
-    console.log('[DB] Inicializando banco de dados SQLite...');
+    logInfo('DB', 'Inicializando banco de dados SQLite...');
 
     db = await SQLite.openDatabaseAsync('babyguard.db');
 
-    console.log('[DB] Banco de dados SQLite inicializado com sucesso!');
-    console.log('[DB] Arquivo: babyguard.db');
+    logInfo('DB', 'Banco de dados SQLite inicializado com sucesso!');
+    logInfo('DB', 'Arquivo: babyguard.db');
 
   } catch (error) {
-    console.error('[DB] Erro ao inicializar o banco de dados SQLite:', error);
+    logErro('DB', 'Erro ao inicializar o banco de dados SQLite', error);
     throw error;
   }
 }
@@ -44,11 +47,7 @@ export async function executeSelect<T>(
     );
     return result || [];
   } catch (error) {
-    console.error('ERRO em SELECT:', {
-      query,
-      params,
-      error
-    });
+    logErro('DB', 'Erro em SELECT', { query, params, error });
     throw error;
   }
 }
@@ -68,11 +67,7 @@ export async function executeSelectOne<T>(
     );
     return result || null;
   } catch (error) {
-    console.error('ERRO em SELECT ONE:', {
-      query,
-      params,
-      error
-    });
+    logErro('DB', 'Erro em SELECT ONE', { query, params, error });
     throw error;
   }
 }
@@ -92,11 +87,7 @@ export async function executeUpdate(
     // Retorna o número de linhas afetadas
     return result.changes || 0;
   } catch (error) {
-    console.error('ERRO em UPDATE/INSERT/DELETE:', {
-      query,
-      params,
-      error
-    });
+    logErro('DB', 'Erro em UPDATE/INSERT/DELETE', { query, params, error });
     throw error;
   }
 }
@@ -116,9 +107,11 @@ export async function executeBatch(
       );
     }
 
-    console.log('[DB] Batch de consultas executado (${queries.length}) com sucesso!');
+    // aproveitei e corrigi aqui: estava com aspas simples, então o ${queries.length}
+    // aparecia literal no log em vez do número de consultas
+    logInfo('DB', `Batch de consultas executado (${queries.length}) com sucesso!`);
   } catch (error) {
-    console.error('[DB] Erro em BATCH:', error);
+    logErro('DB', 'Erro em BATCH', error);
     throw error;
   }
 }
@@ -135,9 +128,9 @@ export async function executeTransaction(
       await callback();
     });
 
-    console.log('[DB] Transação concluída com sucesso');
+    logInfo('DB', 'Transação concluída com sucesso');
   } catch (error) {
-    console.error('[DB] Erro em transação (ROLLBACK automático):', error);
+    logErro('DB', 'Erro em transação (ROLLBACK automático)', error);
     throw error;
   }
 }
@@ -149,9 +142,9 @@ export async function listTables(): Promise<void> {
     const tables = await database.getAllAsync(
       `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
     );
-    console.log('[DB] Tabelas no banco de dados:', tables.map((t: any) => t.name));
+    logInfo('DB', 'Tabelas no banco de dados', tables.map((t: any) => t.name));
   } catch (error) {
-    console.error('[DB] Erro ao listar tabelas:', error);
+    logErro('DB', 'Erro ao listar tabelas', error);
     throw error;
   }
 }

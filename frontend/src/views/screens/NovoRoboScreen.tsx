@@ -11,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
-import { COLORS } from "../../shared/styles/globalStyles";
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from "../../shared/styles/globalStyles";
 import { roboController } from "../../controllers/roboController";
 import Toast from "react-native-toast-message";
 import { useTheme } from "../../context/ThemeContext";
@@ -76,7 +76,7 @@ export default function NovoRoboScreen() {
           editable={!loading}
         />
 
-        <Text style={[styles.label, { marginTop: 16 }]}>CÓDIGO DE PAREAMENTO</Text>
+        <Text style={styles.label}>CÓDIGO DE PAREAMENTO</Text>
         <Text style={{ fontSize: 13, color: COLORS.textSecondary, marginBottom: 12, lineHeight: 18 }}>
           Encontre o código único impresso na etiqueta localizada na parte inferior do seu BabyGuard ou na caixa do produto.
         </Text>
@@ -92,12 +92,12 @@ export default function NovoRoboScreen() {
         <TouchableOpacity
           style={{
             backgroundColor: COLORS.primary,
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-            borderRadius: 12,
+            paddingVertical: SPACING.lg,
+            paddingHorizontal: SPACING.xl,
+            borderRadius: BORDER_RADIUS.md,
             alignItems: "center",
             justifyContent: "center",
-            marginTop: 28,
+            marginTop: SPACING.xxl,
             opacity: loading ? 0.7 : 1,
           }}
           onPress={handleRegistrar}
@@ -106,7 +106,7 @@ export default function NovoRoboScreen() {
           {loading ? (
             <ActivityIndicator color={COLORS.textInverse} />
           ) : (
-            <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
+            <Text style={{ color: COLORS.textInverse, fontWeight: TYPOGRAPHY.weight.bold, fontSize: TYPOGRAPHY.size.md }}>
               Conectar Robô
             </Text>
           )}

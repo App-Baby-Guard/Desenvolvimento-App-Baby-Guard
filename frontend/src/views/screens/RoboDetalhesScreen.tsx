@@ -165,10 +165,10 @@ export default function RoboDetalhesScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.buttonSecondary, { borderColor: "#E53935", marginTop: 24 }]}
+          style={[styles.buttonSecondary, { borderColor: COLORS.error, marginTop: 24 }]}
           onPress={confirmarExclusao}
         >
-          <Text style={[styles.buttonSecondaryText, { color: "#E53935" }]}>Excluir Robô</Text>
+          <Text style={[styles.buttonSecondaryText, { color: COLORS.error }]}>Excluir Robô</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

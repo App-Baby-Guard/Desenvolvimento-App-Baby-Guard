@@ -49,7 +49,7 @@ export function getStyles(isDarkMode: boolean) {
       borderColor: C.inputBorder,
       borderRadius: BORDER_RADIUS.md,
       padding: SPACING.md,
-      fontSize: TYPOGRAPHY.size.md,
+      fontSize: TYPOGRAPHY.size.sm,
       color: C.textPrimary,
     },
     uuid: {

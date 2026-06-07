@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/RootNavigator";
-import { COLORS } from "../../shared/styles/globalStyles";
+import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY } from "../../shared/styles/globalStyles";
 import { roboController } from "../../controllers/roboController";
 import Toast from "react-native-toast-message";
 import { useTheme } from "../../context/ThemeContext";
@@ -81,9 +81,9 @@ export default function RenomearRoboScreen() {
             style={{
               flex: 1,
               backgroundColor: COLORS.primary,
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              borderRadius: 12,
+              paddingVertical: SPACING.lg,
+              paddingHorizontal: SPACING.xl,
+              borderRadius: BORDER_RADIUS.md,
               alignItems: "center",
               justifyContent: "center",
               opacity: loading ? 0.7 : 1,
@@ -94,7 +94,7 @@ export default function RenomearRoboScreen() {
             {loading ? (
               <ActivityIndicator color={COLORS.textInverse} />
             ) : (
-              <Text style={{ color: COLORS.textInverse, fontWeight: "700", fontSize: 14 }}>
+              <Text style={{ color: COLORS.textInverse, fontWeight: TYPOGRAPHY.weight.bold, fontSize: TYPOGRAPHY.size.md }}>
                 Salvar e Enviar
               </Text>
             )}

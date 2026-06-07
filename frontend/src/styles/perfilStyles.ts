@@ -25,23 +25,18 @@ export function getStyles(isDarkMode: boolean) {
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      padding: SPACING.xs,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
       minHeight: 64,
-      backgroundColor: C.surface,
+      backgroundColor: C.background,
       borderBottomWidth: 1,
       borderBottomColor: C.border,
     },
 
     headerTitle: {
-      fontSize: 20,
-      fontWeight: "700",
+      fontSize: TYPOGRAPHY.size.xxl,
+      fontWeight: TYPOGRAPHY.weight.bold,
       color: C.textPrimary,
-      textAlign: "center",
-      position: "absolute",
-      left: 0,
-      right: 0,
-      top: 22,
     },
 
     avatarSection: {
@@ -50,10 +45,10 @@ export function getStyles(isDarkMode: boolean) {
       marginHorizontal: SPACING.lg,
       marginTop: SPACING.xl,
       marginBottom: SPACING.xl,
-      paddingVertical: SPACING.xxxl,
+      paddingVertical: SPACING.xl,
       paddingHorizontal: SPACING.lg,
       backgroundColor: C.cardBackground,
-      borderRadius: BORDER_RADIUS.xl,
+      borderRadius: BORDER_RADIUS.lg,
       borderWidth: 1,
       borderColor: C.border,
       ...SHADOWS.medium,
@@ -123,20 +118,20 @@ export function getStyles(isDarkMode: boolean) {
 
     input: {
       flex: 1,
-      height: 52,
       backgroundColor: C.inputBackground,
       borderWidth: 1,
       borderColor: C.inputBorder,
       borderRadius: BORDER_RADIUS.md,
       paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.md,
       fontSize: TYPOGRAPHY.size.md,
       color: C.textPrimary,
     },
 
     saveButton: {
       backgroundColor: COLORS.primary,
-      borderRadius: BORDER_RADIUS.lg,
-      paddingVertical: 16,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "row",
@@ -180,14 +175,14 @@ export function getStyles(isDarkMode: boolean) {
 
     modalOverlay: {
       flex: 1,
-      backgroundColor: "rgba(15,23,42,0.6)",
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
       justifyContent: "center",
       paddingHorizontal: SPACING.xl,
     },
 
     modalContainer: {
       backgroundColor: C.surface,
-      borderRadius: BORDER_RADIUS.xl,
+      borderRadius: BORDER_RADIUS.lg,
       padding: SPACING.xl,
       borderWidth: 1,
       borderColor: C.border,

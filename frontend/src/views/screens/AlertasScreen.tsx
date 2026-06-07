@@ -21,9 +21,6 @@ type EventoTipo = 'temperatura' | 'umidade' | 'movimento' | 'choro' | 'sistema' 
 interface EventoHistorico {
     id: number;
     tipo: EventoTipo;
-    iconName: string;
-    iconColor: string;
-    iconBg: string;
     barColor: string;
     titulo: string;
     descricao: string;
@@ -72,53 +69,32 @@ function mapearEvento(evento: any): EventoHistorico {
 
     // Determinar tipo visual
     let tipo: EventoTipo = "sistema";
-    let iconName = "settings";
-    let iconColor = COLORS.primary;
-    let iconBg = COLORS.surfaceSoft || "#E1F5FE";
     let barColor = COLORS.primary;
     let descricao = tipo_evento;
 
     // Padrão de cores espelhado com a DashboardScreen para consistência visual
     if (tipo_evento.toLowerCase().includes("temperatura")) {
         tipo = "temperatura";
-        iconName = "thermometer";
-        iconColor = "#FF6B6B";
-        iconBg = "#FFEBEE";
         barColor = "#FF6B6B";
         descricao = "Valor acima do limite configurado.";
     } else if (tipo_evento.toLowerCase().includes("umidade")) {
         tipo = "umidade";
-        iconName = "water";
-        iconColor = "#4ECDC4";
-        iconBg = "#E0F2F1";
         barColor = "#4ECDC4";
         descricao = "Caiu abaixo do limite seguro.";
     } else if (tipo_evento.toLowerCase().includes("luminosidade")) {
         tipo = "luminosidade";
-        iconName = "sunny";
-        iconColor = "#FFD93D";
-        iconBg = "#FFFBEB";
         barColor = "#FFD93D";
         descricao = "Ambiente muito claro para o bebê.";
     } else if (tipo_evento.toLowerCase().includes("movimento")) {
         tipo = "movimento";
-        iconName = "walk";
-        iconColor = "#A78BFA";
-        iconBg = "#F3E8FF";
         barColor = "#A78BFA";
         descricao = "Atividade identificada próximo ao berço.";
     } else if (tipo_evento.toLowerCase().includes("choro")) {
         tipo = "choro";
-        iconName = "happy";
-        iconColor = "#E53935";
-        iconBg = "#FFEBEE";
         barColor = "#E53935";
         descricao = "Áudio acima do limite para alertar o cuidador.";
     } else if (tipo_evento.toLowerCase().includes("conexão") || tipo_evento.toLowerCase().includes("conexao")) {
         tipo = "conexao";
-        iconName = "wifi";
-        iconColor = COLORS.success;
-        iconBg = "#E8F5E9";
         barColor = COLORS.success;
     }
 
@@ -133,9 +109,6 @@ function mapearEvento(evento: any): EventoHistorico {
     return {
         id: evento.id_evento,
         tipo,
-        iconName,
-        iconColor,
-        iconBg,
         barColor,
         titulo: tipo_evento,
         descricao,
@@ -164,9 +137,6 @@ function mapearLeitura(leitura: any): EventoHistorico {
     return {
         id: dataLocal.getTime(), // Usa o timestamp (milissegundos) da leitura como um ID único, seguro e imutável
         tipo: "sistema",
-        iconName: "reader-outline",
-        iconColor: COLORS.primary,
-        iconBg: COLORS.surfaceSoft || "#E0E7FF",
         barColor: COLORS.primary,
         titulo: "Leitura do Ambiente",
         descricao,
@@ -268,10 +238,8 @@ const AlertasScreen: React.FC = () => {
     const renderCard = (item: EventoHistorico) => (
         <View key={item.id} style={[styles.eventCard, !item.resolvido && styles.eventCardUnresolved]}>
             <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.barColor }]} />
-            <View style={[GLOBAL_STYLES.iconCircle, { backgroundColor: item.iconBg }]}>
-                <Ionicons name={item.iconName as any} size={20} color={item.iconColor} />
-            </View>
-            <View style={{ flex: 1, paddingVertical: SPACING.md, paddingRight: SPACING.sm }}>
+
+            <View style={{ flex: 1, paddingVertical: SPACING.md, paddingRight: SPACING.sm, paddingLeft: SPACING.md }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
                     <Text style={[styles.eventTitle, item.resolvido && styles.eventTitleRead]} numberOfLines={1}>
                         {item.titulo}
@@ -287,7 +255,6 @@ const AlertasScreen: React.FC = () => {
                     </View>
                 )}
             </View>
-            <Ionicons name="chevron-forward" size={14} color={styles.iconColor.color as string} style={{ paddingHorizontal: SPACING.md }} />
         </View>
     );
 

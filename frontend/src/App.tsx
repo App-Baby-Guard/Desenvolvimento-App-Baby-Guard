@@ -5,7 +5,7 @@
 //  usadas para configurar o banco de dados SQLite.
 
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, StatusBar } from "react-native";
 import Toast from "react-native-toast-message";
 
 import {
@@ -83,14 +83,21 @@ function AppContent() {
 
     return (
       <PaperProvider theme={paperTheme}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: isDarkMode ? "#121212" : "#FFFFFF",
-          }}
-        >
+
+      <StatusBar
+        backgroundColor={isDarkMode ? "#0f0f23" : "#F5FBFF"}
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        animated
+      />
+
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: isDarkMode ? "#121212" : "#FFFFFF",
+        }}
+      >
           <ActivityIndicator
             size="large"
             color={isDarkMode ? "#FFFFFF" : "#2ECC71"}
@@ -115,6 +122,11 @@ function AppContent() {
   //  lugar do app.
   return (
     <PaperProvider theme={paperTheme}>
+      <StatusBar
+        backgroundColor={isDarkMode ? "#0f0f23" : "#F5FBFF"}
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        animated
+      />
       <AuthProvider>
         <RootNavigator />
         <Toast />

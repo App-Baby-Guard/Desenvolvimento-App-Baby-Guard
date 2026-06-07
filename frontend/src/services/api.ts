@@ -1,4 +1,4 @@
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';//importei para fazer comunicação com backend
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../config/apiUrl';
 

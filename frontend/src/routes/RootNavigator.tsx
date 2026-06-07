@@ -27,7 +27,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   const { estaLogado, carregandoSessao } = useAuth();
 
-  // enquanto o app verifica se há sessão salva no AsyncStorage, exibe um loading
+  // enquanto o app verifica se há sessão salva no AsyncStorage, exibe um loading vai para tela login ou tab
   if (carregandoSessao) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

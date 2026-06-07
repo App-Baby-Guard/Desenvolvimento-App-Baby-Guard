@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "react"; // responsavel cuidar formulario e chamar a api
 // AsyncStorage removido daqui — o AuthContext agora é responsável por salvar o token
 import { API_URL } from "../config/apiUrl";
 import { DadosUsuario } from "../services/authService";

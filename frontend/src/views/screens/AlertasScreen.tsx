@@ -166,35 +166,17 @@ const AlertasScreen: React.FC = () => {
         try {
             setLoading(true);
             
-            // 1. TENTA BUSCAR DADOS DA INTERNET (API)
+            // Busca os dois juntos (API Leituras e API Eventos)
             const [dadosEventos, dadosLeituras] = await Promise.all([
                 buscarEventos(),
                 buscarHistoricoLeituras()
             ]);
             
-            // 2. SE SUCESSO: SALVA OS DADOS NO SQLITE PARA USO FUTURO (OFFLINE)
-            // ex: await salvarEventosLocalmente(dadosEventos);
-            // ex: await salvarLeiturasLocalmente(dadosLeituras);
-
             setEventos(dadosEventos.map(mapearEvento));
             // garantir que não tenha mais de 50 itens mapeados
             setLeituras(dadosLeituras.slice(0, 50).map((l: any) => mapearLeitura(l)));
         } catch (error) {
-            console.error("Erro de rede. Entrando em modo offline...", error);
-            
-            try {
-                // 3. FALLBACK OFFLINE: BUSCA OS DADOS DO BANCO SQLITE LOCAL
-                // ex: const dadosLocaisEventos = await buscarEventosDoSQLite();
-                // ex: const dadosLocaisLeituras = await buscarLeiturasDoSQLite();
-                
-                // setEventos(dadosLocaisEventos.map(mapearEvento));
-                // setLeituras(dadosLocaisLeituras.slice(0, 50).map((l: any) => mapearLeitura(l)));
-                
-                // Opcional: Avisar o usuário que ele está offline
-                // Alert.alert("Modo Offline", "Exibindo dados armazenados localmente.");
-            } catch (localError) {
-                console.error("Falha fatal: Não foi possível ler nem do banco local.", localError);
-            }
+            console.error("Erro ao carregar dados:", error);
         } finally {
             setLoading(false);
         }

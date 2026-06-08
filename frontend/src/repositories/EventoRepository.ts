@@ -120,22 +120,3 @@ export async function deleteEvento(id: number): Promise<number> {
         throw error;
     }
 }
-
-// Sincronização para o modo Offline-First: 
-// Limpa o histórico local antigo e salva o novo 'espelho' vindo da API.
-export async function syncEventos(eventos: any[]): Promise<void> {
-    try {
-        console.log('[REPO] Sincronizando eventos com banco local...');
-        await executeUpdate('DELETE FROM eventos');
-        
-        for (const ev of eventos) {
-            const query = `
-              INSERT INTO eventos (id_evento, id_dispositivo, tipo_evento, nivel_criticidade, data_evento, sincronizado)
-              VALUES (?, ?, ?, ?, ?, 1)
-            `;
-            await executeUpdate(query, [ev.id_evento, ev.id_dispositivo || 1, ev.tipo_evento, ev.nivel_criticidade, ev.data_evento]);
-        }
-    } catch (error) {
-        console.error('[REPO] Erro ao sincronizar eventos localmente', error);
-    }
-}

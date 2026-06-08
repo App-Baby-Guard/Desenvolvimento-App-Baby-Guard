@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo, useReducer } from "react";
 import {
   View,
   Text,
@@ -120,6 +120,57 @@ function tempoDesdeUltimaLeitura(leituras: LeituraSensor[]): string {
 }
 
 // ─── Componente Principal ───────────────────────────────────────────
+
+// ─── GERENCIAMENTO DE ESTADO CENTRALIZADO (Arquitetura Flux/Reducer) ──────
+// Utilizei seReducer no lugar de múltiplos useState para aplicar princípios
+// de Clean Code e evitar inconsistências (ex: terminar o loading antes dos dados chegarem).
+
+// 1. Interface do Estado: Define o "molde" exato de todos os dados que a tela precisa.
+interface DashboardState {
+  dispositivos: Dispositivo[]; // Lista de todos os robôs do usuário
+  dispositivoAtivo: Dispositivo | null; // O robô selecionado na tela no momento
+  leituras: LeituraSensor[]; // Dados em tempo real (temperatura, umidade atual)
+  historicoLeituras: LeituraHistorico[]; // Dados passados para montar o gráfico
+  loading: boolean; // Controle da tela de carregamento (a "rodinha" girando)
+}
+
+// 2. Tipos de Ações permitidas: Funciona como um "Cardápio" restrito. 
+// O estado da tela só pode ser alterado enviando (dispatch) uma dessas ações exatas.
+type DashboardAction =
+  | { type: "START_LOADING" } // Aciona a tela de carregamento
+  | { type: "SET_DISPOSITIVOS"; payload: { dispositivos: Dispositivo[]; ativo: Dispositivo | null } } // Salva os robôs encontrados no banco
+  | { type: "SELECT_DISPOSITIVO"; payload: Dispositivo } // Troca a aba do robô selecionado
+  | { type: "SET_LEITURAS"; payload: { leituras: LeituraSensor[]; historico: LeituraHistorico[] } } // Atualiza os dados dos sensores
+  | { type: "STOP_LOADING" }; // Para o carregamento (usado em caso de erros)
+
+// 3. Função Redutora (O Cérebro): É uma "Função Pura" que recebe o Estado Atual e uma Ação,
+// e retorna o NOVO estado completo e atualizado, sempre de forma imutável (usando ...state).
+function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
+  switch (action.type) {
+    case "START_LOADING":
+      return { ...state, loading: true };
+    case "SET_DISPOSITIVOS":
+      return {
+        ...state,
+        dispositivos: action.payload.dispositivos,
+        dispositivoAtivo: action.payload.ativo,
+        loading: false, // Ao receber os dispositivos, paramos o loading automaticamente
+      };
+    case "SELECT_DISPOSITIVO":
+      return { ...state, dispositivoAtivo: action.payload };
+    case "SET_LEITURAS":
+      return {
+        ...state,
+        leituras: action.payload.leituras,
+        historicoLeituras: action.payload.historico,
+      };
+    case "STOP_LOADING":
+      return { ...state, loading: false };
+    default:
+      return state;
+  }
+}
+
 const INTERVALO_POLLING = 60000; // 60 segundos (Sincronizado com o Worker do Backend)
 
 const DashboardScreen: React.FC = () => {
@@ -128,11 +179,17 @@ const DashboardScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
 
-  const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
-  const [dispositivoAtivo, setDispositivoAtivo] = useState<Dispositivo | null>(null);
-  const [leituras, setLeituras] = useState<LeituraSensor[]>([]);
-  const [historicoLeituras, setHistoricoLeituras] = useState<LeituraHistorico[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 4. Inicializando o useReducer: O 'state' guarda os dados, e o 'dispatch' é a arma que dispara as Ações.
+  const [state, dispatch] = useReducer(dashboardReducer, {
+    dispositivos: [],
+    dispositivoAtivo: null,
+    leituras: [],
+    historicoLeituras: [],
+    loading: true, // Começa carregando a tela por padrão
+  });
+
+  // Desestruturando para facilitar o uso das variáveis no restante do código (HTML/JSX)
+  const { dispositivos, dispositivoAtivo, leituras, historicoLeituras, loading } = state;
 
   const { usuario } = useAuth();
 
@@ -166,16 +223,18 @@ const DashboardScreen: React.FC = () => {
 
   async function carregarDispositivos() {
     try {
-      setLoading(true);
+      dispatch({ type: "START_LOADING" });
       const dados = await listarDispositivos();
-      setDispositivos(dados);
-      if (dados.length > 0) {
-        setDispositivoAtivo(dados[0]);
-      }
+      dispatch({
+        type: "SET_DISPOSITIVOS",
+        payload: {
+          dispositivos: dados,
+          ativo: dados.length > 0 ? dados[0] : null
+        }
+      });
     } catch (error) {
       console.error("Erro ao carregar dispositivos:", error);
-    } finally {
-      setLoading(false);
+      dispatch({ type: "STOP_LOADING" });
     }
   }
 
@@ -186,8 +245,10 @@ const DashboardScreen: React.FC = () => {
         buscarUltimasLeiturasPorDispositivo(id_dispositivo),
         buscarHistoricoLeituras()
       ]);
-      setLeituras(dadosUltimas);
-      setHistoricoLeituras(dadosHistorico);
+      dispatch({
+        type: "SET_LEITURAS",
+        payload: { leituras: dadosUltimas, historico: dadosHistorico }
+      });
     } catch (error) {
       console.error("Erro ao buscar leituras:", error);
     }
@@ -197,7 +258,7 @@ const DashboardScreen: React.FC = () => {
     // Evita recarregar a tela, perder estado e fazer requests inúteis se for o mesmo robô
     if (dispositivoAtivo?.uuid_dispositivo === disp.uuid_dispositivo) return;
 
-    setDispositivoAtivo(disp);
+    dispatch({ type: "SELECT_DISPOSITIVO", payload: disp });
   }
 
   // Dados dinâmicos dos sensores baseados na API:
@@ -252,7 +313,7 @@ const DashboardScreen: React.FC = () => {
       if (index === 0 || index === validData.length - 1 || index % step === 0) {
         labels.push(horaFormatada);
       } else {
-        labels.push(""); 
+        labels.push("");
       }
     });
 
@@ -318,7 +379,7 @@ const DashboardScreen: React.FC = () => {
               <View style={styles.headerAvatar}>
                 <Ionicons
                   name="person"
-              size={24}
+                  size={24}
                   color={COLORS.textInverse}
                 />
               </View>
@@ -398,7 +459,7 @@ const DashboardScreen: React.FC = () => {
           <Text style={styles.statusTitle}>{statusGeral.texto}</Text>
           <Text style={styles.textMuted}>{ultimaLeitura}</Text>
 
-            {leituras.length === 0 && dispositivoAtivo && (
+          {leituras.length === 0 && dispositivoAtivo && (
             <View style={styles.noDataContainer}>
               <Ionicons name="cloud-offline-outline" size={40} color={COLORS.textTertiary} />
               <Text style={[styles.textMuted, { marginTop: SPACING.sm, textAlign: "center" }]}>

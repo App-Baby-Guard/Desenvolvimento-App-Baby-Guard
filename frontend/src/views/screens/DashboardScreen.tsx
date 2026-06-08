@@ -352,24 +352,43 @@ const DashboardScreen: React.FC = () => {
                 </TouchableOpacity>
               ))}
 
-              <TouchableOpacity
-                style={[
-                  GLOBAL_STYLES.buttonPrimary,
-                  {
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingHorizontal: 0,
-                    paddingVertical: 0,
-                  },
-                ]}
-                activeOpacity={0.7}
-                onPress={() => navigation.getParent()?.navigate("NovoRobo" as any) || navigation.navigate("NovoRobo" as any)}
-              >
-                <Ionicons name="add" size={24} color={COLORS.textInverse} />
-              </TouchableOpacity>
+              {dispositivos.length === 0 ? (
+                <TouchableOpacity
+                  style={[
+                    GLOBAL_STYLES.buttonPrimary,
+                    {
+                      paddingHorizontal: SPACING.md,
+                      paddingVertical: SPACING.sm,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={() => navigation.getParent()?.navigate("NovoRobo" as any) || navigation.navigate("NovoRobo" as any)}
+                >
+                  <Ionicons name="add" size={20} color={COLORS.textInverse} style={{ marginRight: 4 }} />
+                  <Text style={GLOBAL_STYLES.buttonPrimaryText}>Adicionar primeiro Robô</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    GLOBAL_STYLES.buttonPrimary,
+                    {
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingHorizontal: 0,
+                      paddingVertical: 0,
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={() => navigation.getParent()?.navigate("NovoRobo" as any) || navigation.navigate("NovoRobo" as any)}
+                >
+                  <Ionicons name="add" size={24} color={COLORS.textInverse} />
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </View>

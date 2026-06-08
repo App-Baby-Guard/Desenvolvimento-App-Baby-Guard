@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest --config src/tests/jest.config.js --no-coverage"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -32,7 +33,11 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^14.0.0",
+    "@types/jest": "^29.5.0",
     "@types/react": "~19.1.0",
+    "jest": "^30.4.2",
+    "jest-expo": "^56.0.4",
     "typescript": "~5.9.2"
   },
   "private": true

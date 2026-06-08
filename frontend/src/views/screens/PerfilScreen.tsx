@@ -26,7 +26,6 @@ import { useTheme } from "../../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 // log padronizado pra registrar quando o seletor de imagem der algum erro
 import { logErro } from "../../shared/utils/logger";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ROW
 const InfoRow = ({
@@ -76,7 +75,7 @@ const InfoRow = ({
 // SCREEN
 export default function PerfilScreen({ navigation }: { navigation?: any }) {
   // agora pego os dados do usuário do AuthContext em vez do AsyncStorage
-  const { usuario: usuarioAuth, token, salvarSessao } = useAuth();
+  const { usuario: usuarioAuth } = useAuth();
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
 
@@ -93,31 +92,34 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
     setTelefone,
   });
 
-  const handleSalvarPerfil = async () => {
-    // Atualiza a interface instantaneamente
-    const usuarioAtualizado = { ...usuario, nome, telefone, foto_perfil: fotoPerfil } as any;
-    setUsuario(usuarioAtualizado);
+  const handleSalvarPerfil = () => {
+    Alert.alert(
+      "Salvar alterações",
+      "Deseja realmente salvar as alterações do perfil?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Salvar",
+          onPress: async () => {
+            try {
+              await salvarPerfil(nome, telefone, fotoPerfil);
 
-    // ATUALIZA O CONTEXTO GLOBAL NA HORA (Isso faz o nome mudar no app inteiro imediatamente)
-    if (token) {
-      salvarSessao(token, usuarioAtualizado);
-    }
+              Alert.alert("Sucesso", "Perfil atualizado com sucesso.");
+            } catch (error: any) {
+              console.log("Erro ao salvar perfil:", error);
 
-    try {
-      //  TENTA ENVIAR PARA A NUVEM
-      await salvarPerfil(nome, telefone, fotoPerfil);
-
-      Alert.alert("Sucesso", "Perfil atualizado com sucesso.");
-    } catch (error: any) {
-      console.log("Erro ao salvar perfil (pode ser offline):", error);
-      
-      //  MODO OFFLINE: IGNORA ERRO DE REDE E AVISA O USUÁRIO
-      if (error?.message?.includes("Network request failed") || error?.message?.includes("Network")) {
-        Alert.alert("Modo Offline", "Sem conexão com a internet. Suas alterações foram salvas localmente!");
-      } else {
-        Alert.alert("Atenção", "Salvo localmente, mas houve um erro ao enviar para a nuvem: " + (error?.message || "Desconhecido"));
-      }
-    }
+              Alert.alert(
+                "Erro",
+                error?.message || "Não foi possível atualizar o perfil.",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleAlterarSenha = async () => {
@@ -147,39 +149,116 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
   // coloquei tudo dentro de um try/catch porque o seletor de imagem mexe com
   // permissão e com a galeria do celular, e isso pode falhar (ex: erro do
   // sistema operacional). Sem o try/catch, esse erro derrubaria o app.
-  const selecionarFoto = async () => {
+  const abrirCamera = async () => {
   try {
     const permissao =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+      await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissao.granted) {
       Alert.alert(
         "Permissão necessária",
-        "Permita acesso à galeria.",
+        "Permita acesso à câmera."
       );
       return;
     }
 
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-      base64: true,
-    });
+    const resultado =
+      await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
 
-    if (!resultado.canceled) {
+    if (
+      !resultado.canceled &&
+      resultado.assets[0]?.base64
+    ) {
       const imagem = resultado.assets[0];
 
       setFotoPerfil(
-        `data:image/jpeg;base64,${imagem.base64}`,
+        `data:image/jpeg;base64,${imagem.base64}`
       );
     }
   } catch (error) {
-    // loga pra investigar depois e avisa o usuário com uma mensagem simples
-    logErro("PerfilScreen", "Erro ao selecionar foto de perfil", error);
-    Alert.alert("Erro", "Não foi possível selecionar a imagem. Tente novamente.");
+    logErro(
+      "PerfilScreen",
+      "Erro ao abrir câmera",
+      error
+    );
+
+    Alert.alert(
+      "Erro",
+      "Não foi possível abrir a câmera."
+    );
   }
+};
+
+  const abrirGaleria = async () => {
+    try {
+      const permissao =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          "Permissão necessária",
+          "Permita acesso à galeria."
+        );
+        return;
+      }
+
+      const resultado =
+        await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.5,
+          base64: true,
+        });
+
+      if (
+        !resultado.canceled &&
+        resultado.assets[0]?.base64
+      ) {
+        const imagem = resultado.assets[0];
+
+        setFotoPerfil(
+          `data:image/jpeg;base64,${imagem.base64}`
+        );
+      }
+    } catch (error) {
+      logErro(
+        "PerfilScreen",
+        "Erro ao selecionar foto de perfil",
+        error
+      );
+
+      Alert.alert(
+        "Erro",
+        "Não foi possível selecionar a imagem."
+      );
+    }
+};
+
+const selecionarFoto = () => {
+  Alert.alert(
+    "Foto de perfil",
+    "Escolha uma opção",
+    [
+      {
+        text: "Tirar foto",
+        onPress: abrirCamera,
+      },
+      {
+        text: "Escolher da galeria",
+        onPress: abrirGaleria,
+      },
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+    ]
+  );
 };
 
   return (

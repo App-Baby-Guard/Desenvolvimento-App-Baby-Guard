@@ -1,8 +1,6 @@
 // logica das leituras
 
 import * as LeituraRepository from '../repositories/LeituraRepository';
-import * as EventoRepository from '../repositories/EventoRepository';
-import { executeSelect, executeUpdate } from '../database/sqlite';
 import { Leitura, CreateLeituraInput, UpdateLeituraInput } from '../models/Leitura';
 
 export async function listarTodas(): Promise<Leitura[]> {
@@ -19,7 +17,7 @@ export async function listarTodas(): Promise<Leitura[]> {
 export async function listarPorSensor(id_sensor: number): Promise<Leitura[]> {
   try {
     console.log(`[SERVICE] leiturasService.listarPorSensor(${id_sensor})`);
-
+    
     return await LeituraRepository.getLeiturasBySensor(id_sensor);
   } catch (error) {
     console.error('[SERVICE] Erro em listarPorSensor:', error);
@@ -102,66 +100,10 @@ export async function buscarUltimasLeiturasPorDispositivo(id_dispositivo: number
       throw new Error(resData?.erro || resData?.mensagem || "Erro ao buscar leituras");
     }
 
-    const leiturasAPI = resData.dados?.leituras || [];
-
-    // CACHE OFFLINE: Usa a infraestrutura atual para salvar as leituras recentes no SQLite, garantindo que tenhamos dados para mostrar mesmo sem conexão depois
-    try {
-      let cacheSalvo = 0;
-      for (const l of leiturasAPI) {
-        // Garante que o sensor exista na tabela local para o fallback funcionar depois
-        await executeUpdate(
-          `INSERT OR IGNORE INTO sensores (id_sensor, id_dispositivo, nome_sensor, tipo_sensor, unidade_medida) 
-           VALUES (?, ?, ?, ?, ?)`,
-          [l.id_sensor, id_dispositivo, l.nome_sensor || 'Sensor', l.tipo_sensor, l.unidade_medida]
-        );
-
-        const existe = await executeSelect('SELECT 1 FROM leituras WHERE id_sensor = ? AND data_hora = ?', [l.id_sensor, l.data_hora]);
-        if (existe.length === 0) {
-          // Usa INSERT direto porque a função criar() do repositório ignora a data_hora vinda da API
-          await executeUpdate(
-            `INSERT INTO leituras (id_sensor, valor, valor_booleano, movimento, data_hora, sincronizado)
-             VALUES (?, ?, ?, ?, ?, 1)`,
-            [
-              l.id_sensor,
-              l.valor,
-              l.valor_booleano ? 1 : 0,
-              l.movimento ? 1 : 0,
-              l.data_hora
-            ]
-          );
-          cacheSalvo++;
-        }
-      }
-      if (cacheSalvo > 0) console.log(`[SERVICE] Cache da Dashboard salvo com sucesso: ${cacheSalvo} leituras.`);
-    } catch (cacheErr) {
-      console.error("[SERVICE] Erro de cache das leituras", cacheErr);
-    }
-
-    return leiturasAPI;
+    return resData.dados?.leituras || [];
   } catch (error) {
-    console.log("[SERVICE] Fallback offline para buscarUltimasLeiturasPorDispositivo");
-
-    // FALLBACK OFFLINE DA DASHBOARD
-    try {
-      const result = await executeSelect<any>(`
-        SELECT s.id_sensor, s.tipo_sensor, s.unidade_medida, s.nome_sensor,
-               l.valor, l.valor_booleano, l.movimento, MAX(l.data_hora) as data_hora
-        FROM sensores s
-        JOIN leituras l ON l.id_sensor = s.id_sensor
-        WHERE s.id_dispositivo = ?
-        GROUP BY s.id_sensor
-      `, [id_dispositivo]);
-
-      // Converte os inteiros do SQLite (0/1) para Booleanos reais, como a tela espera
-      return (result || []).map(r => ({
-        ...r,
-        valor_booleano: r.valor_booleano === 1,
-        movimento: r.movimento === 1,
-      })) as LeituraSensor[];
-    } catch (localErr) {
-      console.error("[SERVICE] Erro no fallback da Dashboard:", localErr);
-      return [];
-    }
+    console.error("[SERVICE] Erro em buscarUltimasLeiturasPorDispositivo:", error);
+    return [];
   }
 }
 
@@ -184,19 +126,10 @@ export async function buscarEventos(): Promise<any[]> {
       throw new Error(resData?.erro || resData?.mensagem || "Erro ao buscar eventos");
     }
 
-    const eventos = resData.dados || [];
-
-    // CACHE OFFLINE
-    await EventoRepository.syncEventos(eventos);
-
-    return eventos;
+    return resData.dados || [];
   } catch (error) {
-    console.log("[SERVICE] Fallback offline para buscarEventos");
-    try {
-      return await EventoRepository.getAllEventos();
-    } catch (localErr) {
-      return [];
-    }
+    console.error("[SERVICE] Erro em buscarEventos:", error);
+    return [];
   }
 }
 
@@ -221,26 +154,8 @@ export async function buscarHistoricoLeituras(): Promise<any[]> {
 
     return resData.dados?.leituras || resData.dados || [];
   } catch (error) {
-    console.log("[SERVICE] Fallback offline para buscarHistoricoLeituras (Pivot SQLite)...");
-    // Cria uma Query Local que simula a formatação enviada pela nuvem
-    try {
-      const query = `
-        SELECT 
-           strftime('%Y-%m-%d %H:%M:00', l.data_hora) as data_hora,
-           MAX(CASE WHEN s.tipo_sensor = 'temperatura' THEN l.valor END) as temperatura,
-           MAX(CASE WHEN s.tipo_sensor = 'umidade' THEN l.valor END) as umidade,
-           MAX(CASE WHEN s.tipo_sensor = 'luminosidade' THEN l.valor END) as luminosidade,
-           MAX(l.movimento) as movimento
-        FROM leituras l
-        JOIN sensores s ON s.id_sensor = l.id_sensor
-        GROUP BY strftime('%Y-%m-%d %H:%M:00', l.data_hora)
-        ORDER BY l.data_hora DESC
-        LIMIT 50
-      `;
-      return await executeSelect<any>(query) || [];
-    } catch (localErr) {
-      return [];
-    }
+    console.error("[SERVICE] Erro em buscarHistoricoLeituras:", error);
+    return [];
   }
 }
 

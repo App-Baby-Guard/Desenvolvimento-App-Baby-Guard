@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/apiUrl";
 import { Dispositivo, CreateDispositivoInput, UpdateDispositivoInput } from '../models/Dispositivo';
 import * as DispositivoRepository from '../repositories/DispositivoRepository';
-import { executeUpdate } from '../database/sqlite';
 
 
 // Listar todos os dispositivos ativos do usuário logado
@@ -47,13 +46,8 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
             const local = await DispositivoRepository.getDispositivoByUUIDFull(disp.uuid_dispositivo);
             // Se existe, reativa e atualiza
             if (local && typeof local.id_dispositivo === 'number') {
-                // Se o ID do local for diferente do ID da API, atualiza o ID no local para manter a consistência (caso tenha sido criado offline antes de sincronizar)
-                if (local.id_dispositivo !== disp.id_dispositivo) {
-                    await executeUpdate('UPDATE dispositivos SET id_dispositivo = ? WHERE uuid_dispositivo = ?', [disp.id_dispositivo, disp.uuid_dispositivo]);
-                }
-
-                console.log(`[SERVICE] Atualizando dispositivo ${disp.id_dispositivo} no SQLite...`);
-                await DispositivoRepository.updateDispositivo(disp.id_dispositivo as number, {
+                console.log(`[SERVICE] Atualizando dispositivo ${local.id_dispositivo} no SQLite...`);
+                await DispositivoRepository.updateDispositivo(local.id_dispositivo, {
                     nome_dispositivo: disp.nome_dispositivo,
                     status_dispositivo: disp.status_dispositivo,
                     ativo: 1, //reativa se estava inativo
@@ -61,14 +55,13 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
             } else {
                 console.log(`[SERVICE] Criando dispositivo ${disp.uuid_dispositivo} no SQLite...`);
                 // Se não existe, cria
-                await DispositivoRepository.createDispositivo(({
-                    id_dispositivo: disp.id_dispositivo,
+                await DispositivoRepository.createDispositivo({
                     uuid_dispositivo: disp.uuid_dispositivo,
                     id_usuario: disp.id_usuario,
                     nome_dispositivo: disp.nome_dispositivo,
                     status_dispositivo: disp.status_dispositivo,
                     ativo: 1,
-                } as any)); 
+                });
             }
         }
 

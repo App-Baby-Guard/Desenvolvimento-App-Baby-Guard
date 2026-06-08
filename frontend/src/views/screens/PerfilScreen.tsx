@@ -26,6 +26,7 @@ import { useTheme } from "../../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 // log padronizado pra registrar quando o seletor de imagem der algum erro
 import { logErro } from "../../shared/utils/logger";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ROW
 const InfoRow = ({
@@ -75,7 +76,7 @@ const InfoRow = ({
 // SCREEN
 export default function PerfilScreen({ navigation }: { navigation?: any }) {
   // agora pego os dados do usuário do AuthContext em vez do AsyncStorage
-  const { usuario: usuarioAuth } = useAuth();
+  const { usuario: usuarioAuth, token, salvarSessao } = useAuth();
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
 
@@ -104,17 +105,28 @@ export default function PerfilScreen({ navigation }: { navigation?: any }) {
         {
           text: "Salvar",
           onPress: async () => {
+            // Atualiza a interface instantaneamente
+            const usuarioAtualizado = { ...usuario, nome, telefone, foto_perfil: fotoPerfil } as any;
+            setUsuario(usuarioAtualizado);
+
+            // ATUALIZA O CONTEXTO GLOBAL NA HORA (Isso faz o nome mudar no app inteiro imediatamente)
+            if (token) {
+              salvarSessao(token, usuarioAtualizado);
+            }
+
             try {
+              // TENTA ENVIAR PARA A api
               await salvarPerfil(nome, telefone, fotoPerfil);
 
               Alert.alert("Sucesso", "Perfil atualizado com sucesso.");
             } catch (error: any) {
-              console.log("Erro ao salvar perfil:", error);
-
-              Alert.alert(
-                "Erro",
-                error?.message || "Não foi possível atualizar o perfil.",
-              );
+              console.log("Erro ao salvar perfil (pode ser offline):", error);
+              //  OFFLINE: IGNORA ERRO DE REDE E AVISA O USUÁRIO
+              if (error?.message?.includes("Network request failed") || error?.message?.includes("Network")) {
+                Alert.alert("Modo Offline", "Sem conexão com a internet. Suas alterações foram salvas localmente!");
+              } else {
+                Alert.alert("Atenção", "Salvo localmente, mas houve um erro ao enviar para a nuvem: " + (error?.message || "Desconhecido"));
+              }
             }
           },
         },

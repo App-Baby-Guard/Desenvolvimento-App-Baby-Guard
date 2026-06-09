@@ -16,7 +16,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
 import { limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadPersistedSensorLimits } from '../../repositories/SensorLimitsRepository';
 
 interface EventoHistorico {
     id: string;
@@ -127,30 +127,22 @@ const AlertasScreen: React.FC = () => {
             let limiteUmidadeMax = 60;
             let limiteUmidadeMin = 40;
 
-            //  Busca as configurações que o usuário salvou na memória do celular - AsyncStorage
-            const configuracoesSalvas = await AsyncStorage.getItem("limites_sensores");
+            const limitesSalvos = await loadPersistedSensorLimits();
 
-            if (configuracoesSalvas !== null) {
-                // Transforma o texto que estava salvo (JSON) de volta em uma Lista para o Javascript
-                const listaDeLimites = JSON.parse(configuracoesSalvas);
-
-                // Procura a configuração da temperatura usando um nome descritivo para cada item da lista
-                const configuracaoTemperatura = listaDeLimites.find((configuracaoAtual: any) => {
-                    return configuracaoAtual.label === "Limite de Temperatura";
+            if (limitesSalvos.length > 0) {
+                const configuracaoTemperatura = limitesSalvos.find((configuracaoAtual: any) => {
+                    return configuracaoAtual.tipo_sensor === 'temperatura';
                 });
 
-                // Procura a configuração da umidade
-                const configuracaoUmidade = listaDeLimites.find((configuracaoAtual: any) => {
-                    return configuracaoAtual.label === "Limite de Umidade";
+                const configuracaoUmidade = limitesSalvos.find((configuracaoAtual: any) => {
+                    return configuracaoAtual.tipo_sensor === 'umidade';
                 });
 
-                // Se encontrou a configuração da temperatura salva, atualiza as variáveis
                 if (configuracaoTemperatura !== undefined) {
                     limiteTemperaturaMax = configuracaoTemperatura.max;
                     limiteTemperaturaMin = configuracaoTemperatura.min;
                 }
 
-                // Se encontrou a configuração da umidade salva, atualiza as variáveis
                 if (configuracaoUmidade !== undefined) {
                     limiteUmidadeMax = configuracaoUmidade.max;
                     limiteUmidadeMin = configuracaoUmidade.min;

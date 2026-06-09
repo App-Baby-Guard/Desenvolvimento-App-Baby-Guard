@@ -1,4 +1,4 @@
-﻿//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
+//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
 // sensores e informações do dispositivo.
 import React, { useState, useEffect } from "react";
 import {
@@ -322,7 +322,7 @@ const salvarLimite = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.screen}
         contentContainerStyle={GLOBAL_STYLES.scrollContent}

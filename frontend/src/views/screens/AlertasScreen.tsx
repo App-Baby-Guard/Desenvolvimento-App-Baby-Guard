@@ -366,7 +366,7 @@ const AlertasScreen: React.FC = () => {
     const keyExtractorCallback = useCallback((item: EventoHistorico) => item.id.toString(), []);
 
     return (
-        <SafeAreaView style={styles.screen}>
+        <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.title}>Alertas</Text>

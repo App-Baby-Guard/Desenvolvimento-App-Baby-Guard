@@ -82,6 +82,8 @@ describe('SensorLimitsRepository', () => {
   });
 
   it('deve migrar limites legados do AsyncStorage quando não houver dados no SQLite', async () => {
+    mockExecuteSelect.mockResolvedValueOnce([]); // Verifica se há dados no SQLite (retorna vazio)
+    // O método migrateLimitsFromLegacyStorage faz uma segunda consulta de segurança antes de migrar.  simula vazio também.
     mockExecuteSelect.mockResolvedValueOnce([]);
     (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
       JSON.stringify([

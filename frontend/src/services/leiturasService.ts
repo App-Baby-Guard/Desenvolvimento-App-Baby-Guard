@@ -102,7 +102,7 @@ export async function buscarUltimasLeiturasPorDispositivo(id_dispositivo: number
 
     return resData.dados?.leituras || [];
   } catch (error) {
-    console.error("[SERVICE] Erro em buscarUltimasLeiturasPorDispositivo:", error);
+    console.warn("[SERVICE] Aviso em buscarUltimasLeiturasPorDispositivo:", error);
     return [];
   }
 }
@@ -128,7 +128,7 @@ export async function buscarEventos(): Promise<any[]> {
 
     return resData.dados || [];
   } catch (error) {
-    console.error("[SERVICE] Erro em buscarEventos:", error);
+    console.warn("[SERVICE] Aviso em buscarEventos:", error);
     return [];
   }
 }
@@ -154,7 +154,7 @@ export async function buscarHistoricoLeituras(): Promise<any[]> {
 
     return resData.dados?.leituras || resData.dados || [];
   } catch (error) {
-    console.error("[SERVICE] Erro em buscarHistoricoLeituras:", error);
+    console.warn("[SERVICE] Aviso em buscarHistoricoLeituras:", error);
     return [];
   }
 }
@@ -193,7 +193,7 @@ export async function limparHistoricoGeral(): Promise<void> {
 
     console.log("[SERVICE] Histórico geral limpo com sucesso");
   } catch (error) {
-    console.error("[SERVICE] Erro em limparHistoricoGeral:", error);
+    console.warn("[SERVICE] Aviso em limparHistoricoGeral:", error);
     throw error;
   }
 }

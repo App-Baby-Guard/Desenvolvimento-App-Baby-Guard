@@ -30,7 +30,20 @@ const SCHEMA = {
     );
   `,
 
-  // Tabela 3: LEITURAS
+  // Tabela 3: LIMITES DE SENSORES
+  limites_sensores: `
+    CREATE TABLE IF NOT EXISTS limites_sensores (
+      id_limite INTEGER PRIMARY KEY AUTOINCREMENT,
+      label TEXT UNIQUE NOT NULL,
+      tipo_sensor TEXT NOT NULL,
+      min REAL NOT NULL,
+      max REAL NOT NULL,
+      unidade_medida TEXT,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `,
+
+  // Tabela 4: LEITURAS
   leituras: `
     CREATE TABLE IF NOT EXISTS leituras (
       id_leitura INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,6 +84,10 @@ export async function createTables(db: any): Promise<void> {
     //cria tabela SENSORES
     await db.execAsync(SCHEMA.sensores);
     console.log('[SCHEMA] Tabela "sensores" criada ou já existe.');
+
+    //cria tabela LIMITES DE SENSORES
+    await db.execAsync(SCHEMA.limites_sensores);
+    console.log('[SCHEMA] Tabela "limites_sensores" criada ou já existe.');
 
     //cria tabela LEITURAS
     await db.execAsync(SCHEMA.leituras);

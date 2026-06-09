@@ -166,17 +166,17 @@ const AlertasScreen: React.FC = () => {
         try {
             setLoading(true);
             
-            // Busca os dois juntos (API Leituras e API Eventos)
+            // 1. TENTA BUSCAR DADOS DA INTERNET (API)
             const [dadosEventos, dadosLeituras] = await Promise.all([
                 buscarEventos(),
                 buscarHistoricoLeituras()
             ]);
-            
+
             setEventos(dadosEventos.map(mapearEvento));
             // garantir que não tenha mais de 50 itens mapeados
             setLeituras(dadosLeituras.slice(0, 50).map((l: any) => mapearLeitura(l)));
         } catch (error) {
-            console.error("Erro ao carregar dados:", error);
+            console.error("Erro inesperado ao processar dados de alertas e leituras:", error);
         } finally {
             setLoading(false);
         }

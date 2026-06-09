@@ -1,6 +1,6 @@
 //essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
 // sensores e informações do dispositivo.
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 // importei o serviço de logout para invalidar o token na API
 import { logoutApi } from '../../services/authService';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // TYPES
 interface SensorLimit {
@@ -212,6 +213,21 @@ export default function ConfiguracoesScreen({
   // todos os estilos vêm do arquivo separado, nenhum inline style no screen
   const styles = getStyles(isDarkMode);
 
+  // CARREGA LIMITES DO STORAGE AO ABRIR (Offline-First)
+  useEffect(() => {
+    const carregarLimites = async () => {
+      try {
+        const limitesSalvos = await AsyncStorage.getItem("limites_sensores");
+        if (limitesSalvos) {
+          setLimitesSensores(JSON.parse(limitesSalvos));
+        }
+      } catch (e) {
+        console.log("Erro ao carregar limites locais", e);
+      }
+    };
+    carregarLimites();
+  }, []);
+
   const abrirEdicaoLimite = (sensor: SensorLimit) => {
   setSensorSelecionado(sensor);
   setValorMinimo(String(sensor.min));
@@ -237,8 +253,7 @@ const salvarLimite = () => {
     return;
   }
 
-  setLimitesSensores((prev) =>
-    prev.map((sensor) =>
+  const novosLimites = limitesSensores.map((sensor) =>
       sensor.label === sensorSelecionado.label
         ? {
             ...sensor,
@@ -246,10 +261,15 @@ const salvarLimite = () => {
             max: maximo,
           }
         : sensor
-    )
   );
+
+  // Atualiza tela na hora
+  setLimitesSensores(novosLimites);
   setSensorSelecionado(null);
   setModalLimitesVisible(false);
+
+  // SALVA LOCALMENTE (Offline-First)
+  AsyncStorage.setItem("limites_sensores", JSON.stringify(novosLimites)).catch((err) => console.log(err));
 };
 
   // função de logout: invalida o token na API e limpa a sessão local

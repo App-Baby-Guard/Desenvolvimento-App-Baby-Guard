@@ -122,7 +122,7 @@ function tempoDesdeUltimaLeitura(leituras: LeituraSensor[]): string {
 // ─── Componente Principal ───────────────────────────────────────────
 
 // ─── GERENCIAMENTO DE ESTADO CENTRALIZADO (Arquitetura Flux/Reducer) ──────
-// Utilizei seReducer no lugar de múltiplos useState para aplicar princípios
+// Utilizei useReducer no lugar de múltiplos useState para aplicar princípios
 // de Clean Code e evitar inconsistências (ex: terminar o loading antes dos dados chegarem).
 
 // 1. Interface do Estado: Define o "molde" exato de todos os dados que a tela precisa.
@@ -284,7 +284,7 @@ const DashboardScreen: React.FC = () => {
       .reverse()
       .filter((l) => l.temperatura !== null && l.temperatura !== undefined);
 
-    // se falta de dados
+    // se faltam dados
     if (validData.length < 2) {
       return (
         <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}>
@@ -334,7 +334,7 @@ const DashboardScreen: React.FC = () => {
             propsForDots: { r: "3", strokeWidth: "2", stroke: "#FF6B6B" },
             propsForBackgroundLines: { stroke: styles.textMuted.color as string, strokeOpacity: 0.2 },
           }}
-          bezier // Transforma os ângulos duros em curvas suaves e fluídas
+          bezier // Transforma os ângulos duros em curvas suaves e fluidas
           style={{ marginVertical: 8, borderRadius: 16 }}
         />
       </View>

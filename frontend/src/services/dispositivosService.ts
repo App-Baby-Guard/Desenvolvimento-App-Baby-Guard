@@ -38,7 +38,7 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
             criado_em: d.criado_em,
         }));
 
-        //sincornizar com o sqlite local
+        // sincronizar com o SQLite local
         console.log('[SERVICE] Sincronizando API -> SQLite local...');
 
         for (const disp of dispositivos) {

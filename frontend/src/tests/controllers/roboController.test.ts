@@ -5,7 +5,7 @@ jest.mock("../../services/dispositivosService");
 
 describe("Controlador roboController", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.clearAllMocks(); // Limpa os mocks antes de cada teste 
   });
 
   describe("listarRobos", () => {

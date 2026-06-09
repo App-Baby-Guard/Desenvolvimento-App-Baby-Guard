@@ -14,19 +14,17 @@ import { COLORS, SPACING, GLOBAL_STYLES } from '../../shared/styles/globalStyles
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
-import { buscarEventos, limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
-
-type EventoTipo = 'temperatura' | 'umidade' | 'movimento' | 'choro' | 'sistema' | 'conexao' | 'luminosidade';
+import { limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface EventoHistorico {
-    id: number;
-    tipo: EventoTipo;
+    id: string;
     barColor: string;
     titulo: string;
-    descricao: string;
-    hora: string;
+    descricao?: string;
     dataLabel: string;
-    resolvido: boolean;
+    dataHoraCompleta: string;
+    timestamp: number;
 }
 
 function formatarDataLabel(data: Date): string {
@@ -59,65 +57,6 @@ function formatarHoraLocal(data: Date): string {
     return `${horas}:${minutos}`;
 }
 
-//  Mapear evento da API para o formato visual 
-function mapearEvento(evento: any): EventoHistorico {
-    const tipo_evento: string = evento.tipo_evento || "";
-    const nivel: string = evento.nivel_criticidade || "baixo";
-    
-    // Padroniza a data para UTC antes de qualquer cálculo de UI
-    const dataLocal = parseDataUTC(evento.data_evento);
-
-    // Determinar tipo visual
-    let tipo: EventoTipo = "sistema";
-    let barColor = COLORS.primary;
-    let descricao = tipo_evento;
-
-    // Padrão de cores espelhado com a DashboardScreen para consistência visual
-    if (tipo_evento.toLowerCase().includes("temperatura")) {
-        tipo = "temperatura";
-        barColor = "#FF6B6B";
-        descricao = "Valor acima do limite configurado.";
-    } else if (tipo_evento.toLowerCase().includes("umidade")) {
-        tipo = "umidade";
-        barColor = "#4ECDC4";
-        descricao = "Caiu abaixo do limite seguro.";
-    } else if (tipo_evento.toLowerCase().includes("luminosidade")) {
-        tipo = "luminosidade";
-        barColor = "#FFD93D";
-        descricao = "Ambiente muito claro para o bebê.";
-    } else if (tipo_evento.toLowerCase().includes("movimento")) {
-        tipo = "movimento";
-        barColor = "#A78BFA";
-        descricao = "Atividade identificada próximo ao berço.";
-    } else if (tipo_evento.toLowerCase().includes("choro")) {
-        tipo = "choro";
-        barColor = "#E53935";
-        descricao = "Áudio acima do limite para alertar o cuidador.";
-    } else if (tipo_evento.toLowerCase().includes("conexão") || tipo_evento.toLowerCase().includes("conexao")) {
-        tipo = "conexao";
-        barColor = COLORS.success;
-    }
-
-    // O JS do celular agora subtrai as horas automaticamente baseado no fuso do aparelho
-    const hora = formatarHoraLocal(dataLocal);
-
-    const dataLabel = formatarDataLabel(dataLocal);
-
-    // Criticidade alta/critico = não resolvido
-    const resolvido = nivel === "baixo";
-
-    return {
-        id: evento.id_evento,
-        tipo,
-        barColor,
-        titulo: tipo_evento,
-        descricao,
-        hora,
-        dataLabel,
-        resolvido,
-    };
-}
-
 //  Mapear leitura bruta da API para o formato visual esperado, colocando os sensores no mesmo card
 function mapearLeitura(leitura: any): EventoHistorico {
 
@@ -133,16 +72,16 @@ function mapearLeitura(leitura: any): EventoHistorico {
 
     const descricao = `Temperatura: ${temp}\nUmidade: ${umid}\nLuminosidade: ${luz}\nMovimento: ${mov}`;
     const dataLabel = formatarDataLabel(dataLocal);
+    const dataHoraCompleta = `${dataLocal.toLocaleDateString("pt-BR")} ${hora}`;
 
     return {
-        id: dataLocal.getTime(), // Usa o timestamp (milissegundos) da leitura como um ID único, seguro e imutável
-        tipo: "sistema",
+        id: `leitura_${dataLocal.getTime()}`,
         barColor: COLORS.primary,
         titulo: "Leitura do Ambiente",
         descricao,
-        hora,
         dataLabel,
-        resolvido: true, // Leituras não têm tag de "Não resolvido"
+        dataHoraCompleta,
+        timestamp: dataLocal.getTime(),
     };
 }
 
@@ -166,15 +105,84 @@ const AlertasScreen: React.FC = () => {
         try {
             setLoading(true);
             
-            // 1. TENTA BUSCAR DADOS DA INTERNET (API)
-            const [dadosEventos, dadosLeituras] = await Promise.all([
-                buscarEventos(),
-                buscarHistoricoLeituras()
-            ]);
+            //  TENTA BUSCAR DADOS DA INTERNET (API)
+            const dadosLeituras = await buscarHistoricoLeituras();
 
-            setEventos(dadosEventos.map(mapearEvento));
-            // garantir que não tenha mais de 50 itens mapeados
-            setLeituras(dadosLeituras.slice(0, 50).map((l: any) => mapearLeitura(l)));
+            // variáveis de limite usando os valores "padrão" como plano B
+            let limiteTemperaturaMax = 26;
+            let limiteTemperaturaMin = 20;
+            let limiteUmidadeMax = 60;
+            let limiteUmidadeMin = 40;
+
+            //  Busca as configurações que o usuário salvou na memória do celular - AsyncStorage
+            const configuracoesSalvas = await AsyncStorage.getItem("limites_sensores");
+
+            if (configuracoesSalvas !== null) {
+                // Transforma o texto que estava salvo (JSON) de volta em uma Lista para o Javascript
+                const listaDeLimites = JSON.parse(configuracoesSalvas);
+
+                // Procura a configuração da temperatura usando um nome descritivo para cada item da lista
+                const configuracaoTemperatura = listaDeLimites.find((configuracaoAtual: any) => {
+                    return configuracaoAtual.label === "Limite de Temperatura";
+                });
+
+                // Procura a configuração da umidade
+                const configuracaoUmidade = listaDeLimites.find((configuracaoAtual: any) => {
+                    return configuracaoAtual.label === "Limite de Umidade";
+                });
+
+                // Se encontrou a configuração da temperatura salva, atualiza as variáveis
+                if (configuracaoTemperatura !== undefined) {
+                    limiteTemperaturaMax = configuracaoTemperatura.max;
+                    limiteTemperaturaMin = configuracaoTemperatura.min;
+                }
+                
+                // Se encontrou a configuração da umidade salva, atualiza as variáveis
+                if (configuracaoUmidade !== undefined) {
+                    limiteUmidadeMax = configuracaoUmidade.max;
+                    limiteUmidadeMin = configuracaoUmidade.min;
+                }
+            }
+
+            // Separa as leituras: uma lista para os novos Alertas e outra para as Leituras Normais
+            const novosAlertasLocais: EventoHistorico[] = [];
+            const novasLeiturasNormais: EventoHistorico[] = [];
+
+            //  Analisa  últimas 50 leituras vindas do banco de dados
+            dadosLeituras.slice(0, 50).forEach((leituraBruta: any) => {
+                const leituraFormatada = mapearLeitura(leituraBruta);
+                novasLeiturasNormais.push(leituraFormatada);
+                
+                const valorTemperatura = leituraBruta.temperatura !== null && leituraBruta.temperatura !== undefined ? Number(leituraBruta.temperatura) : null;
+                const valorUmidade = leituraBruta.umidade !== null && leituraBruta.umidade !== undefined ? Number(leituraBruta.umidade) : null;
+                
+                const dataLocal = parseDataUTC(leituraBruta.data_hora);
+                const hora = formatarHoraLocal(dataLocal);
+                const dataLabel = formatarDataLabel(dataLocal);
+                const dataHoraCompleta = `${dataLocal.toLocaleDateString("pt-BR")} ${hora}`;
+                const ts = dataLocal.getTime();
+
+                // Analisa e cria Alerta de Temperatura
+                if (valorTemperatura !== null) {
+                    if (valorTemperatura > limiteTemperaturaMax) {
+                        novosAlertasLocais.push({ id: `alerta_temp_alta_${ts}`, titulo: 'Temperatura Alta', barColor: '#FF6B6B', dataLabel, dataHoraCompleta, timestamp: ts });
+                    } else if (valorTemperatura < limiteTemperaturaMin) {
+                        novosAlertasLocais.push({ id: `alerta_temp_baixa_${ts}`, titulo: 'Temperatura Baixa', barColor: '#1565C0', dataLabel, dataHoraCompleta, timestamp: ts });
+                    }
+                }
+
+                // Analisa e cria Alerta de Umidade 
+                if (valorUmidade !== null) {
+                    if (valorUmidade > limiteUmidadeMax) {
+                        novosAlertasLocais.push({ id: `alerta_umid_alta_${ts}`, titulo: 'Umidade Alta', barColor: '#4ECDC4', dataLabel, dataHoraCompleta, timestamp: ts });
+                    } else if (valorUmidade < limiteUmidadeMin) {
+                        novosAlertasLocais.push({ id: `alerta_umid_baixa_${ts}`, titulo: 'Umidade Baixa', barColor: '#F59E0B', dataLabel, dataHoraCompleta, timestamp: ts });
+                    }
+                }
+            });
+
+            setEventos(novosAlertasLocais);
+            setLeituras(novasLeiturasNormais);
         } catch (error) {
             console.error("Erro inesperado ao processar dados de alertas e leituras:", error);
         } finally {
@@ -224,9 +232,8 @@ const AlertasScreen: React.FC = () => {
         }
     }
 
-    // Se o filtro for Alertas, pega o estado 'eventos' mostrando só os não resolvidos.
-    // Se o filtro for Leituras, pega direto o estado 'leituras'.
-    const listaExibicao = filtroAtivo === 'Alertas' ? eventos.filter(e => !e.resolvido) : leituras;
+    // Se o filtro for Alertas exibe os eventos dinâmicos. Senão, exibe leituras puras.
+    const listaExibicao = filtroAtivo === 'Alertas' ? eventos : leituras;
 
     const datasUnicas = [...new Set(listaExibicao.map((e) => e.dataLabel))];
 
@@ -236,24 +243,23 @@ const AlertasScreen: React.FC = () => {
     }));
 
     const renderCard = (item: EventoHistorico) => (
-        <View key={item.id} style={[styles.eventCard, !item.resolvido && styles.eventCardUnresolved]}>
+        <View key={item.id} style={styles.eventCard}>
             <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.barColor }]} />
 
-            <View style={{ flex: 1, paddingVertical: SPACING.md, paddingRight: SPACING.sm, paddingLeft: SPACING.md }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
-                    <Text style={[styles.eventTitle, item.resolvido && styles.eventTitleRead]} numberOfLines={1}>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: SPACING.md, paddingRight: SPACING.md, paddingLeft: SPACING.md }}>
+                <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+                    <Text style={[styles.eventTitle, { marginBottom: 4 }]} numberOfLines={1}>
                         {item.titulo}
                     </Text>
-                    <Text style={styles.eventTime}>{item.hora}</Text>
+                    {item.descricao ? (
+                        <Text style={styles.eventDescription} numberOfLines={4}>
+                            {item.descricao}
+                        </Text>
+                    ) : null}
                 </View>
-                <Text style={[styles.eventDescription, item.resolvido && styles.eventDescriptionRead]} numberOfLines={4}>
-                    {item.descricao}
+                <Text style={[styles.eventTime, { textAlign: 'right' }]}>
+                    {item.dataHoraCompleta.replace(' ', '\n')}
                 </Text>
-                {!item.resolvido && (
-                    <View style={GLOBAL_STYLES.badgeUnresolved}>
-                        <Text style={GLOBAL_STYLES.badgeUnresolvedText}>Não resolvido</Text>
-                    </View>
-                )}
             </View>
         </View>
     );

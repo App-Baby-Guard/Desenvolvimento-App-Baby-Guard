@@ -149,7 +149,7 @@ export async function buscarUltimasLeiturasPorDispositivo(id_dispositivo: number
         movimento: r.movimento === 1,
       })) as LeituraSensor[];
     } catch (localErr) {
-      console.error("[SERVICE] Erro no fallback da Dashboard:", localErr);
+      console.warn("[SERVICE] Aviso no fallback da Dashboard:", localErr);
       return [];
     }
   }
@@ -196,6 +196,7 @@ export async function buscarEventos(): Promise<any[]> {
     try {
       return await EventoRepository.getAllEventos();
     } catch (localErr) {
+      console.warn("[SERVICE] Aviso no fallback de buscarEventos:", localErr);
       return [];
     }
   }
@@ -222,7 +223,7 @@ export async function buscarHistoricoLeituras(): Promise<any[]> {
 
     return resData.dados?.leituras || resData.dados || [];
   } catch (error) {
-    console.log("[SERVICE] Fallback offline para buscarHistoricoLeituras (SQL Lite");
+    console.log("[SERVICE] Fallback offline para buscarHistoricoLeituras (SQL Lite)");
     try {
       const result = await executeSelect<any>(`
         SELECT 
@@ -242,6 +243,7 @@ export async function buscarHistoricoLeituras(): Promise<any[]> {
         movimento: r.movimento === 1
       }));
     } catch (localError) {
+      console.warn("[SERVICE] Aviso no fallback de buscarHistoricoLeituras:", localError);
       return [];
     }
   }
@@ -281,7 +283,7 @@ export async function limparHistoricoGeral(): Promise<void> {
 
     console.log("[SERVICE] Histórico geral limpo com sucesso");
   } catch (error) {
-    console.error("[SERVICE] Erro em limparHistoricoGeral:", error);
+    console.warn("[SERVICE] Aviso em limparHistoricoGeral:", error);
     throw error;
   }
 }

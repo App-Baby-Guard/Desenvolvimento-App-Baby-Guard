@@ -1,4 +1,4 @@
-//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
+﻿//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
 // sensores e informações do dispositivo.
 import React, { useState, useEffect } from "react";
 import {
@@ -23,7 +23,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 // importei o serviço de logout para invalidar o token na API
 import { logoutApi } from '../../services/authService';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loadPersistedSensorLimits, saveSensorLimitsToDatabase } from '../../repositories/SensorLimitsRepository';
+import { SensorLimit as SensorLimitPersisted } from '../../models/SensorLimit';
 
 // TYPES
 interface SensorLimit {
@@ -61,7 +62,7 @@ const SENSOR_LIMITS: SensorLimit[] = [
   },
 ];
 
-// HEADER — seções da tela de configurações
+// HEADER - seções da tela de configurações
 const SectionHeader = ({
   title,
   actionLabel,
@@ -198,6 +199,23 @@ export default function ConfiguracoesScreen({
 
   const [modalLimitesVisible, setModalLimitesVisible] = useState(false);
 
+  const mergePersistedLimits = (savedLimits: SensorLimitPersisted[]) => {
+    if (!savedLimits || savedLimits.length === 0) {
+      return SENSOR_LIMITS;
+    }
+
+    return SENSOR_LIMITS.map((item) => {
+      const saved = savedLimits.find((limit) => limit.label === item.label);
+      return saved
+        ? {
+            ...item,
+            min: saved.min,
+            max: saved.max,
+          }
+        : item;
+    });
+  };
+
   const [sensorSelecionado, setSensorSelecionado] =
     useState<SensorLimit | null>(null);
 
@@ -210,17 +228,14 @@ export default function ConfiguracoesScreen({
 
   const { isDarkMode, toggleDarkMode } = useTheme();
 
-  // todos os estilos vêm do arquivo separado, nenhum inline style no screen
   const styles = getStyles(isDarkMode);
 
   // CARREGA LIMITES DO STORAGE AO ABRIR (Offline-First)
   useEffect(() => {
     const carregarLimites = async () => {
       try {
-        const limitesSalvos = await AsyncStorage.getItem("limites_sensores");
-        if (limitesSalvos) {
-          setLimitesSensores(JSON.parse(limitesSalvos));
-        }
+        const limitesSalvos = await loadPersistedSensorLimits();
+        setLimitesSensores(mergePersistedLimits(limitesSalvos));
       } catch (e) {
         console.log("Erro ao carregar limites locais", e);
       }
@@ -254,13 +269,13 @@ const salvarLimite = () => {
   }
 
   const novosLimites = limitesSensores.map((sensor) =>
-      sensor.label === sensorSelecionado.label
-        ? {
-            ...sensor,
-            min: minimo,
-            max: maximo,
-          }
-        : sensor
+    sensor.label === sensorSelecionado.label
+      ? {
+          ...sensor,
+          min: minimo,
+          max: maximo,
+        }
+      : sensor
   );
 
   // Atualiza tela na hora
@@ -268,8 +283,17 @@ const salvarLimite = () => {
   setSensorSelecionado(null);
   setModalLimitesVisible(false);
 
-  // SALVA LOCALMENTE (Offline-First)
-  AsyncStorage.setItem("limites_sensores", JSON.stringify(novosLimites)).catch((err) => console.log(err));
+  const limitesParaSalvar: SensorLimitPersisted[] = novosLimites.map((sensor) => ({
+    label: sensor.label,
+    tipo_sensor: sensor.label.toLowerCase().includes('temperatura') ? 'temperatura' : 'umidade',
+    min: sensor.min,
+    max: sensor.max,
+    unidade_medida: sensor.unit,
+  }));
+
+  saveSensorLimitsToDatabase(limitesParaSalvar).catch((err: any) =>
+    console.log('Erro ao salvar limites no SQLite', err)
+  );
 };
 
   // função de logout: invalida o token na API e limpa a sessão local
@@ -348,11 +372,9 @@ const salvarLimite = () => {
               color={styles.userEmail.color as string}
             />
           </TouchableOpacity>
-
-    
         </View>
 
-        {/* NOTIFICAÇOES */}
+        {/* NOTIFICAÇÕES */}
         <SectionHeader title="NOTIFICAÇÕES" />
 
         <View style={styles.sectionCard}>
@@ -406,36 +428,6 @@ const salvarLimite = () => {
 
         <View style={styles.sectionCard}>
           <TouchableOpacity
-            style={[GLOBAL_STYLES.deviceField, styles.rowBackground]}
-            activeOpacity={0.7}
-            onPress={() => navigation?.navigate("Robôs")}
-          >
-            <Text style={styles.fieldLabelThemed}>DISPOSITIVOS</Text>
-
-            <View style={GLOBAL_STYLES.spaceBetween}>
-              <Text style={styles.fieldValueThemed}>Visualizar Dispositivos</Text>
-
-              <View style={styles.deviceStatus}>
-                <View style={styles.statusDot} />
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <View style={[GLOBAL_STYLES.deviceField, styles.rowWithBorder, styles.rowBackground]}>
-            <Text style={styles.fieldLabelThemed}>VERSÃO DO FIRMWARE</Text>
-
-            <View style={GLOBAL_STYLES.spaceBetween}>
-              <Text style={styles.fieldValueThemed}>v1.2.3</Text>
-
-              <Ionicons
-                name="refresh-outline"
-                size={18}
-                color={styles.fieldLabelThemed.color as string}
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
             style={[
               { flexDirection: "row", alignItems: "center" },
               styles.logoutRow,
@@ -449,94 +441,92 @@ const salvarLimite = () => {
               <Text style={styles.logoutText}>Sair da Conta</Text>
             </View>
           </TouchableOpacity>
-
         </View>
 
-        {/* FOOTER */}
-      <Text style={styles.footerThemed}>BabyGuard v1.4.0 (2026)</Text>
+        <Text style={styles.footerThemed}>BabyGuard v1.4.0 (2026)</Text>
 
-      {/* MODAL LISTA DE SENSORES */}
-      <Modal
-        visible={modalLimitesVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setModalLimitesVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={GLOBAL_STYLES.spaceBetween}>
-              <Text style={styles.modalTitle}>Ajustar Limites</Text>
-              <TouchableOpacity onPress={() => setModalLimitesVisible(false)}>
-                <Ionicons name="close" size={22} color={styles.headerTitle.color as string} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView>
-              {limitesSensores.map((item, idx) => (
-                <TouchableOpacity
-                  key={item.label}
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    abrirEdicaoLimite(item);
-                    setModalLimitesVisible(false);
-                  }}
-                >
-                  <SensorLimitRow item={item} isLast={idx === limitesSensores.length - 1} styles={styles} />
+        {/* MODAL LISTA DE SENSORES */}
+        <Modal
+          visible={modalLimitesVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setModalLimitesVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={GLOBAL_STYLES.spaceBetween}>
+                <Text style={styles.modalTitle}>Ajustar Limites</Text>
+                <TouchableOpacity onPress={() => setModalLimitesVisible(false)}>
+                  <Ionicons name="close" size={22} color={styles.headerTitle.color as string} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              </View>
+
+              <ScrollView>
+                {limitesSensores.map((item, idx) => (
+                  <TouchableOpacity
+                    key={item.label}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      abrirEdicaoLimite(item);
+                      setModalLimitesVisible(false);
+                    }}
+                  >
+                    <SensorLimitRow item={item} isLast={idx === limitesSensores.length - 1} styles={styles} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      <Modal
-        visible={!!sensorSelecionado}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setSensorSelecionado(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Editar Limite</Text>
+        <Modal
+          visible={!!sensorSelecionado}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setSensorSelecionado(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Editar Limite</Text>
 
-            <View style={styles.modalInputSection}>
-              <Text style={styles.modalInputSectionTitle}>{sensorSelecionado?.label}</Text>
+              <View style={styles.modalInputSection}>
+                <Text style={styles.modalInputSectionTitle}>{sensorSelecionado?.label}</Text>
 
-              <View style={styles.modalRowInputContainer}>
-                <View style={styles.modalInputGroup}>
-                  <Text style={styles.modalInputLabel}>Mínimo ({sensorSelecionado?.unit})</Text>
-                  <TextInput
-                    value={valorMinimo}
-                    onChangeText={setValorMinimo}
-                    keyboardType="numeric"
-                    style={styles.modalTextInput}
-                  />
-                </View>
+                <View style={styles.modalRowInputContainer}>
+                  <View style={styles.modalInputGroup}>
+                    <Text style={styles.modalInputLabel}>Mínimo ({sensorSelecionado?.unit})</Text>
+                    <TextInput
+                      value={valorMinimo}
+                      onChangeText={setValorMinimo}
+                      keyboardType="numeric"
+                      style={styles.modalTextInput}
+                    />
+                  </View>
 
-                <View style={styles.modalInputGroup}>
-                  <Text style={styles.modalInputLabel}>Máximo ({sensorSelecionado?.unit})</Text>
-                  <TextInput
-                    value={valorMaximo}
-                    onChangeText={setValorMaximo}
-                    keyboardType="numeric"
-                    style={styles.modalTextInput}
-                  />
+                  <View style={styles.modalInputGroup}>
+                    <Text style={styles.modalInputLabel}>Máximo ({sensorSelecionado?.unit})</Text>
+                    <TextInput
+                      value={valorMaximo}
+                      onChangeText={setValorMaximo}
+                      keyboardType="numeric"
+                      style={styles.modalTextInput}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <View style={styles.modalActionButtons}>
-              <TouchableOpacity onPress={() => setSensorSelecionado(null)} style={styles.modalBtnCancel}>
-                <Text style={styles.modalBtnTextCancel}>Cancelar</Text>
-              </TouchableOpacity>
+              <View style={styles.modalActionButtons}>
+                <TouchableOpacity onPress={() => setSensorSelecionado(null)} style={styles.modalBtnCancel}>
+                  <Text style={styles.modalBtnTextCancel}>Cancelar</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => salvarLimite()} style={styles.modalBtnSave}>
-                <Text style={styles.modalBtnTextSave}>Salvar</Text>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => salvarLimite()} style={styles.modalBtnSave}>
+                  <Text style={styles.modalBtnTextSave}>Salvar</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );

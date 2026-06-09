@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -293,7 +293,8 @@ const AlertasScreen: React.FC = () => {
         data: listaExibicao.filter((e) => e.dataLabel === label),
     }));
 
-    const renderCard = (item: EventoHistorico) => {
+    // useCallback evita que a função de renderização seja recriada a cada renderização da tela
+    const renderItemCallback = useCallback(({ item }: { item: EventoHistorico }) => {
         // Se NÃO for um alerta, renderiza o card original para a aba de Leituras
         if (!item.isAlert) {
             return (
@@ -352,7 +353,10 @@ const AlertasScreen: React.FC = () => {
                 </View>
             </View>
         );
-    };
+    }, [styles]);
+
+    // guarda a chave para performance
+    const keyExtractorCallback = useCallback((item: EventoHistorico) => item.id.toString(), []);
 
     return (
         <SafeAreaView style={styles.screen}>
@@ -391,8 +395,12 @@ const AlertasScreen: React.FC = () => {
                 style={styles.list}
                 showsVerticalScrollIndicator={false}
                 sections={loading || listaExibicao.length === 0 ? [] : secoes}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => renderCard(item)}
+                keyExtractor={keyExtractorCallback}
+                renderItem={renderItemCallback}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                removeClippedSubviews={Platform.OS === 'android'}
                 renderSectionHeader={({ section: { title } }) => (
                     <Text style={styles.secaoLabel}>{title.toUpperCase()}</Text>
                 )}

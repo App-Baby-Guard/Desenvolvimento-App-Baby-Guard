@@ -61,9 +61,9 @@ function formatarHoraLocal(data: Date): string {
 function mapearLeitura(leitura: any): EventoHistorico {
 
     const dataLocal = parseDataUTC(leitura.data_hora);
-    
+
     const hora = formatarHoraLocal(dataLocal);
-    
+
     // Formata a descrição com base nos sensores disponíveis naquela leitura
     const temp = leitura.temperatura !== null && leitura.temperatura !== undefined ? `${Number(leitura.temperatura).toFixed(1)} °C` : '--';
     const umid = leitura.umidade !== null && leitura.umidade !== undefined ? `${Number(leitura.umidade).toFixed(0)} %` : '--';
@@ -90,7 +90,7 @@ const AlertasScreen: React.FC = () => {
     const [filtroAtivo, setFiltroAtivo] = useState<'Leituras' | 'Alertas'>('Alertas');
     const { isDarkMode } = useTheme();
     const styles = getStyles(isDarkMode);
-    
+
     const [eventos, setEventos] = useState<EventoHistorico[]>([]);
     const [leituras, setLeituras] = useState<EventoHistorico[]>([]);
     const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ const AlertasScreen: React.FC = () => {
     async function carregarDados() {
         try {
             setLoading(true);
-            
+
             //  TENTA BUSCAR DADOS DA INTERNET (API)
             const dadosLeituras = await buscarHistoricoLeituras();
 
@@ -136,7 +136,7 @@ const AlertasScreen: React.FC = () => {
                     limiteTemperaturaMax = configuracaoTemperatura.max;
                     limiteTemperaturaMin = configuracaoTemperatura.min;
                 }
-                
+
                 // Se encontrou a configuração da umidade salva, atualiza as variáveis
                 if (configuracaoUmidade !== undefined) {
                     limiteUmidadeMax = configuracaoUmidade.max;
@@ -152,10 +152,10 @@ const AlertasScreen: React.FC = () => {
             dadosLeituras.slice(0, 50).forEach((leituraBruta: any) => {
                 const leituraFormatada = mapearLeitura(leituraBruta);
                 novasLeiturasNormais.push(leituraFormatada);
-                
+
                 const valorTemperatura = leituraBruta.temperatura !== null && leituraBruta.temperatura !== undefined ? Number(leituraBruta.temperatura) : null;
                 const valorUmidade = leituraBruta.umidade !== null && leituraBruta.umidade !== undefined ? Number(leituraBruta.umidade) : null;
-                
+
                 const dataLocal = parseDataUTC(leituraBruta.data_hora);
                 const hora = formatarHoraLocal(dataLocal);
                 const dataLabel = formatarDataLabel(dataLocal);
@@ -269,7 +269,6 @@ const AlertasScreen: React.FC = () => {
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.title}>Alertas</Text>
-                <Ionicons name="notifications-outline" size={22} color={styles.iconColor.color as string} />
             </View>
             {/* Filtros */}
             <View style={[styles.filterContainer, { justifyContent: 'space-between', alignItems: 'center' }]}>

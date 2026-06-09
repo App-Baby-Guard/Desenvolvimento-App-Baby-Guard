@@ -161,6 +161,13 @@ const AlertasScreen: React.FC = () => {
             const novosAlertasLocais: EventoHistorico[] = [];
             const novasLeiturasNormais: EventoHistorico[] = [];
 
+            // Configuração visual dos alertas 
+            const alertTheme = {
+                temp: { color: '#FF6B6B', bg: isDarkMode ? 'rgba(255, 107, 107, 0.15)' : '#FFF0F0' },
+                umid: { color: '#4A90E2', bg: isDarkMode ? 'rgba(74, 144, 226, 0.15)' : '#E6F0FA' },
+                mov:  { color: '#A78BFA', bg: isDarkMode ? 'rgba(167, 139, 250, 0.15)' : '#F5F3FF' }
+            };
+
             //  Analisa  últimas 50 leituras vindas do banco de dados
             dadosLeituras.slice(0, 50).forEach((leituraBruta: any) => {
                 const leituraFormatada = mapearLeitura(leituraBruta, isDarkMode);
@@ -168,18 +175,13 @@ const AlertasScreen: React.FC = () => {
 
                 const valorTemperatura = leituraBruta.temperatura !== null && leituraBruta.temperatura !== undefined ? Number(leituraBruta.temperatura) : null;
                 const valorUmidade = leituraBruta.umidade !== null && leituraBruta.umidade !== undefined ? Number(leituraBruta.umidade) : null;
+                const valorMovimento = leituraBruta.movimento;
 
                 const dataLocal = parseDataUTC(leituraBruta.data_hora);
                 const hora = formatarHoraLocal(dataLocal);
                 const dataLabel = formatarDataLabel(dataLocal);
                 const dataHoraCompleta = `${dataLocal.toLocaleDateString("pt-BR")} ${hora}`;
                 const ts = dataLocal.getTime();
-
-                // Estilização condicional em variáveis limpas
-                const tempColor = '#FF6B6B';
-                const tempBg = isDarkMode ? 'rgba(255, 107, 107, 0.15)' : '#FFF0F0';
-                const umidColor = '#4A90E2';
-                const umidBg = isDarkMode ? 'rgba(74, 144, 226, 0.15)' : '#E6F0FA';
 
                 // Analisa e cria Alerta de Temperatura
                 if (valorTemperatura !== null) {
@@ -191,7 +193,7 @@ const AlertasScreen: React.FC = () => {
                             dataLabel, dataHoraCompleta, hora, timestamp: ts,
                             isAlert: true,
                             iconName: 'thermometer-outline',
-                            iconBg: tempBg, iconColor: tempColor, textColor: tempColor
+                            iconBg: alertTheme.temp.bg, iconColor: alertTheme.temp.color, textColor: alertTheme.temp.color
                         });
                     } else if (valorTemperatura < limiteTemperaturaMin) {
                         novosAlertasLocais.push({
@@ -201,7 +203,7 @@ const AlertasScreen: React.FC = () => {
                             dataLabel, dataHoraCompleta, hora, timestamp: ts,
                             isAlert: true,
                             iconName: 'thermometer-outline',
-                            iconBg: tempBg, iconColor: tempColor, textColor: tempColor
+                            iconBg: alertTheme.temp.bg, iconColor: alertTheme.temp.color, textColor: alertTheme.temp.color
                         });
                     }
                 }
@@ -216,7 +218,7 @@ const AlertasScreen: React.FC = () => {
                             dataLabel, dataHoraCompleta, hora, timestamp: ts,
                             isAlert: true,
                             iconName: 'water-outline',
-                            iconBg: umidBg, iconColor: umidColor, textColor: umidColor
+                            iconBg: alertTheme.umid.bg, iconColor: alertTheme.umid.color, textColor: alertTheme.umid.color
                         });
                     } else if (valorUmidade < limiteUmidadeMin) {
                         novosAlertasLocais.push({
@@ -226,9 +228,22 @@ const AlertasScreen: React.FC = () => {
                             dataLabel, dataHoraCompleta, hora, timestamp: ts,
                             isAlert: true,
                             iconName: 'water-outline',
-                            iconBg: umidBg, iconColor: umidColor, textColor: umidColor
+                            iconBg: alertTheme.umid.bg, iconColor: alertTheme.umid.color, textColor: alertTheme.umid.color
                         });
                     }
+                }
+
+                // Analisa e cria Alerta de Movimento
+                if (valorMovimento === true) {
+                    novosAlertasLocais.push({
+                        id: `alerta_mov_${ts}`,
+                        titulo: 'Movimento Detectado',
+                        descricao: 'Atividade identificada próximo ao sensor.',
+                        dataLabel, dataHoraCompleta, hora, timestamp: ts,
+                        isAlert: true,
+                        iconName: 'body-outline',
+                        iconBg: alertTheme.mov.bg, iconColor: alertTheme.mov.color, textColor: alertTheme.mov.color
+                    });
                 }
             });
 

@@ -48,8 +48,8 @@ export const roboController = {
       });
       return result;
     } catch (error: any) {
-      console.error("Erro ao registrar robô:", error);
-      throw new Error(error.message || "Não foi possível registrar o robô. Verifique os dados.");
+      const message = error?.message || "Não foi possível registrar o robô. Verifique os dados.";
+      throw new Error(message);
     }
   },
 

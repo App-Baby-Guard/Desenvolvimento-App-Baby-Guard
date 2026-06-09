@@ -70,8 +70,8 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
 
     // Busca o dispositivo pelo UUID fornecido pelo aplicativo
     const dispositivoExistente = await pool.query(
-      `SELECT id_dispositivo FROM dispositivos WHERE uuid_dispositivo = $1`,
-      [uuid_dispositivo]
+      `SELECT id_dispositivo, id_usuario FROM dispositivos WHERE uuid_dispositivo = $1`,
+      [uuid_dispositivo],
     );
 
     // Se não existir, impede o cadastro dinâmico
@@ -81,6 +81,19 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
         .json(Respostas.naoEncontrado("Código do dispositivo inválido ou não reconhecido pela fábrica."));
     }
 
+    const dispositivo = dispositivoExistente.rows[0];
+
+    if (
+      dispositivo.id_usuario !== null &&
+      dispositivo.id_usuario !== id_usuario
+    ) {
+      return res.status(409).json(
+        Respostas.conflito(
+          "Este robô já está vinculado a outra conta e não pode ser cadastrado novamente.",
+        ),
+      );
+    }
+
     // CLAIM DEVICE: Associa o usuário ao hardware já existente
     const { rows } = await pool.query<Dispositivo>(
       `UPDATE dispositivos
@@ -88,7 +101,7 @@ export const criarDispositivo = async (req: AuthRequest, res: Response) => {
        WHERE uuid_dispositivo = $3
        RETURNING id_dispositivo, uuid_dispositivo, id_usuario, nome_dispositivo,
                  token_dispositivo, status_dispositivo, ativo, criado_em`,
-      [id_usuario, Validacao.sanitizarString(nome_dispositivo), uuid_dispositivo]
+      [id_usuario, Validacao.sanitizarString(nome_dispositivo), uuid_dispositivo],
     );
 
     return res

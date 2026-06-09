@@ -160,7 +160,8 @@ export async function criarDispositivo(dados: CreateDispositivoInput): Promise<n
         console.log('[SERVICE] dispositivosService.criarDispositivo: Dispositivo criado com sucesso no Supabase');
         return 1;
     } catch (error) {
-        console.error('[SERVICE] Erro em criarDispositivo:', error);
+        
+        console.log('[SERVICE] Erro em criarDispositivo:', error);
         throw error;
     }
 }

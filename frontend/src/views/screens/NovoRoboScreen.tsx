@@ -43,9 +43,19 @@ export default function NovoRoboScreen() {
         navigation.goBack();
       }, 1500);
     } catch (error: any) {
+      const invalidCodeMessage =
+        "Código do dispositivo inválido ou não reconhecido pela fábrica.";
+
+      const errorTitle =
+        error.message === "Já existe um robô cadastrado com esse UUID."
+          ? "Dispositivo já cadastrado"
+          : error.message === invalidCodeMessage
+          ? "Código inválido"
+          : "Falha ao registrar o robô";
+
       Toast.show({
         type: "error",
-        text1: "Erro na conexão",
+        text1: errorTitle,
         text2: error.message,
         visibilityTime: 3000,
       });

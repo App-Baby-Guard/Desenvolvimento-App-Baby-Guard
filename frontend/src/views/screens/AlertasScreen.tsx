@@ -7,10 +7,11 @@ import {
     ActivityIndicator,
     Alert,
     Platform,
+    StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, GLOBAL_STYLES } from '../../shared/styles/globalStyles';
+import { COLORS, SPACING, GLOBAL_STYLES, TYPOGRAPHY, BORDER_RADIUS } from '../../shared/styles/globalStyles';
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
@@ -19,12 +20,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface EventoHistorico {
     id: string;
-    barColor: string;
     titulo: string;
     descricao?: string;
     dataLabel: string;
     dataHoraCompleta: string;
+    hora: string;
     timestamp: number;
+    isAlert: boolean;
+    iconName: keyof typeof Ionicons.glyphMap;
+    iconBg: string;
+    iconColor: string;
+    textColor: string;
+    barColor?: string;
 }
 
 function formatarDataLabel(data: Date): string {
@@ -58,7 +65,7 @@ function formatarHoraLocal(data: Date): string {
 }
 
 //  Mapear leitura bruta da API para o formato visual esperado, colocando os sensores no mesmo card
-function mapearLeitura(leitura: any): EventoHistorico {
+function mapearLeitura(leitura: any, isDarkMode: boolean): EventoHistorico {
 
     const dataLocal = parseDataUTC(leitura.data_hora);
 
@@ -76,12 +83,18 @@ function mapearLeitura(leitura: any): EventoHistorico {
 
     return {
         id: `leitura_${dataLocal.getTime()}`,
-        barColor: COLORS.primary,
         titulo: "Leitura do Ambiente",
         descricao,
         dataLabel,
         dataHoraCompleta,
+        hora,
         timestamp: dataLocal.getTime(),
+        isAlert: false,
+        iconName: 'analytics-outline',
+        iconBg: isDarkMode ? 'rgba(150, 150, 150, 0.15)' : '#F0F4F8',
+        iconColor: COLORS.primary,
+        textColor: COLORS.textSecondary,
+        barColor: COLORS.primary,
     };
 }
 
@@ -150,7 +163,7 @@ const AlertasScreen: React.FC = () => {
 
             //  Analisa  últimas 50 leituras vindas do banco de dados
             dadosLeituras.slice(0, 50).forEach((leituraBruta: any) => {
-                const leituraFormatada = mapearLeitura(leituraBruta);
+                const leituraFormatada = mapearLeitura(leituraBruta, isDarkMode);
                 novasLeiturasNormais.push(leituraFormatada);
 
                 const valorTemperatura = leituraBruta.temperatura !== null && leituraBruta.temperatura !== undefined ? Number(leituraBruta.temperatura) : null;
@@ -162,21 +175,59 @@ const AlertasScreen: React.FC = () => {
                 const dataHoraCompleta = `${dataLocal.toLocaleDateString("pt-BR")} ${hora}`;
                 const ts = dataLocal.getTime();
 
+                // Estilização condicional em variáveis limpas
+                const tempColor = '#FF6B6B';
+                const tempBg = isDarkMode ? 'rgba(255, 107, 107, 0.15)' : '#FFF0F0';
+                const umidColor = '#4A90E2';
+                const umidBg = isDarkMode ? 'rgba(74, 144, 226, 0.15)' : '#E6F0FA';
+
                 // Analisa e cria Alerta de Temperatura
                 if (valorTemperatura !== null) {
                     if (valorTemperatura > limiteTemperaturaMax) {
-                        novosAlertasLocais.push({ id: `alerta_temp_alta_${ts}`, titulo: 'Temperatura Alta', barColor: '#FF6B6B', dataLabel, dataHoraCompleta, timestamp: ts });
+                        novosAlertasLocais.push({
+                            id: `alerta_temp_alta_${ts}`,
+                            titulo: 'Temperatura Alta',
+                            descricao: `Sensor detectou ${valorTemperatura.toFixed(1)}°C no ambiente.`,
+                            dataLabel, dataHoraCompleta, hora, timestamp: ts,
+                            isAlert: true,
+                            iconName: 'thermometer-outline',
+                            iconBg: tempBg, iconColor: tempColor, textColor: tempColor
+                        });
                     } else if (valorTemperatura < limiteTemperaturaMin) {
-                        novosAlertasLocais.push({ id: `alerta_temp_baixa_${ts}`, titulo: 'Temperatura Baixa', barColor: '#1565C0', dataLabel, dataHoraCompleta, timestamp: ts });
+                        novosAlertasLocais.push({
+                            id: `alerta_temp_baixa_${ts}`,
+                            titulo: 'Temperatura Baixa',
+                            descricao: `Sensor detectou ${valorTemperatura.toFixed(1)}°C no ambiente.`,
+                            dataLabel, dataHoraCompleta, hora, timestamp: ts,
+                            isAlert: true,
+                            iconName: 'thermometer-outline',
+                            iconBg: tempBg, iconColor: tempColor, textColor: tempColor
+                        });
                     }
                 }
 
                 // Analisa e cria Alerta de Umidade 
                 if (valorUmidade !== null) {
                     if (valorUmidade > limiteUmidadeMax) {
-                        novosAlertasLocais.push({ id: `alerta_umid_alta_${ts}`, titulo: 'Umidade Alta', barColor: '#4ECDC4', dataLabel, dataHoraCompleta, timestamp: ts });
+                        novosAlertasLocais.push({
+                            id: `alerta_umid_alta_${ts}`,
+                            titulo: 'Umidade Alta',
+                            descricao: `Sensor detectou ${valorUmidade.toFixed(0)}% de umidade.`,
+                            dataLabel, dataHoraCompleta, hora, timestamp: ts,
+                            isAlert: true,
+                            iconName: 'water-outline',
+                            iconBg: umidBg, iconColor: umidColor, textColor: umidColor
+                        });
                     } else if (valorUmidade < limiteUmidadeMin) {
-                        novosAlertasLocais.push({ id: `alerta_umid_baixa_${ts}`, titulo: 'Umidade Baixa', barColor: '#F59E0B', dataLabel, dataHoraCompleta, timestamp: ts });
+                        novosAlertasLocais.push({
+                            id: `alerta_umid_baixa_${ts}`,
+                            titulo: 'Umidade Baixa',
+                            descricao: `Sensor detectou ${valorUmidade.toFixed(0)}% de umidade.`,
+                            dataLabel, dataHoraCompleta, hora, timestamp: ts,
+                            isAlert: true,
+                            iconName: 'water-outline',
+                            iconBg: umidBg, iconColor: umidColor, textColor: umidColor
+                        });
                     }
                 }
             });
@@ -242,27 +293,66 @@ const AlertasScreen: React.FC = () => {
         data: listaExibicao.filter((e) => e.dataLabel === label),
     }));
 
-    const renderCard = (item: EventoHistorico) => (
-        <View key={item.id} style={styles.eventCard}>
-            <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.barColor }]} />
-
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: SPACING.md, paddingRight: SPACING.md, paddingLeft: SPACING.md }}>
-                <View style={{ flex: 1, paddingRight: SPACING.sm }}>
-                    <Text style={[styles.eventTitle, { marginBottom: 4 }]} numberOfLines={1}>
-                        {item.titulo}
-                    </Text>
-                    {item.descricao ? (
-                        <Text style={styles.eventDescription} numberOfLines={4}>
-                            {item.descricao}
+    const renderCard = (item: EventoHistorico) => {
+        // Se NÃO for um alerta, renderiza o card original para a aba de Leituras
+        if (!item.isAlert) {
+            return (
+                <View key={item.id} style={styles.eventCard}>
+                    <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.barColor || COLORS.primary }]} />
+                    <View style={[GLOBAL_STYLES.row, { flex: 1, paddingVertical: SPACING.md, paddingHorizontal: SPACING.md }]}>
+                        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+                            <Text style={[styles.eventTitle, { marginBottom: SPACING.xs }]} numberOfLines={1}>
+                                {item.titulo}
+                            </Text>
+                            {item.descricao ? (
+                                <Text style={[styles.eventDescription, { marginBottom: SPACING.sm }]} numberOfLines={4}>
+                                    {item.descricao}
+                                </Text>
+                            ) : null}
+                        </View>
+                        <Text style={[styles.eventTime, { textAlign: 'right' }]}>
+                            {item.dataHoraCompleta.replace(' ', '\n')}
                         </Text>
-                    ) : null}
+                    </View>
                 </View>
-                <Text style={[styles.eventTime, { textAlign: 'right' }]}>
-                    {item.dataHoraCompleta.replace(' ', '\n')}
-                </Text>
+            );
+        }
+
+        // Se FOR um alerta
+        return (
+            <View key={item.id} style={styles.eventCard}>
+                <View style={[GLOBAL_STYLES.lateralBar, { backgroundColor: item.iconColor }]} />
+
+                <View style={[GLOBAL_STYLES.row, { flex: 1, paddingVertical: SPACING.md, paddingHorizontal: SPACING.md }]}>
+                    <View style={[GLOBAL_STYLES.centerContent, {
+                        width: 48,
+                        height: 48,
+                        borderRadius: BORDER_RADIUS.md,
+                        backgroundColor: item.iconBg,
+                        marginRight: SPACING.md
+                    }]}>
+                        <Ionicons name={item.iconName} size={26} color={item.iconColor} />
+                    </View>
+
+                    <View style={[GLOBAL_STYLES.row, { flex: 1 }]}>
+                        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+                            <Text style={[styles.eventTitle, { color: item.textColor, marginBottom: SPACING.xs }]} numberOfLines={1}>
+                                {item.titulo}
+                            </Text>
+                            {item.descricao ? (
+                                <Text style={[styles.eventDescription, { marginBottom: SPACING.sm }]} numberOfLines={2}>
+                                    {item.descricao}
+                                </Text>
+                            ) : null}
+                        </View>
+                        <Text style={[styles.eventTime, { textAlign: 'right' }]}>
+                            {item.dataHoraCompleta.replace(' ', '\n')}
+                        </Text>
+                    </View>
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <SafeAreaView style={styles.screen}>
@@ -271,8 +361,8 @@ const AlertasScreen: React.FC = () => {
                 <Text style={styles.title}>Alertas</Text>
             </View>
             {/* Filtros */}
-            <View style={[styles.filterContainer, { justifyContent: 'space-between', alignItems: 'center' }]}>
-                <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+            <View style={[styles.filterContainer, GLOBAL_STYLES.spaceBetween]}>
+                <View style={[GLOBAL_STYLES.row, { gap: SPACING.sm }]}>
                     {(['Leituras', 'Alertas'] as const).map((f) => (
                         <TouchableOpacity
                             key={f}
@@ -292,7 +382,7 @@ const AlertasScreen: React.FC = () => {
                     ))}
                 </View>
                 <TouchableOpacity onPress={confirmarLimpeza} style={{ paddingVertical: SPACING.xs }}>
-                    <Text style={{ color: COLORS.error, fontSize: 13, fontWeight: 'bold' }}>Apagar Histórico</Text>
+                    <Text style={{ color: COLORS.error, fontSize: TYPOGRAPHY.size.sm, fontWeight: 'bold' }}>Apagar Histórico</Text>
                 </TouchableOpacity>
             </View>
 
@@ -308,7 +398,7 @@ const AlertasScreen: React.FC = () => {
                 )}
                 ListEmptyComponent={
                     loading ? (
-                        <View style={{ padding: SPACING.xxl, alignItems: "center" }}>
+                        <View style={[GLOBAL_STYLES.centerContent, { padding: SPACING.xxl }]}>
                             <ActivityIndicator size="large" color={COLORS.primary} />
                             <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
                                 Carregando alertas...
@@ -322,7 +412,7 @@ const AlertasScreen: React.FC = () => {
                         </View>
                     )
                 }
-                ListFooterComponent={<View style={{ height: 32 }} />}
+                ListFooterComponent={<View style={{ height: SPACING.xxxl || 32 }} />}
             />
         </SafeAreaView>
     );

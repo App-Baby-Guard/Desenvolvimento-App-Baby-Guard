@@ -65,7 +65,7 @@ export default function MeusRobosScreen() {
     // Eu identifiquei um erro grave aqui: o componente `Alert.alert` do React Native 
     // trava a aplicação quando tentamos rodar o app direto no Navegador (Web).
     // Por conta disso, eu criei essa condição onde, se o sistema operacional for 'web', chamamos a função nativa do 
-    // Javascript (window.confirm). Se for um celular de verdade, mantive o balão padrão do Alert.
+    // Javascript (window.confirm).  Se for um celular de verdade, mantive o balão padrão do Alert.
     if (Platform.OS === 'web') {
       if (window.confirm(`Tem certeza que deseja excluir o robô "${nome}"? Esta ação não pode ser desfeita.`)) {
         handleRemover(uuid, nome);

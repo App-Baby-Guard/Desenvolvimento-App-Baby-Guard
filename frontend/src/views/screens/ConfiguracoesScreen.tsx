@@ -356,7 +356,7 @@ export default function ConfiguracoesScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.screen}
         contentContainerStyle={GLOBAL_STYLES.scrollContent}

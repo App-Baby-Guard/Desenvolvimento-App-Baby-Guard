@@ -384,7 +384,7 @@ const DashboardScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={GLOBAL_STYLES.scrollContent}
@@ -602,7 +602,6 @@ const DashboardScreen: React.FC = () => {
           {renderGrafico()}
         </View>
 
-        <View style={styles.footerSpacing} />
       </ScrollView>
     </SafeAreaView>
   );

@@ -39,6 +39,7 @@ function AppContent() {
     : MD3LightTheme;
 
   const [isDbReady, setIsDbReady] = useState(false); //vê se o banco de dados está pronto
+  const [dbError, setDbError] = useState(false); // bloqueia a interface se o DB quebrar
 
   //usei isso para rodar a função de configuração do banco de dados apenas uma vez, 
   // quando o app é iniciado. Dentro do useEffect,
@@ -66,6 +67,7 @@ function AppContent() {
       catch (error) {
 
         console.error('[APP]Erro durante configuração do banco de dados SQLite:', error);
+        setDbError(true);
 
       }
       finally {
@@ -110,6 +112,26 @@ function AppContent() {
             }}
           >
             Iniciando serviços locais...
+          </Text>
+        </View>
+      </PaperProvider>
+    );
+  }
+
+  if (dbError) {
+    return (
+      <PaperProvider theme={paperTheme}>
+        <StatusBar
+          backgroundColor={isDarkMode ? "#0f0f23" : "#F5FBFF"}
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+          animated
+        />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: isDarkMode ? "#121212" : "#FFFFFF", padding: 24 }}>
+          <Text style={{ color: "#E53935", fontSize: 20, fontWeight: "bold", textAlign: "center" }}>
+            Erro Crítico
+          </Text>
+          <Text style={{ color: isDarkMode ? "#E0E0E0" : "#333333", marginTop: 12, textAlign: "center", fontSize: 16 }}>
+            Não foi possível inicializar o banco de dados local. Por favor, reinicie o aplicativo.
           </Text>
         </View>
       </PaperProvider>

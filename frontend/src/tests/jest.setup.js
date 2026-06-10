@@ -76,10 +76,11 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 // Mock expo-sqlite
 jest.mock('expo-sqlite', () => {
   const mockDb = {
-    getAllAsync: jest.fn(),
-    getFirstAsync: jest.fn(),
-    runAsync: jest.fn(),
-    execAsync: jest.fn(),
+    // Retorna array vazio por padrão para não causar NullPointer no SensorLimitsRepository
+    getAllAsync: jest.fn().mockResolvedValue([]),
+    getFirstAsync: jest.fn().mockResolvedValue(null),
+    runAsync: jest.fn().mockResolvedValue({ changes: 0, lastInsertRowId: 0 }),
+    execAsync: jest.fn().mockResolvedValue(undefined),
     withTransactionAsync: jest.fn(async (cb) => {
       await cb();
     }),

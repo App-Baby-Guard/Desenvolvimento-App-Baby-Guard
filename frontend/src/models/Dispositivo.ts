@@ -5,6 +5,7 @@ export interface Dispositivo {
   uuid_dispositivo: string;       
   id_usuario?: number;            
   nome_dispositivo: string;       
+  token_dispositivo?: string | null; // Token do Blynk Cloud usado para comunicação direta com o ESP32
   status_dispositivo: 'online' | 'offline'; 
   ativo: 0 | 1;                   // 0=inativo, 1=ativo
   criado_em?: string;            

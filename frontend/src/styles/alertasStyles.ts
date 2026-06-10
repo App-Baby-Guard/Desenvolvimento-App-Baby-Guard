@@ -123,6 +123,7 @@ export function getStyles(isDarkMode: boolean) {
       fontSize: TYPOGRAPHY.size.sm,
       color: C.textSecondary,
       marginTop: SPACING.xs,
+      textAlign: "center",
     },
     iconColor: {
       color: C.textSecondary,

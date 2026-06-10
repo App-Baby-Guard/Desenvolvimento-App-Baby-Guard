@@ -15,6 +15,7 @@ import { COLORS, SPACING, GLOBAL_STYLES, TYPOGRAPHY, BORDER_RADIUS } from '../..
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
+import { BLYNK_STATIC_TOKEN, obterStatusBlynk } from '../../services/blynkService';
 import { limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
 import { loadPersistedSensorLimits } from '../../repositories/SensorLimitsRepository';
 
@@ -107,6 +108,8 @@ const AlertasScreen: React.FC = () => {
     const [eventos, setEventos] = useState<EventoHistorico[]>([]);
     const [leituras, setLeituras] = useState<EventoHistorico[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isDeviceOn, setIsDeviceOn] = useState<boolean | null>(null);
+    const [ultimaReativacao, setUltimaReativacao] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFocused) {
@@ -117,6 +120,28 @@ const AlertasScreen: React.FC = () => {
     async function carregarDados() {
         try {
             setLoading(true);
+
+            const blynkStatus = BLYNK_STATIC_TOKEN
+                ? await obterStatusBlynk(BLYNK_STATIC_TOKEN)
+                : null;
+            const standbyAtivo = blynkStatus?.v7 === "0";
+            const novoStatus = !standbyAtivo;
+
+            if (isDeviceOn === false && novoStatus) {
+                // Reativação: zera a lista de leituras para começar a exibir apenas dados novos.
+                setUltimaReativacao(Date.now());
+                setEventos([]);
+                setLeituras([]);
+            }
+
+            setIsDeviceOn(novoStatus);
+
+            if (standbyAtivo) {
+                setEventos([]);
+                setLeituras([]);
+                setUltimaReativacao(null);
+                return;
+            }
 
             //  TENTA BUSCAR DADOS DA INTERNET (API)
             const dadosLeituras = await buscarHistoricoLeituras();
@@ -161,7 +186,14 @@ const AlertasScreen: React.FC = () => {
             };
 
             //  Analisa  últimas 50 leituras vindas do banco de dados
-            dadosLeituras.slice(0, 50).forEach((leituraBruta: any) => {
+            dadosLeituras
+                .slice(0, 50)
+                .filter((leituraBruta: any) => {
+                    if (!ultimaReativacao) return true;
+                    const leituraTimestamp = parseDataUTC(leituraBruta.data_hora).getTime();
+                    return leituraTimestamp >= ultimaReativacao;
+                })
+                .forEach((leituraBruta: any) => {
                 const leituraFormatada = mapearLeitura(leituraBruta, isDarkMode);
                 novasLeiturasNormais.push(leituraFormatada);
 
@@ -420,11 +452,21 @@ const AlertasScreen: React.FC = () => {
                             </Text>
                         </View>
                     ) : (
-                        <View style={GLOBAL_STYLES.emptyState}>
-                            <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
-                            <Text style={styles.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
-                            <Text style={styles.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
-                        </View>
+                        isDeviceOn === false ? (
+                            <View style={[GLOBAL_STYLES.emptyState, { paddingHorizontal: SPACING.md }]}> 
+                                <Ionicons name="pause-circle" size={60} color={COLORS.warning} />
+                                <Text style={styles.emptyStateTitle}>Standby Ativo</Text>
+                                <Text style={styles.emptyStateSubtitle}>
+                                    O dispositivo está em modo standby. As leituras estão pausadas até a reativação.
+                                </Text>
+                            </View>
+                        ) : (
+                            <View style={GLOBAL_STYLES.emptyState}>
+                                <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
+                                <Text style={styles.emptyStateTitle}>Sem {filtroAtivo.toLowerCase()}!</Text>
+                                <Text style={styles.emptyStateSubtitle}>Tudo está funcionando perfeitamente.</Text>
+                            </View>
+                        )
                     )
                 }
                 ListFooterComponent={<View style={{ height: SPACING.xxxl || 32 }} />}

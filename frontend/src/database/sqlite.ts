@@ -1,16 +1,25 @@
 //Inicialização do SQLite: gerencia o banco de dados, abre, inicializa e gerencia conexões com SQLite
 
 import * as SQLite from 'expo-sqlite';
-// troquei os console.log/console.error daqui pelo logger, que já coloca o
-// prefixo "[DB]" sozinho e separa log de informação de log de erro
 import { logInfo, logErro } from '../shared/utils/logger';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-// abre o arquivo do abnco de dados SQLite, se não existir, ele será criado automaticamente
+// abre o arquivo do banco de dados SQLite, se não existir, ele será criado automaticamente
 export async function initDatabase(): Promise<void> {
   try {
     logInfo('DB', 'Inicializando banco de dados SQLite...');
+
+    // Segurança extra para evitar travamentos do Expo Go (Fast Refresh):
+    // Se já havia uma conexão antiga (e perdida), tentamos fechá-la antes de reabrir
+    // para não bloquear o arquivo .db no sistema Android.
+    if (db) {
+      try {
+        await db.closeAsync();
+      } catch (e) {
+        // Erro silencioso (já deve estar desconectado)
+      }
+    }
 
     db = await SQLite.openDatabaseAsync('babyguard.db');
 
@@ -46,7 +55,7 @@ export async function executeSelect<T>(
       params ?? []
     );
     return result || [];
-  } catch (error) {
+  } catch (error: any) {
     logErro('DB', 'Erro em SELECT', { query, params, error });
     throw error;
   }
@@ -66,7 +75,7 @@ export async function executeSelectOne<T>(
       params ?? []
     );
     return result || null;
-  } catch (error) {
+  } catch (error: any) {
     logErro('DB', 'Erro em SELECT ONE', { query, params, error });
     throw error;
   }
@@ -86,7 +95,7 @@ export async function executeUpdate(
     );
     // Retorna o número de linhas afetadas
     return result.changes || 0;
-  } catch (error) {
+  } catch (error: any) {
     logErro('DB', 'Erro em UPDATE/INSERT/DELETE', { query, params, error });
     throw error;
   }
@@ -107,10 +116,8 @@ export async function executeBatch(
       );
     }
 
-    // aproveitei e corrigi aqui: estava com aspas simples, então o ${queries.length}
-    // aparecia literal no log em vez do número de consultas
     logInfo('DB', `Batch de consultas executado (${queries.length}) com sucesso!`);
-  } catch (error) {
+  } catch (error: any) {
     logErro('DB', 'Erro em BATCH', error);
     throw error;
   }
@@ -129,7 +136,7 @@ export async function executeTransaction(
     });
 
     logInfo('DB', 'Transação concluída com sucesso');
-  } catch (error) {
+  } catch (error: any) {
     logErro('DB', 'Erro em transação (ROLLBACK automático)', error);
     throw error;
   }

@@ -3,27 +3,29 @@ import { pool } from "../config/database";
 
 // para testar a comunicação com o Blynk
 export const testarConexaoBlynk = async (tokenBlynk: string) => {
-    try {
-        console.log(`[BLYNK TESTE] Buscando dados no Blynk para o token: ${tokenBlynk}`);
+  try {
+    console.log(`[BLYNK TESTE] Buscando dados no Blynk para o token: ${tokenBlynk}`);
 
-        const url = `https://blynk.cloud/external/api/get?token=${tokenBlynk}&v3&v4&v5&v6`;
+    // Incluindo v7 na consulta de pinos
+    const url = `https://blynk.cloud/external/api/get?token=${tokenBlynk}&v7&v3&v4&v5&v6`;
 
-        // O timeout evita que o backend fique travado
-        const response = await axios.get(url, { timeout: 5000 });
-        const dados = response.data;
+    // O timeout evita que o backend fique travado
+    const response = await axios.get(url, { timeout: 5000 });
+    const dados = response.data;
 
-        //  imprimir os dados no console para validar se estão chegando certo
-        console.log("[BLYNK TESTE] Resposta recebida com sucesso!");
-        console.log(`- Temperatura (V3):  ${dados.v3}`);
-        console.log(`- Umidade (V4):      ${dados.v4}`);
-        console.log(`- Luminosidade (V5): ${dados.v5}`);
-        console.log(`- Distância (V6):    ${dados.v6}`);
+    //  imprimir os dados no console para validar se estão chegando certo
+    console.log("[BLYNK TESTE] Resposta recebida com sucesso!");
+    console.log(`- Standby (V7):      ${dados.v7}`);
+    console.log(`- Temperatura (V3):  ${dados.v3}`);
+    console.log(`- Umidade (V4):      ${dados.v4}`);
+    console.log(`- Luminosidade (V5): ${dados.v5}`);
+    console.log(`- Distância (V6):    ${dados.v6}`);
 
-        return response.data;
-    } catch (erro: any) {
-        console.error("[BLYNK TESTE] Falha ao comunicar com a API do Blynk:", erro.message);
-        return null;
-    }
+    return response.data;
+  } catch (erro: any) {
+    console.error("[BLYNK TESTE] Falha ao comunicar com a API do Blynk:", erro.message);
+    return null;
+  }
 };
 
 // Relaciona o pino que vem do Blynk com o nome do sensor cadastrado na tabela
@@ -50,6 +52,23 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
       console.error("[BLYNK SYNC] Erro ao atualizar status para offline:", err.message);
     }
     return null;
+  }
+
+  // TRAVA DE SEGURANÇA: Se o pino V7 (Estado) indicar standby, o robô está desligado e NÃO deve gravar leituras.
+  const v7Raw = String(dadosBlynk.v7 ?? '').trim().toLowerCase();
+  const estaEmStandby = v7Raw === '0' || v7Raw === 'false' || v7Raw === 'off';
+
+  if (estaEmStandby) {
+    console.log(`[BLYNK SYNC] Dispositivo ${tokenBlynk} está em STANDBY (V7 = ${v7Raw}). Ignorando inserção no banco.`);
+    try {
+      await pool.query(
+        `UPDATE dispositivos SET status_dispositivo = 'offline' WHERE token_dispositivo = $1`,
+        [tokenBlynk]
+      );
+    } catch (err: any) {
+      console.error("[BLYNK SYNC] Erro ao atualizar status:", err.message);
+    }
+    return dadosBlynk; // Retorna para exibir na tela de teste, mas não salva no BD
   }
 
   try {

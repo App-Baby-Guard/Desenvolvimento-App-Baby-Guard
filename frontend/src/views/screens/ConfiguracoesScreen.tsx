@@ -1,4 +1,4 @@
-﻿//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
+//essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
 // sensores e informações do dispositivo.
 import React, { useState, useEffect } from "react";
 import {
@@ -25,6 +25,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { logoutApi } from '../../services/authService';
 import { loadPersistedSensorLimits, saveSensorLimitsToDatabase } from '../../repositories/SensorLimitsRepository';
 import { SensorLimit as SensorLimitPersisted } from '../../models/SensorLimit';
+import { BLYNK_STATIC_TOKEN, obterStatusBlynk, setStandbyBlynk } from '../../services/blynkService';
 
 // TYPES
 interface SensorLimit {
@@ -37,6 +38,7 @@ interface SensorLimit {
   unit: string;
   description: string;
 }
+
 
 //aqui defini cores e ícones para os limites dos sensores, para deixar a interface mais visual e intuitiva
 const SENSOR_LIMITS: SensorLimit[] = [
@@ -135,55 +137,55 @@ const ToggleRow = ({
 );
 
 // SENSOR
-    const SensorLimitRow = ({
-      item,
-      isLast = false,
-      styles,
-    }: {
-      item: SensorLimit;
-      isLast?: boolean;
-      styles: ReturnType<typeof getStyles>;
-    }) => (
-      <View
-        style={[
-          { flexDirection: "row", alignItems: "center" },
-          styles.sensorRow,
-          { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
-          !isLast && styles.rowWithBorder,
-        ]}
-      >
-        <View
-          style={[
-            {
-              width: 36,
-              height: 36,
-              borderRadius: BORDER_RADIUS.sm,
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: SPACING.md,
-            },
-            { backgroundColor: item.iconBg },
-          ]}
-        >
-          <Ionicons name={item.icon} size={18} color={item.iconColor} />
-        </View>
+const SensorLimitRow = ({
+  item,
+  isLast = false,
+  styles,
+}: {
+  item: SensorLimit;
+  isLast?: boolean;
+  styles: ReturnType<typeof getStyles>;
+}) => (
+  <View
+    style={[
+      { flexDirection: "row", alignItems: "center" },
+      styles.sensorRow,
+      { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
+      !isLast && styles.rowWithBorder,
+    ]}
+  >
+    <View
+      style={[
+        {
+          width: 36,
+          height: 36,
+          borderRadius: BORDER_RADIUS.sm,
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: SPACING.md,
+        },
+        { backgroundColor: item.iconBg },
+      ]}
+    >
+      <Ionicons name={item.icon} size={18} color={item.iconColor} />
+    </View>
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.userName}>{item.label}</Text>
-          <Text style={styles.userEmail}>{item.description}</Text>
-        </View>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.userName}>{item.label}</Text>
+      <Text style={styles.userEmail}>{item.description}</Text>
+    </View>
 
-        <View style={styles.sensorRange}>
-          <Text style={styles.sensorRangeText}>
-            {item.min}
-            {item.unit}
-            {" - "}
-            {item.max}
-            {item.unit}
-          </Text>
-        </View>
-      </View>
-    );
+    <View style={styles.sensorRange}>
+      <Text style={styles.sensorRangeText}>
+        {item.min}
+        {item.unit}
+        {" - "}
+        {item.max}
+        {item.unit}
+      </Text>
+    </View>
+  </View>
+);
 
 // SCREEN
 export default function ConfiguracoesScreen({
@@ -191,6 +193,7 @@ export default function ConfiguracoesScreen({
 }: {
   navigation?: any;
 }) {
+  const [isDeviceOn, setIsDeviceOn] = useState(true);
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -208,10 +211,10 @@ export default function ConfiguracoesScreen({
       const saved = savedLimits.find((limit) => limit.label === item.label);
       return saved
         ? {
-            ...item,
-            min: saved.min,
-            max: saved.max,
-          }
+          ...item,
+          min: saved.min,
+          max: saved.max,
+        }
         : item;
     });
   };
@@ -243,58 +246,89 @@ export default function ConfiguracoesScreen({
     carregarLimites();
   }, []);
 
+  // Busca o status atual do Blynk no início
+  useEffect(() => {
+    if (!BLYNK_STATIC_TOKEN) {
+      console.warn("[Configurações] Token do Blynk não configurado");
+      setIsDeviceOn(false);
+      return;
+    }
+
+    obterStatusBlynk(BLYNK_STATIC_TOKEN)
+      .then((status) => setIsDeviceOn(status?.v7 === "1"))
+      .catch((err) => console.log("Erro ao ler Blynk nas configurações:", err));
+  }, []);
+
+  const handleTogglePower = async (ligar: boolean) => {
+    setIsDeviceOn(ligar);
+    if (!BLYNK_STATIC_TOKEN) {
+      console.warn("[Configurações] Token do Blynk não configurado");
+      setIsDeviceOn(!ligar);
+      return;
+    }
+
+    const sucesso = await setStandbyBlynk(BLYNK_STATIC_TOKEN, ligar);
+    if (!sucesso) {
+      console.log("Erro ao atualizar Blynk: retorno negativo");
+      setIsDeviceOn(!ligar);
+      return;
+    }
+
+    console.log(`Blynk atualizado para ${ligar ? "ativo" : "standby"}`);
+  };
+
   const abrirEdicaoLimite = (sensor: SensorLimit) => {
-  setSensorSelecionado(sensor);
-  setValorMinimo(String(sensor.min));
-  setValorMaximo(String(sensor.max));
-};
+    setSensorSelecionado(sensor);
+    setValorMinimo(String(sensor.min));
+    setValorMaximo(String(sensor.max));
+  };
 
-const salvarLimite = () => {
-  if (!sensorSelecionado) return;
+  const salvarLimite = () => {
+    if (!sensorSelecionado) return;
 
-  const minimo = Number(valorMinimo);
-  const maximo = Number(valorMaximo);
+    const minimo = Number(valorMinimo);
+    const maximo = Number(valorMaximo);
 
-  if (isNaN(minimo) || isNaN(maximo)) {
-    Alert.alert("Erro", "Informe valores válidos.");
-    return;
-  }
+    if (isNaN(minimo) || isNaN(maximo)) {
+      Alert.alert("Erro", "Informe valores válidos.");
+      return;
+    }
 
-  if (minimo > maximo) {
-    Alert.alert(
-      "Erro",
-      "O valor mínimo não pode ser maior que o máximo."
-    );
-    return;
-  }
+    if (minimo > maximo) {
+      Alert.alert(
+        "Erro",
+        "O valor mínimo não pode ser maior que o máximo."
+      );
+      return;
+    }
 
-  const novosLimites = limitesSensores.map((sensor) =>
-    sensor.label === sensorSelecionado.label
-      ? {
+    const novosLimites = limitesSensores.map((sensor) =>
+      sensor.label === sensorSelecionado.label
+        ? {
           ...sensor,
           min: minimo,
           max: maximo,
         }
-      : sensor
-  );
+        : sensor
+    );
 
-  // Atualiza tela na hora
-  setLimitesSensores(novosLimites);
-  setSensorSelecionado(null);
-  setModalLimitesVisible(false);
+    // Atualiza tela na hora
+    setLimitesSensores(novosLimites);
+    setSensorSelecionado(null);
+    setModalLimitesVisible(false);
 
-  const limitesParaSalvar: SensorLimitPersisted[] = novosLimites.map((sensor) => ({
-    label: sensor.label,
-    tipo_sensor: sensor.label.toLowerCase().includes('temperatura') ? 'temperatura' : 'umidade',
-    min: sensor.min,
-    max: sensor.max,
-    unidade_medida: sensor.unit,
-  }));
+    const limitesParaSalvar: SensorLimitPersisted[] = novosLimites.map((sensor) => ({
+      label: sensor.label,
+      tipo_sensor: sensor.label.toLowerCase().includes('temperatura') ? 'temperatura' : 'umidade',
+      min: sensor.min,
+      max: sensor.max,
+      unidade_medida: sensor.unit,
+    }));
 
-  saveSensorLimitsToDatabase(limitesParaSalvar).catch((err: any) =>
-    console.log('Erro ao salvar limites no SQLite', err)
-  );
-};
+    saveSensorLimitsToDatabase(limitesParaSalvar).catch((err: any) =>
+      console.log('Erro ao salvar limites no SQLite', err)
+    );
+  };
 
   // função de logout: invalida o token na API e limpa a sessão local
   const handleLogout = () => {
@@ -379,6 +413,15 @@ const salvarLimite = () => {
 
         <View style={styles.sectionCard}>
           <ToggleRow
+            icon="power-outline"
+            iconColor={isDeviceOn ? COLORS.success : COLORS.error}
+            label={isDeviceOn ? "BabyGuard Ativado" : "BabyGuard em Standby"}
+            value={isDeviceOn}
+            onToggle={handleTogglePower}
+            styles={styles}
+          />
+
+          <ToggleRow
             icon="notifications-outline"
             label="Ativar alertas"
             value={alertsEnabled}
@@ -423,10 +466,39 @@ const salvarLimite = () => {
           ))}
         </View>
 
-        {/* DISPOSITIVOS */}
         <SectionHeader title="OUTROS" />
 
         <View style={styles.sectionCard}>
+          <TouchableOpacity
+            style={[GLOBAL_STYLES.deviceField, styles.rowBackground]}
+            activeOpacity={0.7}
+            onPress={() => navigation?.navigate("Robôs")}
+          >
+            <Text style={styles.fieldLabelThemed}>DISPOSITIVOS</Text>
+
+            <View style={GLOBAL_STYLES.spaceBetween}>
+              <Text style={styles.fieldValueThemed}>Visualizar Dispositivos</Text>
+
+              <View style={styles.deviceStatus}>
+                <View style={styles.statusDot} />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          <View style={[GLOBAL_STYLES.deviceField, styles.rowWithBorder, styles.rowBackground]}>
+            <Text style={styles.fieldLabelThemed}>VERSÃO DO FIRMWARE</Text>
+
+            <View style={GLOBAL_STYLES.spaceBetween}>
+              <Text style={styles.fieldValueThemed}>v1.2.3</Text>
+
+              <Ionicons
+                name="refresh-outline"
+                size={18}
+                color={styles.fieldLabelThemed.color as string}
+              />
+            </View>
+          </View>
+
           <TouchableOpacity
             style={[
               { flexDirection: "row", alignItems: "center" },

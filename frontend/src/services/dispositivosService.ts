@@ -33,6 +33,7 @@ export async function listarDispositivos(): Promise<Dispositivo[]> {
             uuid_dispositivo: d.uuid_dispositivo,
             id_usuario: d.id_usuario,
             nome_dispositivo: d.nome_dispositivo,
+            token_dispositivo: d.token_dispositivo ?? null,
             status_dispositivo: d.status_dispositivo || 'offline',
             ativo: d.ativo ? 1 : 0,
             criado_em: d.criado_em,

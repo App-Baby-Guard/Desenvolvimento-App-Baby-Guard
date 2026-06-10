@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
   Image,
   Dimensions,
 } from "react-native";
@@ -18,6 +19,7 @@ import { getStyles } from "../../styles/dashboardStyles";
 
 import { listarDispositivos } from "../../services/dispositivosService";
 import { buscarUltimasLeiturasPorDispositivo, buscarHistoricoLeituras, LeituraSensor } from "../../services/leiturasService";
+import { BLYNK_STATIC_TOKEN } from "../../services/blynkService";
 import { Dispositivo } from "../../models/Dispositivo";
 import { useAuth } from "../../context/AuthContext";
 import { LineChart } from "react-native-chart-kit";
@@ -95,7 +97,10 @@ function calcularProgresso(leitura: LeituraSensor | undefined, tipo: string): nu
   return 50;
 }
 
-function calcularStatusGeral(leituras: LeituraSensor[]): { texto: string; cor: string } {
+// Quando o monitoramento estiver desativado, o status geral reflete isso
+function calcularStatusGeral(leituras: LeituraSensor[], isDeviceOn: boolean): { texto: string; cor: string } {
+  if (!isDeviceOn) return { texto: "Monitoramento Desativado", cor: COLORS.textTertiary };
+  
   const temp = getLeituraByTipo(leituras, "temperatura");
   const umid = getLeituraByTipo(leituras, "umidade");
   const mov = getLeituraByTipo(leituras, "movimento");
@@ -106,7 +111,8 @@ function calcularStatusGeral(leituras: LeituraSensor[]): { texto: string; cor: s
   return { texto: "Tudo tranquilo", cor: COLORS.success };
 }
 
-function tempoDesdeUltimaLeitura(leituras: LeituraSensor[]): string {
+function tempoDesdeUltimaLeitura(leituras: LeituraSensor[], isDeviceOn: boolean): string {
+  if (!isDeviceOn) return "Notificações pausadas";
   if (leituras.length === 0) return "Sem leituras ainda";
   const maisRecente = leituras.reduce((a, b) =>
     new Date(a.data_hora) > new Date(b.data_hora) ? a : b
@@ -122,29 +128,23 @@ function tempoDesdeUltimaLeitura(leituras: LeituraSensor[]): string {
 // ─── Componente Principal ───────────────────────────────────────────
 
 // ─── GERENCIAMENTO DE ESTADO CENTRALIZADO (Arquitetura Flux/Reducer) ──────
-// Utilizei useReducer no lugar de múltiplos useState para aplicar princípios
-// de Clean Code e evitar inconsistências (ex: terminar o loading antes dos dados chegarem).
-
-// 1. Interface do Estado: Define o "molde" exato de todos os dados que a tela precisa.
 interface DashboardState {
-  dispositivos: Dispositivo[]; // Lista de todos os robôs do usuário
-  dispositivoAtivo: Dispositivo | null; // O robô selecionado na tela no momento
-  leituras: LeituraSensor[]; // Dados em tempo real (temperatura, umidade atual)
-  historicoLeituras: LeituraHistorico[]; // Dados passados para montar o gráfico
-  loading: boolean; // Controle da tela de carregamento (a "rodinha" girando)
+  dispositivos: Dispositivo[];
+  dispositivoAtivo: Dispositivo | null;
+  leituras: LeituraSensor[];
+  historicoLeituras: LeituraHistorico[];
+  loading: boolean;
+  isDeviceOn: boolean;
 }
 
-// 2. Tipos de Ações permitidas: Funciona como um "Cardápio" restrito. 
-// O estado da tela só pode ser alterado enviando (dispatch) uma dessas ações exatas.
 type DashboardAction =
-  | { type: "START_LOADING" } // Aciona a tela de carregamento
-  | { type: "SET_DISPOSITIVOS"; payload: { dispositivos: Dispositivo[]; ativo: Dispositivo | null } } // Salva os robôs encontrados no banco
-  | { type: "SELECT_DISPOSITIVO"; payload: Dispositivo } // Troca a aba do robô selecionado
-  | { type: "SET_LEITURAS"; payload: { leituras: LeituraSensor[]; historico: LeituraHistorico[] } } // Atualiza os dados dos sensores
-  | { type: "STOP_LOADING" }; // Para o carregamento (usado em caso de erros)
+  | { type: "START_LOADING" }
+  | { type: "SET_DISPOSITIVOS"; payload: { dispositivos: Dispositivo[]; ativo: Dispositivo | null } }
+  | { type: "SELECT_DISPOSITIVO"; payload: Dispositivo }
+  | { type: "SET_LEITURAS"; payload: { leituras: LeituraSensor[]; historico: LeituraHistorico[] } }
+  | { type: "SET_DEVICE_STATUS"; payload: boolean }
+  | { type: "STOP_LOADING" };
 
-// 3. Função Redutora (O Cérebro): É uma "Função Pura" que recebe o Estado Atual e uma Ação,
-// e retorna o NOVO estado completo e atualizado, sempre de forma imutável (usando ...state).
 function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
   switch (action.type) {
     case "START_LOADING":
@@ -154,7 +154,7 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
         ...state,
         dispositivos: action.payload.dispositivos,
         dispositivoAtivo: action.payload.ativo,
-        loading: false, // Ao receber os dispositivos, paramos o loading automaticamente
+        loading: false,
       };
     case "SELECT_DISPOSITIVO":
       return { ...state, dispositivoAtivo: action.payload };
@@ -163,6 +163,11 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
         ...state,
         leituras: action.payload.leituras,
         historicoLeituras: action.payload.historico,
+      };
+    case "SET_DEVICE_STATUS":
+      return {
+        ...state,
+        isDeviceOn: action.payload,
       };
     case "STOP_LOADING":
       return { ...state, loading: false };
@@ -178,48 +183,72 @@ const DashboardScreen: React.FC = () => {
   const isFocused = useIsFocused();
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
-
-  // 4. Inicializando o useReducer: O 'state' guarda os dados, e o 'dispatch' é a arma que dispara as Ações.
+  // Inicializando o useReducer
   const [state, dispatch] = useReducer(dashboardReducer, {
     dispositivos: [],
     dispositivoAtivo: null,
     leituras: [],
     historicoLeituras: [],
-    loading: true, // Começa carregando a tela por padrão
+    loading: true,
+    isDeviceOn: true,
   });
 
-  // Desestruturando para facilitar o uso das variáveis no restante do código (HTML/JSX)
-  const { dispositivos, dispositivoAtivo, leituras, historicoLeituras, loading } = state;
-
+  const { dispositivos, dispositivoAtivo, leituras, historicoLeituras, loading, isDeviceOn } = state;
   const { usuario } = useAuth();
 
-  // [ATUALIZAÇÃO EM TEMPO REAL]
-  // Aqui eu resolvi o problema de "dados antigos". Antes, se eu criasse um robô
-  // em outra aba e voltasse pra cá, a tela não exibia o robô novo.
-  // Colocando o `isFocused` como dependência, eu forço o React a rodar `carregarDispositivos()`
-  // TODA VEZ que o usuário clica na aba 'Dashboard' e a tela entra em foco.
+  // Atualização de dispositivos ao entrar em foco
   useEffect(() => {
     if (isFocused) {
       carregarDispositivos();
     }
   }, [isFocused]);
 
-  // Polling de leituras quando a tela está em foco
+  // Polling para ler o estado de standby diretamente do Blynk
   useEffect(() => {
-    if (!isFocused || !dispositivoAtivo || !dispositivoAtivo.id_dispositivo) return;
+    if (!isFocused) return;
+
+    const carregarStatusBlynkV7 = async () => {
+      const token = dispositivoAtivo?.token_dispositivo || BLYNK_STATIC_TOKEN;
+      if (!token) {
+        console.warn("[Dashboard] Token do Blynk não configurado");
+        dispatch({ type: "SET_DEVICE_STATUS", payload: false });
+        return;
+      }
+
+      try {
+        const url = `https://blynk.cloud/external/api/get?token=${encodeURIComponent(token)}&v7`;
+        const response = await fetch(url);
+        if (response.ok) {
+          const text = await response.text();
+          const statusVal = text.trim();
+          dispatch({ type: "SET_DEVICE_STATUS", payload: statusVal === "1" });
+        } else {
+          console.warn("[Dashboard] Erro na resposta do Blynk Cloud:", response.status);
+          dispatch({ type: "SET_DEVICE_STATUS", payload: false });
+        }
+      } catch (error) {
+        console.log("[Dashboard] Erro ao ler status Blynk diretamente da API:", error);
+      }
+    };
+
+    carregarStatusBlynkV7();
+    const intervalStatus = setInterval(carregarStatusBlynkV7, 5000); // Polling de 5s para refletir standby na hora
+    return () => clearInterval(intervalStatus);
+  }, [isFocused, dispositivoAtivo?.token_dispositivo]);
+
+  // Polling de leituras do banco quando a tela está em foco e o dispositivo está ativo
+  useEffect(() => {
+    if (!isFocused || !dispositivoAtivo || !dispositivoAtivo.id_dispositivo || !isDeviceOn) return;
 
     const id = dispositivoAtivo.id_dispositivo;
-
-    // Buscar imediatamente
     buscarLeituras(id);
 
-    // Polling a cada 5s
     const interval = setInterval(() => {
       buscarLeituras(id);
     }, INTERVALO_POLLING);
 
     return () => clearInterval(interval);
-  }, [isFocused, dispositivoAtivo?.id_dispositivo]);
+  }, [isFocused, dispositivoAtivo?.id_dispositivo, isDeviceOn]);
 
   async function carregarDispositivos() {
     try {
@@ -240,7 +269,6 @@ const DashboardScreen: React.FC = () => {
 
   async function buscarLeituras(id_dispositivo: number) {
     try {
-      // Promise.all permite buscar o tempo real e o histórico ao mesmo tempo, sem lentidão.
       const [dadosUltimas, dadosHistorico] = await Promise.all([
         buscarUltimasLeiturasPorDispositivo(id_dispositivo),
         buscarHistoricoLeituras()
@@ -255,39 +283,44 @@ const DashboardScreen: React.FC = () => {
   }
 
   function selecionarDispositivo(disp: Dispositivo) {
-    // Evita recarregar a tela, perder estado e fazer requests inúteis se for o mesmo robô
     if (dispositivoAtivo?.uuid_dispositivo === disp.uuid_dispositivo) return;
-
     dispatch({ type: "SELECT_DISPOSITIVO", payload: disp });
   }
 
-  // Dados dinâmicos dos sensores baseados na API:
+  // Leituras dos sensores
   const tempLeitura = getLeituraByTipo(leituras, "temperatura");
   const umidLeitura = getLeituraByTipo(leituras, "umidade");
   const luzLeitura = getLeituraByTipo(leituras, "luminosidade");
   const movLeitura = getLeituraByTipo(leituras, "movimento");
-
-
 
   const tempStatus = calcularStatus(tempLeitura, "temperatura");
   const umidStatus = calcularStatus(umidLeitura, "umidade");
   const luzStatus = calcularStatus(luzLeitura, "luminosidade");
   const movStatus = calcularStatus(movLeitura, "movimento");
 
-  const statusGeral = calcularStatusGeral(leituras);
-  const ultimaLeitura = tempoDesdeUltimaLeitura(leituras);
+  const statusGeral = calcularStatusGeral(leituras, isDeviceOn);
+  const ultimaLeitura = tempoDesdeUltimaLeitura(leituras, isDeviceOn);
 
   // Função responsável por renderizar o gráfico histórico de temperatura
   const renderGrafico = () => {
-    // Filtra nulls e inverter a ordem (cronológico: mais antigo -> mais novo)
+    if (!isDeviceOn) {
+      return (
+        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}> 
+          <Text style={styles.textMuted}>Monitoramento pausado. O gráfico será exibido novamente quando o dispositivo voltar ao modo ativo.</Text>
+        </View>
+      );
+    }
+
     const validData = [...historicoLeituras]
       .reverse()
-      .filter((l) => l.temperatura !== null && l.temperatura !== undefined);
+      .filter((item) => {
+        const temperatura = Number(item.temperatura);
+        return Number.isFinite(temperatura);
+      });
 
-    // se faltam dados
     if (validData.length < 2) {
       return (
-        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}>
+        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}> 
           <Text style={styles.textMuted}>Sem leituras suficientes para o gráfico</Text>
         </View>
       );
@@ -295,13 +328,12 @@ const DashboardScreen: React.FC = () => {
 
     const labels: string[] = [];
     const data: number[] = [];
-    const step = Math.ceil(validData.length / 5); // Distribui os labels de hora em 5 pontos para não poluir o eixo X
+    const step = Math.max(1, Math.ceil(validData.length / 5));
 
     validData.forEach((item, index) => {
-      // converte string para number, garantindo a compatibilidade matemática
-      data.push(Number(item.temperatura));
+      const temperatura = Number(item.temperatura);
+      data.push(temperatura);
 
-      // UTC (usado no serviço de Alertas)
       let isoString = String(item.data_hora).trim().replace(' ', 'T');
       if (!isoString.includes('Z') && !isoString.match(/[+-]\d{2}:\d{2}$/)) {
         isoString += 'Z';
@@ -309,7 +341,6 @@ const DashboardScreen: React.FC = () => {
       const dataLocal = new Date(isoString);
       const horaFormatada = `${String(dataLocal.getHours()).padStart(2, '0')}:${String(dataLocal.getMinutes()).padStart(2, '0')}`;
 
-      // Insere o texto apenas nas posições calculadas. Os demais ficam em branco (mas o ponto no eixo Y existe)
       if (index === 0 || index === validData.length - 1 || index % step === 0) {
         labels.push(horaFormatada);
       } else {
@@ -321,7 +352,7 @@ const DashboardScreen: React.FC = () => {
       <View style={{ marginTop: SPACING.md, alignItems: "center" }}>
         <LineChart
           data={{ labels, datasets: [{ data }] }}
-          width={Dimensions.get("window").width - 64} // Compensa os paddings de tela e de Card
+          width={Dimensions.get("window").width - 64}
           height={180}
           yAxisSuffix="°"
           chartConfig={{
@@ -329,12 +360,12 @@ const DashboardScreen: React.FC = () => {
             backgroundGradientFromOpacity: 0,
             backgroundGradientToOpacity: 0,
             decimalPlaces: 1,
-            color: (opacity = 1) => `rgba(255, 107, 107, ${opacity})`, // Cor baseada na temperatura do SensorCard (#FF6B6B)
+            color: (opacity = 1) => `rgba(255, 107, 107, ${opacity})`,
             labelColor: () => styles.textMuted.color as string,
             propsForDots: { r: "3", strokeWidth: "2", stroke: "#FF6B6B" },
             propsForBackgroundLines: { stroke: styles.textMuted.color as string, strokeOpacity: 0.2 },
           }}
-          bezier // Transforma os ângulos duros em curvas suaves e fluidas
+          bezier
           style={{ marginVertical: 8, borderRadius: 16 }}
         />
       </View>
@@ -454,12 +485,59 @@ const DashboardScreen: React.FC = () => {
           </ScrollView>
         </View>
 
+        {/* Card de aviso de monitoramento desligado e notificações pausadas */}
+        {!isDeviceOn && (
+          <View style={[
+            styles.card,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderLeftWidth: 4,
+              borderLeftColor: COLORS.textTertiary,
+            }
+          ]}>
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: SPACING.md
+            }}>
+              <Ionicons
+                name="moon"
+                size={22}
+                color={COLORS.textSecondary}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.subtitle, { marginBottom: 2 }]}>
+                Modo Standby
+              </Text>
+              <Text style={styles.textMuted}>
+                O monitoramento em tempo real está pausado.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Card de status */}
         <View style={styles.card}>
-          <Text style={styles.statusTitle}>{statusGeral.texto}</Text>
-          <Text style={styles.textMuted}>{ultimaLeitura}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.statusTitle}>{statusGeral.texto}</Text>
+              <Text style={styles.textMuted}>{ultimaLeitura}</Text>
+            </View>
+            <View style={{
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: isDeviceOn ? COLORS.success : COLORS.error
+            }} />
+          </View>
 
-          {leituras.length === 0 && dispositivoAtivo && (
+            {(!isDeviceOn || leituras.length === 0) && dispositivoAtivo && (
             <View style={styles.noDataContainer}>
               <Ionicons name="cloud-offline-outline" size={40} color={COLORS.textTertiary} />
               <Text style={[styles.textMuted, { marginTop: SPACING.sm, textAlign: "center" }]}>
@@ -479,38 +557,38 @@ const DashboardScreen: React.FC = () => {
             <SensorCard
               iconName="thermometer-outline"
               label="Temperatura"
-              value={formatarValor(tempLeitura, "temperatura")}
-              status={tempStatus.status}
-              statusColor={tempStatus.color}
+              value={isDeviceOn ? formatarValor(tempLeitura, "temperatura") : '—'}
+              status={isDeviceOn ? tempStatus.status : 'Sem dados'}
+              statusColor={isDeviceOn ? tempStatus.color : COLORS.textTertiary}
               iconColor="#FF6B6B"
-              progress={calcularProgresso(tempLeitura, "temperatura")}
+              progress={isDeviceOn ? calcularProgresso(tempLeitura, "temperatura") : 0}
             />
             <SensorCard
               iconName="water-outline"
               label="Umidade"
-              value={formatarValor(umidLeitura, "umidade")}
-              status={umidStatus.status}
-              statusColor={umidStatus.color}
+              value={isDeviceOn ? formatarValor(umidLeitura, "umidade") : '—'}
+              status={isDeviceOn ? umidStatus.status : 'Sem dados'}
+              statusColor={isDeviceOn ? umidStatus.color : COLORS.textTertiary}
               iconColor="#4ECDC4"
-              progress={calcularProgresso(umidLeitura, "umidade")}
+              progress={isDeviceOn ? calcularProgresso(umidLeitura, "umidade") : 0}
             />
             <SensorCard
               iconName="sunny-outline"
               label="Luminosidade"
-              value={formatarValor(luzLeitura, "luminosidade")}
-              status={luzStatus.status}
-              statusColor={luzStatus.color}
+              value={isDeviceOn ? formatarValor(luzLeitura, "luminosidade") : '—'}
+              status={isDeviceOn ? luzStatus.status : 'Sem dados'}
+              statusColor={isDeviceOn ? luzStatus.color : COLORS.textTertiary}
               iconColor="#FFD93D"
-              progress={calcularProgresso(luzLeitura, "luminosidade")}
+              progress={isDeviceOn ? calcularProgresso(luzLeitura, "luminosidade") : 0}
             />
             <SensorCard
               iconName="body-outline"
               label="Presença"
-              value={formatarValor(movLeitura, "movimento")}
-              status={movStatus.status}
-              statusColor={movStatus.color}
+              value={isDeviceOn ? formatarValor(movLeitura, "movimento") : '—'}
+              status={isDeviceOn ? movStatus.status : 'Sem dados'}
+              statusColor={isDeviceOn ? movStatus.color : COLORS.textTertiary}
               iconColor="#A78BFA"
-              progress={calcularProgresso(movLeitura, "movimento")}
+              progress={isDeviceOn ? calcularProgresso(movLeitura, "movimento") : 0}
             />
           </View>
         </View>

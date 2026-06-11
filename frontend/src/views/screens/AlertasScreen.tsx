@@ -109,7 +109,6 @@ const AlertasScreen: React.FC = () => {
     const [leituras, setLeituras] = useState<EventoHistorico[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDeviceOn, setIsDeviceOn] = useState<boolean | null>(null);
-    const [ultimaReativacao, setUltimaReativacao] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFocused) {
@@ -127,21 +126,13 @@ const AlertasScreen: React.FC = () => {
             const standbyAtivo = blynkStatus?.v7 === "0";
             const novoStatus = !standbyAtivo;
 
-            if (isDeviceOn === false && novoStatus) {
-                // Reativação: zera a lista de leituras para começar a exibir apenas dados novos.
-                setUltimaReativacao(Date.now());
-                setEventos([]);
-                setLeituras([]);
-            }
-
+            // Apenas atualizamos o status do dispositivo sem limpar as listas
+            // para manter o histórico visível ao usuário a todo momento.
             setIsDeviceOn(novoStatus);
 
-            if (standbyAtivo) {
-                setEventos([]);
-                setLeituras([]);
-                setUltimaReativacao(null);
-                return;
-            }
+            // Quando em standby, mantemos as leituras anteriores visíveis para o usuário e
+            // NÃO resetamos a última reativação nem limpamos as listas locais de eventos/leituras.
+            // Apenas prosseguimos para carregar os dados históricos existentes.
 
             //  TENTA BUSCAR DADOS DA INTERNET (API)
             const dadosLeituras = await buscarHistoricoLeituras();
@@ -185,14 +176,10 @@ const AlertasScreen: React.FC = () => {
                 mov:  { color: '#A78BFA', bg: isDarkMode ? 'rgba(167, 139, 250, 0.15)' : '#F5F3FF' }
             };
 
-            //  Analisa  últimas 50 leituras vindas do banco de dados
+            // Analisa as últimas 50 leituras vindas do banco de dados
+            // Removido o filtro de reativação para que o histórico anterior não desapareça.
             dadosLeituras
                 .slice(0, 50)
-                .filter((leituraBruta: any) => {
-                    if (!ultimaReativacao) return true;
-                    const leituraTimestamp = parseDataUTC(leituraBruta.data_hora).getTime();
-                    return leituraTimestamp >= ultimaReativacao;
-                })
                 .forEach((leituraBruta: any) => {
                 const leituraFormatada = mapearLeitura(leituraBruta, isDarkMode);
                 novasLeiturasNormais.push(leituraFormatada);
@@ -428,6 +415,16 @@ const AlertasScreen: React.FC = () => {
                     <Text style={{ color: COLORS.error, fontSize: TYPOGRAPHY.size.sm, fontWeight: 'bold' }}>Apagar Histórico</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Banner indicando que o monitoramento está pausado devido ao Standby */}
+            {isDeviceOn === false && (
+                <View style={styles.standbyBanner}>
+                    <Ionicons name="pause-circle" size={20} color={COLORS.warning} />
+                    <Text style={styles.standbyBannerText}>
+                        Modo Standby Ativo. O monitoramento está temporariamente pausado.
+                    </Text>
+                </View>
+            )}
 
             {/* Lista de alertas */}
             <SectionList

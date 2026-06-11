@@ -6,12 +6,23 @@ export const testarConexaoBlynk = async (tokenBlynk: string) => {
   try {
     console.log(`[BLYNK TESTE] Buscando dados no Blynk para o token: ${tokenBlynk}`);
 
+    // Verifica se o hardware (ESP32) está fisicamente conectado à internet
+    const connectedUrl = `https://blynk.cloud/external/api/isHardwareConnected?token=${tokenBlynk}`;
+    const connectedResponse = await axios.get(connectedUrl, { timeout: 5000 });
+    const isOnline = connectedResponse.data === true || String(connectedResponse.data).trim().toLowerCase() === 'true';
+    if (!isOnline) {
+      console.log(`[BLYNK TESTE] Dispositivo fisicamente OFFLINE. Ignorando cache.`);
+      return { hardwareOffline: true };
+    }
+
     // Incluindo v7 na consulta de pinos
     const url = `https://blynk.cloud/external/api/get?token=${tokenBlynk}&v7&v3&v4&v5&v6`;
 
     // O timeout evita que o backend fique travado
     const response = await axios.get(url, { timeout: 5000 });
     const dados = response.data;
+    console.log("[INSPEÇÃO BLYNK] JSON recebido do Blynk:", JSON.stringify(dados));
+
 
     //  imprimir os dados no console para validar se estão chegando certo
     console.log("[BLYNK TESTE] Resposta recebida com sucesso!");
@@ -39,8 +50,8 @@ const MAPA_PINOS: Record<string, string> = {
 // Vai no Blynk, busca os pinos e salva as variações na tabela leituras
 export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
   const dadosBlynk = await testarConexaoBlynk(tokenBlynk);
-  
-  if (!dadosBlynk) {
+
+  if (!dadosBlynk || dadosBlynk.hardwareOffline) {
     try {
       // Atualiza status para offline se a API do Blynk falhar (Timeout ou Erro)
       await pool.query(
@@ -55,7 +66,10 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
   }
 
   // TRAVA DE SEGURANÇA: Se o pino V7 (Estado) indicar standby, o robô está desligado e NÃO deve gravar leituras.
-  const v7Raw = String(dadosBlynk.v7 ?? '').trim().toLowerCase();
+  // Busca o valor de v7 ou V7 no JSON retornado, resolvendo a quebra por Case Sensitivity
+  const valorV7 = dadosBlynk.v7 ?? dadosBlynk.V7 ?? '';
+
+  const v7Raw = String(valorV7).trim().toLowerCase();
   const estaEmStandby = v7Raw === '0' || v7Raw === 'false' || v7Raw === 'off';
 
   if (estaEmStandby) {
@@ -105,7 +119,7 @@ export const sincronizarBlynkPorToken = async (tokenBlynk: string) => {
       const sensor = sensores.find((s) => s.tipo_sensor === tipoEsperado);
       if (sensor) {
         const valorNumerico = parseFloat(valorString as string);
-        
+
         // Trava de segurança: se o Blynk mandar lixo, não quebra a coluna NUMERIC do Postgres
         if (isNaN(valorNumerico)) {
           console.warn(`[BLYNK SYNC] Valor inválido recebido para o pino ${pino}: ${valorString}`);

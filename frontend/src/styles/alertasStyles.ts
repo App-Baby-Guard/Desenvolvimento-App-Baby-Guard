@@ -128,5 +128,25 @@ export function getStyles(isDarkMode: boolean) {
     iconColor: {
       color: C.textSecondary,
     },
+    standbyBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDarkMode ? "rgba(238, 188, 94, 0.15)" : "#FFF9E6",
+      borderColor: C.warning,
+      borderWidth: 1,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.md,
+      gap: SPACING.sm,
+    },
+    standbyBannerText: {
+      fontSize: TYPOGRAPHY.size.sm,
+      fontWeight: TYPOGRAPHY.weight.semiBold,
+      color: C.warning,
+      flexShrink: 1,
+    },
   });
 }

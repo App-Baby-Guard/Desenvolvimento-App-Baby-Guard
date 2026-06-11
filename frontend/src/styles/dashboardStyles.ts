@@ -64,6 +64,11 @@ export function getStyles(isDarkMode: boolean) {
       borderColor: C.border,
       marginBottom: SPACING.md,
       ...SHADOWS.soft,
+      shadowColor: isDarkMode ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.12)",
+      shadowOpacity: isDarkMode ? 0.4 : 0.25,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
     },
     btnSec: {
       backgroundColor: C.buttonSecondary,

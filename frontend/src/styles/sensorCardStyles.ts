@@ -20,7 +20,11 @@ export function getStyles(isDarkMode: boolean) {
       backgroundColor: C.cardBackground,
       borderRadius: BORDER_RADIUS.lg,
       ...SHADOWS.soft,
-      elevation: 3,
+      shadowColor: isDarkMode ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.34)",
+      shadowOpacity: isDarkMode ? 0.4 : 0.25,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
     },
     iconContainer: {
       marginBottom: SPACING.md,

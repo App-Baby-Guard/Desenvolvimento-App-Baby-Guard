@@ -1,164 +1,168 @@
 ![Logo do Projeto](frontend/src/assets/imagemBG.png)
+# BabyGuard — Monitoramento Inteligente de Berços IoT
 
-# BabyGuard: Amor, Cuidado e Proteção em Tempo Real
-
-O BabyGuard nasceu do desejo de oferecer tranquilidade aos pais e proteção absoluta aos bebês. Muito mais do que uma babá eletrônica, o sistema funciona como um guardião digital zeloso, monitorando o microclima do berço e o bem-estar da criança. Através da união entre hardware delicadamente calibrado, uma infraestrutura em nuvem acolhedora e um aplicativo móvel intuitivo, o BabyGuard transforma dados ambientais em paz de espírito para a sua família.
-
----
-
-## O Ecossistema de Proteção
-
-A arquitetura do BabyGuard foi desenhada para garantir que nenhuma leitura se perca e que cada variação no ambiente do bebê seja tratada com a máxima prioridade e carinho. O sistema opera de forma integrada e totalmente distribuída na nuvem.
-
-```
- [Hardware ESP32] ----( Protocolo MQTT )----> [Broker MQTT Cloud]
-                                                    |
-                                            (Ingestion Loop)
-                                                    |
- [App Mobile] <---( HTTP / JSON )---> [API Express no Render] <---> [Banco Supabase]
-
-```
+O **BabyGuard** é um sistema de monitoramento para berços infantis integrado a sensores físicos de telemetria de temperatura, umidade, luminosidade e distância (presença). O projeto é estruturado em uma arquitetura distribuída composta por firmware embarcado (ESP32), barramento de comunicação (Blynk Cloud), API de backend (Node.js/Express com PostgreSQL) e aplicativo móvel (React Native/Expo com SQLite para cache offline).
 
 ---
 
-## Organização do Projeto (Monorepo)
-
-Para manter o desenvolvimento desse ecossistema de cuidado centralizado e harmonioso, o repositório utiliza o modelo de monorepo:
+## Arquitetura do Sistema
 
 ```
-/
-├── backend/       --> O coração do sistema: API em Node.js hospedada no Render
-└── frontend/      --> O olhar dos pais: Aplicativo mobile feito em React Native e Expo
-
+[ ESP32 Simulador (Wokwi) ] 
+       │ (Wi-Fi / TCP)
+       ▼
+[ Blynk IoT Cloud ] (Mantém cache dos pinos virtuais V3, V4, V5, V6, V7)
+       ▲
+       │ (HTTP REST / Axios Polling 60s)
+[ Backend API (Node.js/TypeScript) ] <=======> [ Banco PostgreSQL (Supabase) ]
+       ▲
+       │ (HTTP REST / Fetch Polling 60s)
+[ Aplicativo Móvel (React Native/Expo) ] <===> [ Banco SQLite Local ] + [ AsyncStorage ]
 ```
+
+### Componentes de Hardware Simulados (Pinos Blynk)
+* **V3**: Sensor de Temperatura (°C)
+* **V4**: Sensor de Umidade (%)
+* **V5**: Sensor de Luminosidade (Lux)
+* **V6**: Sensor de Distância Ultrassônico (cm) — Mapeado localmente e remotamente como flag booleana de movimentação quando a leitura for inferior a 50cm.
+* **V7**: Pino de Estado Standby ("1" = Ativo/Monitorando; "0" = Standby/Pausado).
 
 ---
 
-## Tecnologias e Ninhos de Armazenamento
+## Tecnologias Reais Utilizadas
 
-Para garantir que o monitoramento seja ininterrupto, seguro e incrivelmente rápido, escolhemos tecnologias modernas e robustas para abrigar os dados do seu bebê.
+### Aplicativo Mobile (React Native / Expo)
+* **Estrutura**: React Native com Expo SDK 54 e TypeScript.
+* **Estilização**: CSS-in-JS e biblioteca de componentes React Native Paper.
+* **Persistência Local**: Banco de dados relacional SQLite local via `expo-sqlite` (para cache offline) e armazenamento chave-valor rápido `AsyncStorage` (para sessões JWT e temas).
+* **Navegação**: Roteador estruturado com Native Stack e Bottom Tabs da biblioteca React Navigation.
+* **Gráficos**: Plotagem do histórico de temperatura via `react-native-chart-kit`.
+* **Recursos Nativos**: Acesso físico à Câmera e Galeria de Mídia do celular (`expo-image-picker`) com solicitação de permissões dinâmicas em tempo real.
 
-```
-+-------------------------------------------------------------------+
-|                            FRONTEND                               |
-|  [React Native]   [TypeScript]     [Expo Core]    [Persistência]  |
-+-------------------------------------------------------------------+
-|                         NUVEM & BACKEND                           |
-|  [Hospedagem Render] [Node.js/Express] [JWT Auth]  [MQTT Consumer]|
-+-------------------------------------------------------------------+
-|                         BANCO DE DADOS                            |
-|  [Supabase Cloud]    [PostgreSQL Engine]   [Segurança Concorrente]|
-+-------------------------------------------------------------------+
-
-```
-
-### Detalhes das Camadas Tecnológicas
-
-### O Olhar dos Pais (Frontend Mobile)
-
-* Estrutura Nativa: Desenvolvido em React Native com a agilidade do ecossistema Expo.
-* Tipagem Segura: Construído inteiramente em TypeScript, garantindo um código livre de falhas para o cuidado da criança.
-* Navegação Fluida: Interfaces projetadas com React Navigation para que os pais acessem o histórico do bebê com um único toque.
-
-### O Coração do Sistema (Backend no Render)
-
-* Hospedagem de Confiança: A API está hospedada na plataforma Render, garantindo alta disponibilidade e respostas instantâneas às requisições do aplicativo.
-* Processamento Assíncrono: Motor construído em Node.js e Express, preparado para receber múltiplos dados de telemetria sem oscilações.
-* Escuta Ativa: Consumidores focados na leitura contínua das filas de mensagens geradas pelo hardware no berço.
-
-### O Cofre das Memórias (Banco de Dados no Supabase)
-
-* Nuvem Escalável: Toda a persistência de usuários, configurações e logs ambientais foi migrada para o Supabase, aproveitando a resiliência e a velocidade do PostgreSQL em nuvem.
-* Integridade dos Dados: Tabelas estruturadas para guardar cada variação de temperatura e movimento de forma eterna e segura.
-
-### O Guardião Físico (Hardware Embarcado)
-
-* Cérebro do Dispositivo: Placa ESP32 atuando com processamento dual-core para leitura em tempo real.
-* Sensores de Carinho:
-* DHT11 / DHT22: Cuidando da temperatura ideal do quarto e da umidade do ar.
-* LDR (Luminosidade): Monitorando se a iluminação do quarto está propícia para o sono profundo.
-* HC-SR04: Proteção ultrassônica para verificar o posicionamento e pequenas movimentações.
-
-
+### API de Backend (Node.js / Express)
+* **Ambiente**: Runtime Node.js com TypeScript e execução dev via `ts-node-dev`.
+* **Banco de Dados**: Pool de conexões assíncronas PostgreSQL via driver nativo `pg`.
+* **Segurança**: Hashing de senhas com biblioteca `bcryptjs` de complexidade 10, autenticação JWT via `jsonwebtoken` e middleware de token blacklist para logout seguro.
 
 ---
 
-## O Caminho do Cuidado: Fluxo Operacional
-
-```
-[Berço do Bebê] ---> [Leitura dos Sensores] ---> [Transmissão MQTT] ---> [API no Render]
-                                                                              |
-[Notificação no App] <--- [Geração de Alertas] <--- [Supabase Cloud] <--------+
-
-```
-
-1. Percepção Atenta: O ESP32 colhe com precisão cada alteração climática e sonora no quarto do bebê.
-2. Envio Seguro: Essas informações são envelopadas e transmitidas via protocolo leve MQTT para a nuvem.
-3. Acolhimento dos Dados: A API hospedada no Render recebe as leituras e analisa se tudo está dentro dos padrões de conforto definidos pelos pais.
-4. Registro Histórico: O Supabase armazena instantaneamente essas leituras, criando um diário completo da rotina do berço.
-5. Alerta Protetor: Se a temperatura subir demais ou o quarto ficar barulhento, o sistema gera um evento de atenção e envia uma notificação imediata para o smartphone dos pais.
+## Funcionalidades Principais do Aplicativo
+1. **Pareamento de Berços (Claim Device)**: Vincula um código físico único (UUID) de um hardware BabyGuard à conta autenticada do usuário.
+2. **Painel de Controle em Tempo Real (Dashboard)**: Exibe leituras de sensores ambientais através de cartões interativos animados e mostra um gráfico de oscilação térmica da temperatura local.
+3. **Detecção Dinâmica de Standby**: Polling rápido diretamente do Blynk Cloud (de 5 em 5 segundos) detecta se o aparelho físico está em standby (pino V7 = 0) desativando o monitoramento visual do app.
+4. **Histórico e Alarmes Dinâmicos**: A tela de Alertas lista o histórico agrupado de sensores e aponta desvios térmicos ou de umidade baseando-se em limites reguláveis pelo próprio usuário na aba Ajustes.
+5. **Arquitetura Offline-First**: O app salva o histórico de alertas e leituras em banco local SQLite. Ao detectar ausência de rede (offline), o app executa fallbacks de SELECT locais de forma silenciosa para não quebrar a usabilidade do usuário.
+6. **Alternância de Temas**: Suporte global a temas Claro e Escuro (Dark Mode) persistidos localmente.
+7. **Foto de Perfil**: Permite tirar foto da Câmera ou buscar da Galeria, encodando o arquivo de mídia em Base64 para envio seguro à API de perfil do usuário.
 
 ---
 
-## Endereço da API em Nuvem
-
-O ecossistema deixou o ambiente local e agora está acessível globalmente através da infraestrutura de produção do Render:
+## Estrutura do Projeto
 
 ```
-https://desenvolvimento-app-baby-guard.onrender.com
-
+BabyGuard
+├── backend
+│   ├── dist (código compilado)
+│   ├── src
+│   │   ├── config (database.ts)
+│   │   ├── controllers (auth, blynk, dispositivos, eventos, leituras, sensores, usuarios)
+│   │   ├── middleware (autenticacao, tokenBlacklist)
+│   │   ├── models (interfaces TypeScript)
+│   │   ├── routes (definições de rotas HTTP)
+│   │   ├── services (regras de negócio e queries ao banco pg/Blynk)
+│   │   ├── types (index.ts)
+│   │   ├── utils (respostas, validacao)
+│   │   ├── app.ts (configuração express)
+│   │   └── server.ts (entrada do servidor)
+│   └── package.json
+└── frontend
+    ├── src
+    │   ├── config (apiUrl.ts)
+    │   ├── context (AuthContext, ThemeContext)
+    │   ├── controllers (roboController.ts)
+    │   ├── database (sqlite.ts, migrations/schema.ts)
+    │   ├── hooks (useLogin, usePerfil)
+    │   ├── models (interfaces locais)
+    │   ├── repositories (Dispositivo, Evento, Leitura, Sensor, SensorLimits)
+    │   ├── routes (RootNavigator, TabNavigator)
+    │   ├── services (api, auth, blynk, dispositivos, eventos, leituras, sensores)
+    │   ├── shared (styles, utils/logger)
+    │   ├── styles (folhas de estilo CSS-in-JS)
+    │   ├── tests (Jest tests)
+    │   └── views (components, screens)
+    └── package.json
 ```
 
 ---
 
-## Engenharia de Segurança e Conforto
+## Processo de Instalação e Execução
 
-* Abraço Criptográfico: Todas as rotas que exibem informações do bebê exigem validação rigorosa através de tokens JWT passados no cabeçalho das requisições.
-* Privacidade Familiar: Os tokens são invalidados imediatamente ao encerrar a sessão, protegendo os dados de visualizações não autorizadas.
-* Filtro de Proteção: Middlewares barram qualquer tentativa de envio de dados corrompidos antes mesmo que eles cheguem ao banco de dados Supabase.
-* Isolamento de Erros: Caso ocorra alguma instabilidade no hardware, a API trata a falha de forma silenciosa e amigável, sem interromper a exibição das telas do aplicativo móvel.
+### Pré-requisitos
+* Node.js (v18+) instalado.
+* Banco de dados PostgreSQL rodando ou instância Supabase ativa.
+* Aplicativo Expo Go instalado no smartphone físico (para rodar o app móvel).
 
----
+### Passo 1: Configuração das Variáveis de Ambiente (`.env`)
 
-## Configuração e Instalação do Projeto
+No diretório `backend/` crie um arquivo `.env` contendo:
+```env
+DATABASE_URL=postgresql://seu_usuario:sua_senha@seu_host:seu_port/seu_banco?sslmode=require
+JWT_SECRET=sua_chave_secreta_jwt
+```
 
-Siga as instruções para conectar o seu ambiente de desenvolvimento à nossa estrutura de nuvem.
+No diretório `frontend/` crie um arquivo `.env` contendo:
+```env
+EXPO_PUBLIC_API_URL=http://<IP_LOCAL_DO_COMPUTADOR>:3000
+EXPO_PUBLIC_BLYNK_TOKEN=seu_blynk_auth_token_de_teste
+EXPO_PUBLIC_BLYNK_BASE_URL=https://blynk.cloud/external/api
+```
 
-### Pré-requisitos do Sistema
-
-* Node.js (Versão estável LTS 18 ou superior).
-* Git instalado para clonar o repositório.
-* Contas configuradas nas plataformas Render e Supabase para espelhar as variáveis de ambiente.
-* Smartphone com o aplicativo Expo Go para visualizar a interface gráfica.
-
-### Clonando o Repositório
-
+### Passo 2: Executando o Backend
+Abra o terminal na pasta `backend/` e execute:
 ```bash
-git clone https://github.com/App-Baby-Guard/Desenvolvimento-App-Baby-Guard.git
-cd Desenvolvimento-App-Baby-Guard
-
-```
-
-### Configurando e Rodando a API (Render / Local)
-
-```bash
-cd backend
 npm install
-
-# Certifique-se de configurar o arquivo .env com a string de conexão do seu Supabase
 npm run dev
-
 ```
+O servidor será inicializado na porta `3000`. O worker de sincronização com o Blynk Cloud iniciará a rotina automática de 60 segundos.
 
-### Configurando e Rodando o Aplicativo (Mobile)
-
+### Passo 3: Executando o Aplicativo Móvel (Expo)
+Abra o terminal na pasta `frontend/` e execute:
 ```bash
-cd ../frontend
 npm install
-
-# Configure a URL da API apontando para o seu endereço do Render
 npx expo start
-
 ```
+Escaneie o QR Code exibido no terminal utilizando a câmera do celular (iOS) ou o aplicativo Expo Go (Android).
 
-Abra o aplicativo Expo Go no seu celular, faça a leitura do código gerado no terminal e comece a acompanhar o monitoramento em tempo real com todo o cuidado e precisão que o seu bebê merece.
+---
+
+## Rotas e Endpoints Principais da API
+
+### Autenticação (Pública)
+* `POST /auth/registro` -> Cria nova conta de usuário.
+* `POST /auth/login` -> Valida credenciais e retorna token JWT + dispositivos do usuário.
+
+### Dispositivos (Privada - Requer Header `Authorization: Bearer <token>`)
+* `GET /dispositivos` -> Lista robôs ativos cadastrados na conta.
+* `POST /dispositivos` -> Associa/pareia um UUID físico de fábrica à conta autenticada.
+* `PATCH /dispositivos/:uuid` -> Renomeia ou altera o status de conexão de um dispositivo.
+* `DELETE /dispositivos/:uuid` -> Remove o vínculo de um dispositivo da conta do usuário.
+
+### Leituras e Eventos (Privada)
+* `GET /leituras` -> Histórico geral de dados agregados por minuto.
+* `GET /leituras/dispositivo/:id` -> Últimas leituras lidas em cada sensor do robô.
+* `DELETE /leituras/limpar/todos` -> Limpa todo o histórico de sensores atrelados ao usuário.
+* `GET /eventos` -> Lista alertas gerados pelos sensores associados à conta.
+* `DELETE /eventos/limpar/todos` -> Limpa todo o histórico de alertas do usuário logado.
+
+---
+
+## Integrantes do Grupo
+* **Joyce Masalla Jorge**
+* **Arthur Steiner Morais Silva**
+* **Sânio Rodrigues Silva Trindade**
+* **Arthur Lourenço Fritz**
+
+---
+
+## Licença
+Este projeto acadêmico é protegido sob a licença **ISC**.

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { pool } from "../config/database";
 import { Validacao } from "../utils/validacao";
 import { Respostas } from "../utils/respostas";
+import { AuthRequest } from "../middleware/autenticacao";
 
 import { Usuario } from "../models/usuarioModel";
 
@@ -38,9 +39,17 @@ export const listarUsuarios = async (req: Request, res: Response) => {
 };
 
 // GET BY ID
-export const buscarUsuarioPorId = async (req: Request, res: Response) => {
+export const buscarUsuarioPorId = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const idUsuarioAutenticado = req.usuario?.id_usuario;
+
+    // Impede que um usuário acesse o perfil de outro
+    if (Number(id) !== idUsuarioAutenticado) {
+      return res
+        .status(403)
+        .json(Respostas.naoAutorizado("Acesso negado: você não tem permissão para visualizar este perfil"));
+    }
 
     const { rows } = await pool.query<Usuario>(
       `SELECT id_usuario, nome, email, telefone, foto_perfil, push_token, criado_em
@@ -130,9 +139,17 @@ export const criarUsuario = async (req: Request, res: Response) => {
 };
 
 // PATCH
-export const atualizarUsuario = async (req: Request, res: Response) => {
+export const atualizarUsuario = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const idUsuarioAutenticado = req.usuario?.id_usuario;
+
+    // Impede que um usuário atualize o perfil de outro
+    if (Number(id) !== idUsuarioAutenticado) {
+      return res
+        .status(403)
+        .json(Respostas.naoAutorizado("Acesso negado: você não tem permissão para atualizar este perfil"));
+    }
 
     const { nome, email, senha, telefone, foto_perfil, push_token } = req.body;
 
@@ -244,9 +261,17 @@ export const atualizarUsuario = async (req: Request, res: Response) => {
 };
 
 // DELETE
-export const deletarUsuario = async (req: Request, res: Response) => {
+export const deletarUsuario = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const idUsuarioAutenticado = req.usuario?.id_usuario;
+
+    // Impede que um usuário delete a conta de outro
+    if (Number(id) !== idUsuarioAutenticado) {
+      return res
+        .status(403)
+        .json(Respostas.naoAutorizado("Acesso negado: você não tem permissão para deletar este perfil"));
+    }
 
     const { rowCount } = await pool.query(
       `DELETE FROM usuarios WHERE id_usuario = $1`,

@@ -1,4 +1,4 @@
-﻿// schema completo do banco de dados, incluindo as tabelas e suas relações
+// schema completo do banco de dados, incluindo as tabelas e suas relações
 //Schema é o "desenho" do banco - quais tabelas, quais campos cada uma tem.
 
 const SCHEMA = {
@@ -97,7 +97,7 @@ export async function createTables(db: any): Promise<void> {
     await db.execAsync(SCHEMA.eventos);
     console.log('[SCHEMA] Tabela "eventos" criada ou já existe.');
 
-    console.log('[SCHEMA] 4 Tabelas do banco de dados SQLite criadas com sucesso!');
+    console.log('[SCHEMA] 5 Tabelas do banco de dados SQLite criadas com sucesso!');
   } catch (error) {
     console.error('[SCHEMA] Erro ao criar tabelas do banco de dados SQLite:', error);
     throw error;

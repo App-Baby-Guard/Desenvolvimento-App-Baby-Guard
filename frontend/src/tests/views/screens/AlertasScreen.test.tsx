@@ -2,6 +2,21 @@ import React from 'react';
 import AlertasScreen from '../../../views/screens/AlertasScreen';
 import { render } from '@testing-library/react-native';
 
+// Mocks para evitar requisições reais e banco de dados SQLite não inicializado
+jest.mock('../../../services/blynkService', () => ({
+  BLYNK_STATIC_TOKEN: 'mock-token',
+  obterStatusBlynk: jest.fn().mockResolvedValue({ v7: '1' }),
+}));
+
+jest.mock('../../../services/leiturasService', () => ({
+  limparHistoricoGeral: jest.fn().mockResolvedValue(undefined),
+  buscarHistoricoLeituras: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('../../../repositories/SensorLimitsRepository', () => ({
+  loadPersistedSensorLimits: jest.fn().mockResolvedValue([]),
+}));
+
 describe('Componente AlertasScreen (UI Test)', () => {
 
   // TESTE DE UI

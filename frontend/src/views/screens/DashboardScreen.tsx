@@ -374,9 +374,9 @@ const DashboardScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[GLOBAL_STYLES.safeArea, { justifyContent: "center", alignItems: "center" }]}>
+      <SafeAreaView style={[styles.safeArea, { justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={[GLOBAL_STYLES.textMuted, { marginTop: SPACING.sm }]}>
+        <Text style={[styles.textMuted, { marginTop: SPACING.sm }]}>
           Carregando dispositivos...
         </Text>
       </SafeAreaView>

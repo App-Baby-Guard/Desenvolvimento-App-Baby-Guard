@@ -75,7 +75,7 @@ function mapearLeitura(leitura: any, isDarkMode: boolean): EventoHistorico {
     // Formata a descrição com base nos sensores disponíveis naquela leitura
     const temp = leitura.temperatura !== null && leitura.temperatura !== undefined ? `${Number(leitura.temperatura).toFixed(1)} °C` : '--';
     const umid = leitura.umidade !== null && leitura.umidade !== undefined ? `${Number(leitura.umidade).toFixed(0)} %` : '--';
-    const luz = leitura.luminosidade !== null && leitura.luminosidade !== undefined ? `${Number(leitura.luminosidade).toFixed(0)} Lux` : '--';
+    const luz = leitura.luminosidade !== null && leitura.luminosidade !== undefined ? (Number(leitura.luminosidade) === 1 ? "Claro" : "Escuro") : '--';
     const mov = leitura.movimento === true ? "Detectado" : (leitura.movimento === false ? "Calmo" : "--");
 
     const descricao = `Temperatura: ${temp}\nUmidade: ${umid}\nLuminosidade: ${luz}\nMovimento: ${mov}`;

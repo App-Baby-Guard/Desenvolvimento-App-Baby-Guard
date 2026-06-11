@@ -55,9 +55,7 @@ function formatarValor(leitura: LeituraSensor | undefined, tipo: string): string
   if (tipo === "temperatura") return `${val.toFixed(1)}°C`;
   if (tipo === "umidade") return `${val.toFixed(0)}%`;
   if (tipo === "luminosidade") {
-    if (val < 100) return "Baixa";
-    if (val < 500) return "Média";
-    return "Alta";
+    return val === 1 ? "Claro" : "Escuro";
   }
   if (tipo === "movimento") return leitura.movimento ? "Detectado" : "Calmo";
   return String(leitura.valor ?? "—");
@@ -77,8 +75,8 @@ function calcularStatus(leitura: LeituraSensor | undefined, tipo: string): { sta
     return { status: "Normal", color: COLORS.success };
   }
   if (tipo === "luminosidade") {
-    if (val > 800) return { status: "Intensa", color: "#F59E0B" };
-    return { status: "Normal", color: COLORS.success };
+    if (val === 1) return { status: "Iluminado", color: "#F59E0B" };
+    return { status: "Ideal", color: COLORS.success };
   }
   if (tipo === "movimento") {
     if (leitura.movimento) return { status: "Alerta", color: "#F59E0B" };
@@ -92,7 +90,7 @@ function calcularProgresso(leitura: LeituraSensor | undefined, tipo: string): nu
   const val = getValorNum(leitura);
   if (tipo === "temperatura") return Math.min(100, (val / 40) * 100);
   if (tipo === "umidade") return Math.min(100, val);
-  if (tipo === "luminosidade") return Math.min(100, (val / 1000) * 100);
+  if (tipo === "luminosidade") return val === 1 ? 100 : 0;
   if (tipo === "movimento") return leitura.movimento ? 100 : 10;
   return 50;
 }
@@ -100,7 +98,7 @@ function calcularProgresso(leitura: LeituraSensor | undefined, tipo: string): nu
 // Quando o monitoramento estiver desativado, o status geral reflete isso
 function calcularStatusGeral(leituras: LeituraSensor[], isDeviceOn: boolean): { texto: string; cor: string } {
   if (!isDeviceOn) return { texto: "Monitoramento Desativado", cor: COLORS.textTertiary };
-  
+
   const temp = getLeituraByTipo(leituras, "temperatura");
   const umid = getLeituraByTipo(leituras, "umidade");
   const mov = getLeituraByTipo(leituras, "movimento");
@@ -305,7 +303,7 @@ const DashboardScreen: React.FC = () => {
   const renderGrafico = () => {
     if (!isDeviceOn) {
       return (
-        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}> 
+        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}>
           <Text style={styles.textMuted}>Monitoramento pausado. O gráfico será exibido novamente quando o dispositivo voltar ao modo ativo.</Text>
         </View>
       );
@@ -320,7 +318,7 @@ const DashboardScreen: React.FC = () => {
 
     if (validData.length < 2) {
       return (
-        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}> 
+        <View style={[GLOBAL_STYLES.centerContent, { height: 140, marginTop: SPACING.md }]}>
           <Text style={styles.textMuted}>Sem leituras suficientes para o gráfico</Text>
         </View>
       );
@@ -537,7 +535,7 @@ const DashboardScreen: React.FC = () => {
             }} />
           </View>
 
-            {(!isDeviceOn || leituras.length === 0) && dispositivoAtivo && (
+          {(!isDeviceOn || leituras.length === 0) && dispositivoAtivo && (
             <View style={styles.noDataContainer}>
               <Ionicons name="cloud-offline-outline" size={40} color={COLORS.textTertiary} />
               <Text style={[styles.textMuted, { marginTop: SPACING.sm, textAlign: "center" }]}>

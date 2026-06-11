@@ -97,6 +97,15 @@ export async function createTables(db: any): Promise<void> {
     await db.execAsync(SCHEMA.eventos);
     console.log('[SCHEMA] Tabela "eventos" criada ou já existe.');
 
+    // Limpeza automática de dados de luminosidade legados (> 1.0) para adequação ao novo sensor digital
+    await db.execAsync(`
+      DELETE FROM leituras 
+      WHERE id_sensor IN (
+        SELECT id_sensor FROM sensores WHERE tipo_sensor = 'luminosidade'
+      ) AND valor > 1.0;
+    `);
+    console.log('[SCHEMA] Limpeza de leituras antigas de luminosidade concluída.');
+
     console.log('[SCHEMA] 5 Tabelas do banco de dados SQLite criadas com sucesso!');
   } catch (error) {
     console.error('[SCHEMA] Erro ao criar tabelas do banco de dados SQLite:', error);

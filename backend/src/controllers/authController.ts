@@ -228,32 +228,4 @@ export const logout = async (req: Request, res: Response) => {
       ),
     );
   }
-};
-
-export const recuperarSenha = async (req: Request, res: Response) => {
-  try {
-    console.log("[RECUPERAR SENHA] BODY:", req.body);
-
-    const { email } = req.body;
-
-    if (!Validacao.isEmailValido(email))
-      return res
-        .status(400)
-        .json(Respostas.validacaoFalhou(["Email inválido"]));
-
-    return res.json(
-      Respostas.sucesso(
-        null,
-        "Se o email existir, um link será enviado",
-      ),
-    );
-  } catch (error: any) {
-    console.error("[RECUPERAR SENHA] ERRO:", error);
-
-    return res.status(500).json(
-      Respostas.erroInterno(
-        error?.message || "Erro ao recuperar senha",
-      ),
-    );
-  }
-};
+};

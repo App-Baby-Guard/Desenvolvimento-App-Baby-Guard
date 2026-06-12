@@ -1,6 +1,6 @@
 //essa é a tela de configurações do aplicativo, onde o usuário pode gerenciar suas preferências, como notificações, limites dos
 // sensores e informações do dispositivo.
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { Switch as PaperSwitch } from "react-native-paper";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { COLORS, GLOBAL_STYLES, SPACING, BORDER_RADIUS } from "../../shared/styles/globalStyles";
 import { getStyles } from "../../styles/configuracoesStyles";
 // importei o contexto de autenticação para pegar o token e os dados do usuário logado
@@ -254,27 +255,29 @@ export default function ConfiguracoesScreen({
   }, []);
 
   // Busca o dispositivo do usuário e o status atual no Blynk
-  useEffect(() => {
-    const carregarConfiguracoesBlynk = async () => {
-      try {
-        const dados = await listarDispositivos();
-        const ativo = dados.length > 0 ? dados[0] : null;
-        setDispositivoAtivo(ativo);
+  useFocusEffect(
+    useCallback(() => {
+      const carregarConfiguracoesBlynk = async () => {
+        try {
+          const dados = await listarDispositivos();
+          const ativo = dados.length > 0 ? dados[0] : null;
+          setDispositivoAtivo(ativo);
 
-        if (ativo && ativo.token_dispositivo) {
-          const status = await obterStatusBlynk(ativo.token_dispositivo);
-          setIsDeviceOn(status?.v7 === "1");
-        } else {
+          if (ativo && ativo.token_dispositivo) {
+            const status = await obterStatusBlynk(ativo.token_dispositivo);
+            setIsDeviceOn(status?.v7 === "1");
+          } else {
+            setIsDeviceOn(false);
+          }
+        } catch (err) {
+          console.log("Erro ao carregar status Blynk nas configurações:", err);
           setIsDeviceOn(false);
         }
-      } catch (err) {
-        console.log("Erro ao carregar status Blynk nas configurações:", err);
-        setIsDeviceOn(false);
-      }
-    };
+      };
 
-    carregarConfiguracoesBlynk();
-  }, []);
+      carregarConfiguracoesBlynk();
+    }, [])
+  );
 
   const handleTogglePower = async (ligar: boolean) => {
     if (!dispositivoAtivo || !dispositivoAtivo.token_dispositivo) {

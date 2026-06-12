@@ -169,9 +169,9 @@ export const sincronizarTodosDispositivos = async () => {
   }
 };
 
-// Orquestrador de Sincronização Automática (Loop de 60s)
+// Orquestrador de Sincronização Automática (Loop de 10s)
 export const iniciarSincronizacaoAutomatica = async () => {
-  const INTERVALO_MS = 60000; // 60 segundos
+  const INTERVALO_MS = 10000; // 10 segundos
   try {
     await sincronizarTodosDispositivos();
   } finally {

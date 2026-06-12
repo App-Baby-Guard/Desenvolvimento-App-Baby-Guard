@@ -11,6 +11,6 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   
-  console.log("[WORKER] Iniciando rotina de sincronização automática com Blynk (60s)...");
+  console.log("[WORKER] Iniciando rotina de sincronização automática com Blynk (10s)...");
   iniciarSincronizacaoAutomatica();
 });

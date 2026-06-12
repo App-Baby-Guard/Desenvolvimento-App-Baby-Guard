@@ -13,10 +13,10 @@ O **BabyGuard** é um sistema de monitoramento para berços infantis integrado a
        ▼
 [ Blynk IoT Cloud ] (Mantém cache dos pinos virtuais V3, V4, V5, V6, V7)
        ▲
-       │ (HTTP REST / Axios Polling 60s)
+       │ (HTTP REST / Axios Polling 10s)
 [ Backend API (Node.js/TypeScript) ] <=======> [ Banco PostgreSQL (Supabase) ]
        ▲
-       │ (HTTP REST / Fetch Polling 60s)
+       │ (HTTP REST / Fetch Polling 10s)
 [ Aplicativo Móvel (React Native/Expo) ] <===> [ Banco SQLite Local ] + [ AsyncStorage ]
 ```
 
@@ -123,7 +123,7 @@ Abra o terminal na pasta `backend/` e execute:
 npm install
 npm run dev
 ```
-O servidor será inicializado na porta `3000`. O worker de sincronização com o Blynk Cloud iniciará a rotina automática de 60 segundos.
+O servidor será inicializado na porta `3000`. O worker de sincronização com o Blynk Cloud iniciará a rotina automática de 10 segundos.
 
 ### Passo 3: Executando o Aplicativo Móvel (Expo)
 Abra o terminal na pasta `frontend/` e execute:

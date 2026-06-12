@@ -173,7 +173,7 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
   }
 }
 
-const INTERVALO_POLLING = 60000; // 60 segundos (Sincronizado com o Worker do Backend)
+const INTERVALO_POLLING = 10000; // 10 segundos (Sincronizado com o Worker do Backend)
 
 const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

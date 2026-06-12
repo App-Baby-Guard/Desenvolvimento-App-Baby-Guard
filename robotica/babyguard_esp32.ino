@@ -29,7 +29,7 @@ char pass[] = "";
 #define PINO_LED_B 18
 #define PINO_TRIG  13
 #define PINO_ECHO  12
-#define PINO_LDR   34  // Entrada digital de luminosidade (Pino apenas de entrada no ESP32, requer pull-up externo)
+#define PINO_LDR   34  // (Pino apenas de entrada no ESP32, requer pull-up externo)
 
 DHT dht(PINO_DHT, DHT11);
 BlynkTimer timer;
@@ -79,8 +79,6 @@ float lerDistancia() {
 // Lê o sensor de luz digital e retorna:
 //   1 = claro (pino LOW, luz detectada)
 //   0 = escuro (pino HIGH, sem luz)
-// Nota: a maioria dos sensores digitais de luz usa lógica invertida.
-//       Se o seu sensor funcionar ao contrário, troque LOW por HIGH abaixo.
 int lerLuminosidade() {
   return (digitalRead(PINO_LDR) == LOW) ? 1 : 0;
 }
@@ -113,7 +111,7 @@ void lerSensoresEEnviar() {
     alertarTemperatura(temp);
   }
   Blynk.virtualWrite(V6, dist);
-  Blynk.virtualWrite(V5, luz); // 0 ou 1
+  Blynk.virtualWrite(V5, luz); 
 }
 
 /********************************************************************************

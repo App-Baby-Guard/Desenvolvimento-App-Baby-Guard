@@ -15,8 +15,9 @@ import { COLORS, SPACING, GLOBAL_STYLES, TYPOGRAPHY, BORDER_RADIUS } from '../..
 import { useTheme } from '../../context/ThemeContext';
 import { getStyles } from '../../styles/alertasStyles';
 import { useIsFocused } from '@react-navigation/native';
-import { BLYNK_STATIC_TOKEN, obterStatusBlynk } from '../../services/blynkService';
+import { obterStatusBlynk } from '../../services/blynkService';
 import { limparHistoricoGeral, buscarHistoricoLeituras } from '../../services/leiturasService';
+import { listarDispositivos } from '../../services/dispositivosService';
 import { loadPersistedSensorLimits } from '../../repositories/SensorLimitsRepository';
 
 interface EventoHistorico {
@@ -120,11 +121,17 @@ const AlertasScreen: React.FC = () => {
         try {
             setLoading(true);
 
-            const blynkStatus = BLYNK_STATIC_TOKEN
-                ? await obterStatusBlynk(BLYNK_STATIC_TOKEN)
-                : null;
-            const standbyAtivo = blynkStatus?.v7 === "0";
-            const novoStatus = !standbyAtivo;
+            // Busca os dispositivos cadastrados do usuário
+            const dispositivos = await listarDispositivos();
+            const dispositivoAtivo = dispositivos.length > 0 ? dispositivos[0] : null;
+
+            let novoStatus = true; // Por padrão, ativo para evitar exibir o banner de standby se não houver dispositivo
+
+            if (dispositivoAtivo && dispositivoAtivo.token_dispositivo) {
+                const blynkStatus = await obterStatusBlynk(dispositivoAtivo.token_dispositivo);
+                const standbyAtivo = blynkStatus?.v7 === "0";
+                novoStatus = !standbyAtivo;
+            }
 
             // Apenas atualizamos o status do dispositivo sem limpar as listas
             // para manter o histórico visível ao usuário a todo momento.

@@ -19,7 +19,6 @@ import { getStyles } from "../../styles/dashboardStyles";
 
 import { listarDispositivos } from "../../services/dispositivosService";
 import { buscarUltimasLeiturasPorDispositivo, buscarHistoricoLeituras, LeituraSensor } from "../../services/leiturasService";
-import { BLYNK_STATIC_TOKEN } from "../../services/blynkService";
 import { Dispositivo } from "../../models/Dispositivo";
 import { useAuth } from "../../context/AuthContext";
 import { LineChart } from "react-native-chart-kit";
@@ -205,14 +204,13 @@ const DashboardScreen: React.FC = () => {
   useEffect(() => {
     if (!isFocused) return;
 
-    const carregarStatusBlynkV7 = async () => {
-      const token = dispositivoAtivo?.token_dispositivo || BLYNK_STATIC_TOKEN;
-      if (!token) {
-        console.warn("[Dashboard] Token do Blynk não configurado");
-        dispatch({ type: "SET_DEVICE_STATUS", payload: false });
-        return;
-      }
+    const token = dispositivoAtivo?.token_dispositivo;
+    if (!token) {
+      dispatch({ type: "SET_DEVICE_STATUS", payload: false });
+      return;
+    }
 
+    const carregarStatusBlynkV7 = async () => {
       try {
         const url = `https://blynk.cloud/external/api/get?token=${encodeURIComponent(token)}&v7`;
         const response = await fetch(url);

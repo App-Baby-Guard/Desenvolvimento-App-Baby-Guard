@@ -25,7 +25,9 @@ import { useTheme } from '../../context/ThemeContext';
 import { logoutApi } from '../../services/authService';
 import { loadPersistedSensorLimits, saveSensorLimitsToDatabase } from '../../repositories/SensorLimitsRepository';
 import { SensorLimit as SensorLimitPersisted } from '../../models/SensorLimit';
-import { BLYNK_STATIC_TOKEN, obterStatusBlynk, setStandbyBlynk } from '../../services/blynkService';
+import { obterStatusBlynk, setStandbyBlynk } from '../../services/blynkService';
+import { listarDispositivos } from "../../services/dispositivosService";
+import { Dispositivo } from "../../models/Dispositivo";
 
 // TYPES
 interface SensorLimit {
@@ -94,6 +96,7 @@ const ToggleRow = ({
   onToggle,
   isLast = false,
   styles,
+  disabled = false,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   iconColor?: string;
@@ -102,6 +105,7 @@ const ToggleRow = ({
   onToggle: (v: boolean) => void;
   isLast?: boolean;
   styles: ReturnType<typeof getStyles>;
+  disabled?: boolean;
 }) => (
   <View
     style={[
@@ -109,6 +113,7 @@ const ToggleRow = ({
       { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
       !isLast && styles.rowWithBorder,
       styles.rowBackground,
+      disabled && { opacity: 0.5 },
     ]}
   >
     <View
@@ -123,15 +128,16 @@ const ToggleRow = ({
         },
       ]}
     >
-      <Ionicons name={icon} size={18} color={iconColor} />
+      <Ionicons name={icon} size={18} color={disabled ? COLORS.textTertiary : iconColor} />
     </View>
 
-    <Text style={[styles.toggleLabel, { flex: 1 }]}>{label}</Text>
+    <Text style={[styles.toggleLabel, { flex: 1 }, disabled && { color: COLORS.textTertiary }]}>{label}</Text>
 
     <PaperSwitch
       value={value}
       onValueChange={onToggle}
       color={COLORS.primary}
+      disabled={disabled}
     />
   </View>
 );
@@ -194,6 +200,7 @@ export default function ConfiguracoesScreen({
   navigation?: any;
 }) {
   const [isDeviceOn, setIsDeviceOn] = useState(true);
+  const [dispositivoAtivo, setDispositivoAtivo] = useState<Dispositivo | null>(null);
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -246,28 +253,39 @@ export default function ConfiguracoesScreen({
     carregarLimites();
   }, []);
 
-  // Busca o status atual do Blynk no início
+  // Busca o dispositivo do usuário e o status atual no Blynk
   useEffect(() => {
-    if (!BLYNK_STATIC_TOKEN) {
-      console.warn("[Configurações] Token do Blynk não configurado");
+    const carregarConfiguracoesBlynk = async () => {
+      try {
+        const dados = await listarDispositivos();
+        const ativo = dados.length > 0 ? dados[0] : null;
+        setDispositivoAtivo(ativo);
+
+        if (ativo && ativo.token_dispositivo) {
+          const status = await obterStatusBlynk(ativo.token_dispositivo);
+          setIsDeviceOn(status?.v7 === "1");
+        } else {
+          setIsDeviceOn(false);
+        }
+      } catch (err) {
+        console.log("Erro ao carregar status Blynk nas configurações:", err);
+        setIsDeviceOn(false);
+      }
+    };
+
+    carregarConfiguracoesBlynk();
+  }, []);
+
+  const handleTogglePower = async (ligar: boolean) => {
+    if (!dispositivoAtivo || !dispositivoAtivo.token_dispositivo) {
+      console.warn("[Configurações] Nenhum dispositivo ativo cadastrado");
       setIsDeviceOn(false);
       return;
     }
 
-    obterStatusBlynk(BLYNK_STATIC_TOKEN)
-      .then((status) => setIsDeviceOn(status?.v7 === "1"))
-      .catch((err) => console.log("Erro ao ler Blynk nas configurações:", err));
-  }, []);
-
-  const handleTogglePower = async (ligar: boolean) => {
     setIsDeviceOn(ligar);
-    if (!BLYNK_STATIC_TOKEN) {
-      console.warn("[Configurações] Token do Blynk não configurado");
-      setIsDeviceOn(!ligar);
-      return;
-    }
 
-    const sucesso = await setStandbyBlynk(BLYNK_STATIC_TOKEN, ligar);
+    const sucesso = await setStandbyBlynk(dispositivoAtivo.token_dispositivo, ligar);
     if (!sucesso) {
       console.log("Erro ao atualizar Blynk: retorno negativo");
       setIsDeviceOn(!ligar);
@@ -416,10 +434,23 @@ export default function ConfiguracoesScreen({
             icon="power-outline"
             iconColor={isDeviceOn ? COLORS.success : COLORS.error}
             label={isDeviceOn ? "BabyGuard Ativado" : "BabyGuard em Standby"}
-            value={isDeviceOn}
+            value={isDeviceOn && !!dispositivoAtivo}
             onToggle={handleTogglePower}
             styles={styles}
+            disabled={!dispositivoAtivo}
           />
+
+          {!dispositivoAtivo && (
+            <Text style={{
+              color: COLORS.error,
+              fontSize: 12,
+              paddingHorizontal: SPACING.lg,
+              paddingBottom: SPACING.md,
+              fontStyle: "italic",
+            }}>
+              Cadastre um dispositivo para utilizar esta função.
+            </Text>
+          )}
 
           <ToggleRow
             icon="notifications-outline"

@@ -13,6 +13,10 @@ jest.mock('../../../services/leiturasService', () => ({
   buscarHistoricoLeituras: jest.fn().mockResolvedValue([]),
 }));
 
+jest.mock('../../../services/dispositivosService', () => ({
+  listarDispositivos: jest.fn().mockResolvedValue([]),
+}));
+
 jest.mock('../../../repositories/SensorLimitsRepository', () => ({
   loadPersistedSensorLimits: jest.fn().mockResolvedValue([]),
 }));

@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BabyGuard — Documentação Interativa Completa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* DESIGN SYSTEM & TOKENS HSL */
+    :root {
+      --primary-hsl: 217, 100%, 50%; /* #0055ff */
+      --primary: hsl(var(--primary-hsl));
+      --primary-hover: hsl(217, 100%, 45%);
+      --primary-light: hsl(217, 100%, 96%);
+      --accent: hsl(197, 100%, 46%); /* #00b3ff */
+      
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-sidebar: #0f172a;
+      
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-light: #ffffff;
+      
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+      
+      --font-family: 'Inter', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+      
+      --sidebar-width: 320px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    /* DARK MODE OVERRIDES */
+    .dark-mode {
+      --bg-main: #090d16;
+      --bg-card: #121824;
+      --bg-sidebar: #07090f;
+      
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      
+      --border-color: #1e293b;
+      --primary-light: rgba(0, 85, 255, 0.1);
+      
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.25);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
+    }
+
+    /* GLOBAL RESET */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      color: var(--text-main);
+      background-color: var(--bg-main);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bg-sidebar);
+      color: var(--text-light);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 50%;
+      background-color: #ffffff;
+      padding: 4px;
+    }
+
+    .sidebar-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .search-container {
+      padding: 16px 20px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.1);
+      background-color: rgba(255,255,255,0.07);
+      color: #ffffff;
+      font-family: var(--font-family);
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: rgba(255,255,255,0.12);
+      box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.25);
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+    }
+
+    .sidebar-menu::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-menu::-webkit-scrollbar-thumb {
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 2px;
+    }
+
+    .menu-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin: 16px 0 8px 8px;
+    }
+
+    .menu-item {
+      display: block;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      margin-bottom: 4px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .menu-item.active {
+      color: #ffffff;
+      background-color: var(--primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* MAIN CONTENT AREA */
+    .main-container {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* HEADER */
+    header {
+      background-color: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      transition: all 0.3s ease;
+    }
+
+    .header-breadcrumb {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .theme-toggle-btn, .print-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-weight: 500;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover, .print-btn:hover {
+      background-color: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* CONTENT WRAPPER */
+    .content-viewport {
+      padding: 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* TABS */
+    .tab-nav {
+      display: flex;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 30px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--primary);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* MARKDOWN STYLING */
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      color: var(--text-main);
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      scroll-margin-top: 90px;
+    }
+
+    h1 { font-size: 2.25rem; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-top: 0; }
+    h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.1rem; }
+
+    p {
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px dashed var(--primary);
+      transition: all 0.15s ease;
+    }
+
+    a:hover {
+      color: var(--primary-hover);
+      border-bottom-style: solid;
+    }
+
+    ul, ol {
+      margin-bottom: 1.5rem;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* TABLES */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.925rem;
+      box-shadow: var(--shadow-sm);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      font-family: var(--font-heading);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: rgba(0, 0, 0, 0.015);
+    }
+    
+    .dark-mode tr:nth-child(even) td {
+      background-color: rgba(255, 255, 255, 0.015);
+    }
+
+    /* CODE & CODEBLOCKS */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background-color: var(--bg-main);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--primary);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    pre {
+      background-color: #0f172a;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      overflow-x: auto;
+      margin: 20px 0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    pre code {
+      background-color: transparent !important;
+      padding: 0;
+      border-radius: 0;
+      color: #cbd5e1;
+      font-size: 0.875rem;
+      border: none;
+    }
+
+    /* BLOCKQUOTES & ALERTS */
+    blockquote {
+      background-color: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin: 20px 0;
+    }
+
+    blockquote p {
+      margin-bottom: 0;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* ALERTS GH STYLE */
+    .alert {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin: 20px 0;
+      border-left: 4px solid transparent;
+    }
+
+    .alert-important {
+      background-color: rgba(0, 85, 255, 0.08);
+      border-left-color: var(--primary);
+    }
+
+    /* ENDPOINT CARDS / ACCORDIONS */
+    .endpoint-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+      background-color: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .endpoint-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .endpoint-header {
+      padding: 14px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      user-select: none;
+      background-color: var(--bg-card);
+    }
+
+    .method-badge {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      color: white;
+      min-width: 65px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .method-get { background-color: #3b82f6; }
+    .method-post { background-color: #10b981; }
+    .method-patch { background-color: #f59e0b; }
+    .method-delete { background-color: #ef4444; }
+
+    .endpoint-path {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.925rem;
+      flex: 1;
+      color: var(--text-main);
+    }
+
+    .endpoint-auth {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: var(--bg-main);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .endpoint-content {
+      display: none;
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-main);
+    }
+
+    /* INTERACTIVE DATABASE VISUALIZER */
+    .db-visualizer {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin: 24px 0;
+      box-shadow: var(--shadow-md);
+    }
+
+    .db-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .db-tab-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-main);
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .db-tab-btn.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .table-details {
+      display: none;
+    }
+
+    .table-details.active {
+      display: block;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-container {
+        margin-left: 0;
+      }
+      header {
+        padding: 0 20px;
+      }
+    }
+
+    /* PRINT LAYOUT (@media print) */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        display: block !important;
+        font-family: 'Inter', sans-serif !important;
+      }
+      
+      .sidebar, header, .tab-nav, .theme-toggle-btn, .print-btn, .search-container, .db-selector, .method-badge, .endpoint-auth {
+        display: none !important;
+      }
+
+      .main-container {
+        margin-left: 0 !important;
+        padding: 0 !important;
+      }
+
+      .content-viewport {
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+
+      .tab-panel {
+        display: block !important;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        color: #0055ff !important;
+        font-family: 'Outfit', sans-serif !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        font-size: 2.25rem !important;
+        font-weight: 800 !important;
+        border-bottom: 2px solid #0055ff !important;
+        padding-bottom: 12px !important;
+        margin-top: 2rem !important;
+        page-break-before: always;
+      }
+
+      h2 {
+        font-size: 1.5rem !important;
+        border-bottom: 1px solid rgba(0, 85, 255, 0.3) !important;
+        padding-bottom: 8px !important;
+        margin-top: 1.5rem !important;
+      }
+
+      pre, blockquote, table {
+        page-break-inside: avoid;
+      }
+
+      pre {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+      }
+
+      pre code {
+        color: #0f172a !important;
+        background-color: transparent !important;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0055ff !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 2px 6px !important;
+      }
+
+      table {
+        border: 1px solid #cbd5e1 !important;
+      }
+
+      th {
+        background-color: #0055ff !important;
+        color: #ffffff !important;
+        border: 1px solid #0055ff !important;
+      }
+
+      td {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+
+      /* PRINT COVER PAGE */
+      .print-cover {
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        page-break-after: always;
+        padding: 40px;
+      }
+
+      .print-cover h1 {
+        font-size: 4rem !important;
+        color: #0055ff !important;
+        font-weight: 800 !important;
+        margin-bottom: 15px !important;
+        border-bottom: none !important;
+        page-break-before: avoid !important;
+        letter-spacing: 2px !important;
+      }
+
+      .print-cover h2 {
+        font-size: 1.6rem !important;
+        color: #475569 !important;
+        font-weight: 600 !important;
+        border-bottom: none !important;
+        margin-bottom: 40px !important;
+        page-break-after: avoid !important;
+      }
+
+      .print-cover .ppdm {
+        font-size: 1.25rem !important;
+        color: #1e293b !important;
+        margin-bottom: 8px !important;
+        font-weight: 500 !important;
+      }
+
+      .print-cover .robotica {
+        font-size: 1.25rem !important;
+        color: #1e293b !important;
+        margin-bottom: 80px !important;
+        font-weight: 500 !important;
+      }
+
+      .print-cover .integrantes {
+        font-size: 1.15rem !important;
+        line-height: 1.8 !important;
+        color: #1e293b !important;
+        margin-top: 60px !important;
+      }
+      
+      .print-cover .integrante-nome {
+        margin-bottom: 8px !important;
+        font-weight: 500 !important;
+      }
+    }
+
+    /* Hiding print elements on web screen */
+    .print-cover {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://images.unsplash.com/photo-1544070352-9711582269b3?q=80&w=100&auto=format&fit=crop" class="logo-img" alt="BabyGuard Logo" style="display:none;" onerror="this.style.display='none'">
+      <!-- Logo SVG de reposição -->
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 20.2C9.33 20.2 6.91 18.83 5.5 16.71C5.54 14.54 9.9 13.37 12 13.37C14.09 13.37 18.45 14.54 18.5 16.71C17.09 18.83 14.67 20.2 12 20.2Z" fill="#0055ff"/>
+      </svg>
+      <span class="sidebar-title">BabyGuard</span>
+    </div>
+
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar na documentação...">
+    </div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+      <div class="menu-section-title">Visualização</div>
+      <a href="#academic" class="menu-item active" onclick="switchMainTab('academic')">📘 Acadêmica</a>
+      <a href="#api-ref" class="menu-item" onclick="switchMainTab('api-ref')">🛡️ Referência da API</a>
+      
+      <div class="menu-section-title">Seções Acadêmicas</div>
+      <div id="academicMenu"></div>
+    </nav>
+  </aside>
+
+  <!-- MAIN VIEWPORT -->
+  <div class="main-container">
+    
+    <!-- TOP BAR -->
+    <header>
+      <div class="header-breadcrumb" id="headerBreadcrumb">Documentação Oficial</div>
+      <div class="header-actions">
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          Tema Escuro
+        </button>
+        <button class="print-btn" onclick="window.print()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Gerar PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="content-viewport">
+
+      <!-- COVER FOR PRINT -->
+      <div class="print-cover">
+        <h1>BABYGUARD</h1>
+        <h2>Sistema de Monitoramento Ambiental para Bebês</h2>
+        <div class="ppdm">Programação para Dispositivos Móveis (PPDM)</div>
+        <div class="robotica">Robótica</div>
+        <div class="integrantes">
+          <div class="integrante-nome">Arthur Lourenço Fritz</div>
+          <div class="integrante-nome">Arthur Steiner Morais Silva</div>
+          <div class="integrante-nome">Joyce Masalla Jorge</div>
+          <div class="integrante-nome">Sânio Rodrigues Silva Trindade</div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-nav">
+        <button class="tab-btn active" id="academicTabBtn" onclick="switchMainTab('academic')">📘 Documentação Acadêmica</button>
+        <button class="tab-btn" id="apiTabBtn" onclick="switchMainTab('api-ref')">🛡️ Referência Completa da API</button>
+      </div>
+
+      <!-- TAB PANEL 1: ACADEMIC -->
+      <div class="tab-panel active" id="academicPanel">
+        <div class="markdown-body" id="academicContent">
+          <h1>DOCUMENTAÇÃO ACADÊMICA E TÉCNICA OFICIAL — BABYGUARD</h1>
+<h2>CAPA</h2>
+<ul>
+<li><strong>Nome do Projeto</strong>: BabyGuard</li>
+<li><strong>Disciplina</strong>: Programação para Dispositivos Móveis (PPDM)</li>
+<li><strong>Integrantes</strong>:<ul>
+<li>Joyce Masalla Jorge</li>
+<li>Arthur Steiner Morais Silva</li>
+<li>Sânio Rodrigues Silva Trindade</li>
+<li>Arthur Lourenço Fritz</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>SUMÁRIO</h2>
+<ol>
+<li>Introdução</li>
+<li>Objetivos</li>
+<li>Problema Resolvido</li>
+<li>Escopo do Projeto</li>
+<li>Arquitetura Geral</li>
+<li>Tecnologias Utilizadas</li>
+<li>Bibliotecas e Dependências</li>
+<li>Estrutura de Pastas</li>
+<li>Arquitetura Mobile (MVVM + Repository)</li>
+<li>Arquitetura Backend (Controller-Service-Repository)</li>
+<li>Banco de Dados PostgreSQL (Nuvem)</li>
+<li>Banco de Dados SQLite (Embarcado/Cache)</li>
+<li>Estrutura Completa das Tabelas</li>
+<li>Autenticação (JWT + Blacklist)</li>
+<li>Controle de Sessão</li>
+<li>Context API</li>
+<li>Gerenciamento de Estado (useReducer / Flux)</li>
+<li>Navegação (Bottom Tabs + Native Stack)</li>
+<li>Recursos Nativos</li>
+<li>Comunicação com Hardware</li>
+<li>Integração com Blynk IoT</li>
+<li>Fluxo de Sincronização (10s Polling / Sync)</li>
+<li>Fluxo Offline e Cache de Dados</li>
+<li>Telas do Aplicativo</li>
+<li>Funcionalidades de Cada Tela</li>
+<li>Fluxos de Interface do Usuário</li>
+<li>Regras de Negócio e Travas de Segurança</li>
+<li>Segurança Implementada</li>
+<li>Tratamento de Erros e Resiliência</li>
+<li>Boas Práticas e Arquitetura Limpa</li>
+<li>Processo de Instalação</li>
+<li>Processo de Execução</li>
+<li>Ambiente de Desenvolvimento</li>
+<li>Limitações Conhecidas</li>
+<li>Conclusão</li>
+<li>Referência Completa da API REST (30 Endpoints)</li>
+</ol>
+<hr>
+<h3>1. Introdução</h3>
+<p>O projeto BabyGuard consiste em um sistema de monitoramento para berços infantis integrado a sensores físicos de temperatura, umidade, luminosidade e distância (ultrassônico) para rastrear movimento. O sistema é composto por um hardware embarcado (ESP32 simulado via Wokwi), um serviço de nuvem intermediário (Blynk IoT Cloud), uma API REST de backend (Node.js/Express com banco PostgreSQL) e um aplicativo móvel (React Native/Expo com banco local SQLite e AsyncStorage).</p>
+<h3>2. Objetivos</h3>
+<ul>
+<li>Mapear e persistir localmente as leituras ambientais e alertas do berço.</li>
+<li>Disponibilizar as informações em tempo real no aplicativo móvel.</li>
+<li>Garantir o funcionamento contínuo do aplicativo móvel de maneira offline através de cache local estruturado no banco SQLite.</li>
+<li>Fornecer controle de acesso autenticado (JWT) para os usuários no backend e no aplicativo.</li>
+<li>Oferecer uma rotina de standby (modo economia/pausa) controlada diretamente pelo aplicativo via comunicação com o hardware.</li>
+</ul>
+<h3>3. Problema Resolvido</h3>
+<p>A falta de acompanhamento em tempo real das condições de conforto térmico, luminosidade excessiva e atividade física (movimentação ou ausência do bebê no berço), bem como a instabilidade de rede que comumente inutiliza aplicativos puramente online. O BabyGuard soluciona essa interrupção aplicando uma arquitetura offline-first no aplicativo, permitindo a consulta do histórico mesmo sem conexão ativa à internet.</p>
+<h3>4. Escopo do Projeto</h3>
+<p>O escopo abrange o pareamento e renomeação de dispositivos de monitoramento (robôs), a visualização dos dados dos sensores em formato de cartões visuais com barras de progresso, um gráfico histórico das variações de temperatura local, o recebimento de alertas dinâmicos baseados em limites configuráveis do aplicativo, a edição de dados de perfil do usuário e a alternância global de tema claro/escuro.</p>
+<h3>5. Arquitetura Geral</h3>
+<p>O ecossistema é distribuído em quatro camadas:</p>
+<ol>
+<li><strong>Embarcado (ESP32)</strong>: Coleta dados físicos (Temperatura/Umidade com DHT11, Luminosidade com LDR digital, Distância com HC-SR04) e transmite ao Blynk via protocolo TCP/IP.</li>
+<li><strong>Blynk Cloud</strong>: Recebe e mantém em cache os valores dos pinos virtuais.</li>
+<li><strong>Backend API</strong>: Um servidor Node.js/TypeScript que consulta periodicamente (de 10 em 10 segundos) a API REST do Blynk, insere os dados no banco PostgreSQL e fornece endpoints REST para o aplicativo.</li>
+<li><strong>Mobile App</strong>: Consome a API do backend, gerencia sessões locais via AsyncStorage e armazena os dados localmente no SQLite.</li>
+</ol>
+<hr>
+<h3>6. Tecnologias Utilizadas</h3>
+<ul>
+<li><strong>Mobile</strong>: React Native, Expo SDK 54, TypeScript, React Navigation, React Native Paper.</li>
+<li><strong>Backend</strong>: Node.js, Express, TypeScript, ts-node-dev, pg (PostgreSQL driver).</li>
+<li><strong>Bancos de Dados</strong>: PostgreSQL 16 (nuvem/produção via Supabase) e SQLite 3 via <code>expo-sqlite</code> (banco local embarcado).</li>
+<li><strong>IoT/Hardware</strong>: ESP32, sensores DHT11, HC-SR04, LDR, Blynk Cloud API, Simulador Wokwi.</li>
+</ul>
+<hr>
+<h3>7. Bibliotecas e Dependências (Ultra Completa)</h3>
+<p>Esta seção documenta individualmente cada biblioteca, framework e pacote utilizado no ecossistema do BabyGuard, mapeados diretamente dos manifestos do projeto.</p>
+<h4>7.1 Dependências do Frontend (<code>frontend/package.json</code>)</h4>
+<ul>
+<li><strong><code>expo</code> (v54.0.35)</strong>: Framework e plataforma principal para o desenvolvimento do aplicativo React Native. Gerencia a compilação, o ciclo de vida do app e a conexão com módulos nativos sem necessidade de código nativo direto.</li>
+<li><strong><code>react</code> (v19.1.0)</strong>: Biblioteca base de JavaScript para construção das interfaces do usuário estruturada em componentes.</li>
+<li><strong><code>react-dom</code> (v19.1.0)</strong>: Pacote utilizado no projeto para viabilizar a renderização de elementos React no navegador no ecossistema Expo Web.</li>
+<li><strong><code>react-native</code> (v0.81.5)</strong>: Framework que permite compilar componentes em elementos nativos de interface gráfica do Android e iOS.</li>
+<li><strong><code>react-native-web</code> (v0.21.0)</strong>: Permite rodar o código do aplicativo React Native diretamente no ambiente web, convertendo componentes móveis para HTML5 equivalente.</li>
+<li><strong><code>typescript</code> (v5.9.2)</strong>: Linguagem que adiciona tipagem estática opcional ao JavaScript, trazendo detecção de erros em tempo de compilação.</li>
+<li><strong><code>@expo/vector-icons</code> (v15.0.3)</strong>: Renderização e gerenciamento de ícones vetoriais nativos no aplicativo (como ícones <code>Ionicons</code> em abas de navegação, botões e cabeçalhos).</li>
+<li><strong><code>@react-native-async-storage/async-storage</code> (v2.2.0)</strong>: Armazenamento local persistente chave-valor do tipo não volátil, usado para guardar a sessão do usuário (token JWT e dados cadastrais básicos) e preferências visuais (preferência pelo modo escuro).</li>
+<li><strong><code>@react-navigation/native</code> (v7.2.4)</strong> e <strong><code>@react-navigation/bottom-tabs</code> (v7.16.0)</strong>: Infraestrutura de roteamento e navegação do app, provendo a navegação inferior por abas (Início, Alertas, Robôs, Ajustes).</li>
+<li><strong><code>@react-navigation/native-stack</code> (v7.15.0)</strong>: Roteador de pilha (Stack) para navegar de forma transicional para telas secundárias fora do fluxo de abas (Login, Cadastro, Parear Robô, Renomear Robô, Detalhes, Perfil).</li>
+<li><strong><code>expo-asset</code> (v12.0.13)</strong>: Biblioteca utilizada para gerenciar e pré-carregar recursos estáticos como imagens e fontes locais na inicialização do aplicativo.</li>
+<li><strong><code>expo-image-picker</code> (v17.0.11)</strong>: Componente que solicita permissões de segurança do celular e gerencia o uso da Câmera nativa e da Galeria de Fotos do smartphone para captura e atualização da imagem de perfil.</li>
+<li><strong><code>expo-sqlite</code> (v16.0.10)</strong>: Driver assíncrono para o banco de dados embarcado SQLite 3, essencial para criar tabelas locais, executar migrações na inicialização do app e servir de cache físico para o funcionamento offline.</li>
+<li><strong><code>react-native-chart-kit</code> (v6.12.3)</strong>: Biblioteca para renderização do gráfico de variações históricas de temperatura ambiente na tela de Dashboard.</li>
+<li><strong><code>react-native-svg</code> (v15.12.1)</strong>: Renderizador de gráficos vetoriais nativos e dependência direta obrigatória do <code>react-native-chart-kit</code>.</li>
+<li><strong><code>react-native-paper</code> (v5.15.3)</strong>: Biblioteca de componentes visuais baseada na especificação do Material Design da Google, fornecendo inputs de texto formatados, botões com efeito cascata, switches e modais.</li>
+<li><strong><code>react-native-safe-area-context</code> (v5.6.0)</strong>: Garante que os elementos de layout sejam posicionados respeitando os recortes físicos da tela, como o entalhe superior da câmera (notch) e a barra de gestos inferior.</li>
+<li><strong><code>react-native-screens</code> (v4.16.0)</strong>: Pacote de otimização que renderiza telas nativamente de forma a economizar memória e processamento gráfico.</li>
+<li><strong><code>react-native-toast-message</code> (v2.3.3)</strong>: Módulo de alerta dinâmico para renderizar mensagens flutuantes (Toasts) amigáveis para feedbacks de ações na interface (sucesso, erro ou avisos).</li>
+</ul>
+<h4>7.2 Dependências de Desenvolvimento do Frontend (DevDependencies)</h4>
+<ul>
+<li><strong><code>jest</code> (v30.4.2)</strong>: Framework de execução de testes automatizados para verificar comportamentos e lógicas no frontend.</li>
+<li><strong><code>jest-expo</code> (v56.0.4)</strong>: Configuração e preset pré-definido pelo Expo para permitir rodar testes unitários em componentes que usam dependências exclusivas do Expo.</li>
+<li><strong><code>@testing-library/react-native</code> (v14.0.0)</strong>: Facilita testes de comportamento de componentes React Native baseados na perspectiva do usuário de forma declarativa.</li>
+<li><strong><code>@types/jest</code> (v29.5.0)</strong> e <strong><code>@types/react</code> (v19.1.0)</strong>: Arquivos de definições e contratos de tipos para o TypeScript para suporte inteligente em IDEs nas bibliotecas correspondentes.</li>
+</ul>
+<h4>7.3 Dependências do Backend (<code>backend/package.json</code>)</h4>
+<ul>
+<li><strong><code>express</code> (v4.21.2)</strong>: Framework web HTTP minimalista e flexível para criação da API REST, gerenciamento de middlewares e roteamento do backend.</li>
+<li><strong><code>axios</code> (v1.16.1)</strong>: Cliente HTTP baseado em Promessas usado para comunicação com o Blynk IoT Cloud para leitura e escrita dos pinos virtuais.</li>
+<li><strong><code>bcryptjs</code> (v3.0.3)</strong>: Algoritmo de hash de senhas de via única adaptado do bcrypt, que aplica saltos de criptografia (padrão de complexidade de 10) nas senhas dos usuários.</li>
+<li><strong><code>cors</code> (v2.8.5)</strong>: Middleware utilizado para habilitar o compartilhamento de recursos de origem cruzada (CORS), permitindo requisições originadas do app React Native.</li>
+<li><strong><code>dotenv</code> (v16.6.1)</strong>: Módulo que carrega variáveis de ambiente de um arquivo <code>.env</code> para a propriedade global <code>process.env</code>.</li>
+<li><strong><code>jsonwebtoken</code> (v9.0.3)</strong>: Biblioteca para emissão, assinatura e verificação de chaves do padrão RFC 7519 (tokens JWT) utilizando criptografia HMAC-SHA256 para autorizar chamadas em endpoints protegidos.</li>
+<li><strong><code>pg</code> (v8.13.1)</strong>: Driver cliente PostgreSQL para conectar, executar consultas diretas parametrizadas e gerenciar o pool de conexões com o banco remoto Supabase.</li>
+</ul>
+<h4>7.4 Dependências de Desenvolvimento do Backend (DevDependencies)</h4>
+<ul>
+<li><strong><code>typescript</code> (v5.7.2)</strong>: Compilador do TypeScript para converter códigos tipados em JavaScript puro compatível com Node.js.</li>
+<li><strong><code>ts-node</code> (v10.9.2)</strong>: Permite executar scripts TypeScript diretamente sem a necessidade de compilação prévia explícita.</li>
+<li><strong><code>ts-node-dev</code> (v2.0.0)</strong>: Executa o servidor de desenvolvimento com recarregamento em tempo real (auto-reload) ao alterar qualquer arquivo de código do backend.</li>
+<li><strong><code>@types/node</code> (v22.10.2)</strong>, <strong><code>@types/express</code> (v4.17.21)</strong>, <strong><code>@types/jsonwebtoken</code> (v9.0.10)</strong>, <strong><code>@types/pg</code> (v8.11.10)</strong>, <strong><code>@types/cors</code> (v2.8.17)</strong>, <strong><code>@types/bcryptjs</code> (v2.4.6)</strong> e <strong><code>@types/uuid</code> (v9.0.8)</strong>: Definições de tipagem necessárias para que o compilador do TypeScript conheça os contratos de parâmetros e retornos das bibliotecas utilizadas.</li>
+</ul>
+<hr>
+<h3>8. Estrutura de Pastas</h3>
+<pre><code>BabyGuard
+├── backend
+│   ├── dist (código compilado)
+│   ├── src
+│   │   ├── config (database.ts)
+│   │   ├── controllers (auth, blynk, dispositivos, eventos, leituras, sensores, usuarios)
+│   │   ├── middleware (autenticacao, tokenBlacklist)
+│   │   ├── models (interfaces TypeScript)
+│   │   ├── routes (definições de rotas HTTP)
+│   │   ├── services (regras de negócio e queries ao banco pg/Blynk)
+│   │   ├── types (index.ts)
+│   │   ├── utils (respostas, validacao)
+│   │   ├── app.ts (configuração express)
+│   │   └── server.ts (entrada do servidor)
+│   └── package.json
+└── frontend
+    ├── src
+    │   ├── config (apiUrl.ts)
+    │   ├── context (AuthContext, ThemeContext)
+    │   ├── controllers (roboController.ts)
+    │   ├── database (sqlite.ts, migrations/schema.ts)
+    │   ├── hooks (useLogin, usePerfil)
+    │   ├── models (interfaces locais)
+    │   ├── repositories (Dispositivo, Evento, Leitura, Sensor, SensorLimits)
+    │   ├── routes (RootNavigator, TabNavigator)
+    │   ├── services (auth, blynk, dispositivos, eventos, leituras)
+    │   ├── shared (styles, utils/logger)
+    │   ├── styles (folhas de estilo CSS-in-JS)
+    │   ├── tests (Jest tests)
+    │   └── views (components, screens)
+    └── package.json
+</code></pre>
+<hr>
+<h3>9. Arquitetura Mobile (MVVM + Repository)</h3>
+<p>O aplicativo móvel segue o padrão de projeto MVVM (Model-View-ViewModel) desacoplado da camada de dados por meio do padrão Repository:</p>
+<ul>
+<li><strong>Views (Telas/Componentes)</strong>: Componentes React Native funcionais responsáveis apenas por desenhar a interface gráfica com base nos estados.</li>
+<li><strong>Controllers / ViewModels</strong>: Intermediam a lógica, controlando o fluxo e chamadas assíncronas do aplicativo (ex: <code>roboController.ts</code>).</li>
+<li><strong>Services</strong>: Camada responsável por se comunicar com a API do backend, fazendo o tratamento de timeouts e gerando as exceções que ativam o modo offline.</li>
+<li><strong>Repositories</strong>: Camada de persistência local que abstrai as consultas brutas SQL executadas no SQLite do dispositivo móvel do usuário.</li>
+<li><strong>Models</strong>: Arquivos que definem os contratos estruturais e schemas de dados das tabelas locais.</li>
+</ul>
+<h3>10. Arquitetura Backend (Controller-Service-Repository)</h3>
+<p>O backend adota o modelo clássico em camadas:</p>
+<ul>
+<li><strong>Routes</strong>: Direcionam as requisições HTTP para os respectivos controllers da aplicação.</li>
+<li><strong>Middlewares</strong>: Interceptam as chamadas HTTP para realizar validações (como token JWT) ou limpezas de segurança.</li>
+<li><strong>Controllers</strong>: Validam o formato dos payloads das requisições de entrada e formatam a resposta de saída da API no padrão JSON.</li>
+<li><strong>Services</strong>: Concentram toda a lógica e regras de negócio e efetuam as chamadas no banco PostgreSQL remoto via SQL parametrizado.</li>
+</ul>
+<hr>
+<h3>11. Banco de Dados PostgreSQL (Nuvem)</h3>
+<p>O banco PostgreSQL hospeda centralizadamente todos os dados dos usuários e dispositivos. Ele é hospedado na nuvem (Supabase) e acessado pelo backend usando as credenciais definidas na variável de ambiente <code>DATABASE_URL</code> no arquivo <code>.env</code>.</p>
+<h3>12. Banco de Dados SQLite (Embarcado/Cache)</h3>
+<p>O banco de dados SQLite (<code>babyguard.db</code>) roda localmente no dispositivo móvel do usuário por meio do driver assíncrono <code>expo-sqlite</code>. Ele é inicializado no arquivo <a href="../frontend/src/database/sqlite.ts">sqlite.ts</a> e configurado na inicialização do aplicativo em <a href="../frontend/src/App.tsx">App.tsx</a>.</p>
+<hr>
+<h3>13. Estrutura Completa das Tabelas</h3>
+<h4>PostgreSQL (Produção/Nuvem)</h4>
+<ol>
+<li><p><strong>usuarios</strong></p>
+<ul>
+<li><code>id_usuario</code> (SERIAL, PRIMARY KEY)</li>
+<li><code>nome</code> (VARCHAR)</li>
+<li><code>email</code> (VARCHAR, UNIQUE)</li>
+<li><code>senha_hash</code> (VARCHAR)</li>
+<li><code>telefone</code> (VARCHAR, NULLABLE)</li>
+<li><code>foto_perfil</code> (TEXT, NULLABLE)</li>
+<li><code>push_token</code> (VARCHAR, NULLABLE)</li>
+<li><code>status_usuario</code> (VARCHAR, DEFAULT &#39;ativo&#39;)</li>
+<li><code>criado_em</code> (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>dispositivos</strong></p>
+<ul>
+<li><code>id_dispositivo</code> (SERIAL, PRIMARY KEY)</li>
+<li><code>uuid_dispositivo</code> (VARCHAR, UNIQUE)</li>
+<li><code>id_usuario</code> (INTEGER, FOREIGN KEY REFERENCES usuarios)</li>
+<li><code>nome_dispositivo</code> (VARCHAR)</li>
+<li><code>wifi_ssid</code> (VARCHAR, NULLABLE)</li>
+<li><code>token_dispositivo</code> (VARCHAR, NULLABLE)</li>
+<li><code>status_dispositivo</code> (VARCHAR, DEFAULT &#39;offline&#39;)</li>
+<li><code>movimento</code> (BOOLEAN, DEFAULT FALSE)</li>
+<li><code>ativo</code> (BOOLEAN, DEFAULT TRUE)</li>
+<li><code>criado_em</code> (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>sensores</strong></p>
+<ul>
+<li><code>id_sensor</code> (SERIAL, PRIMARY KEY)</li>
+<li><code>id_dispositivo</code> (INTEGER, FOREIGN KEY REFERENCES dispositivos)</li>
+<li><code>nome_sensor</code> (VARCHAR)</li>
+<li><code>tipo_sensor</code> (VARCHAR)</li>
+<li><code>unidade_medida</code> (VARCHAR, NULLABLE)</li>
+<li><code>descricao</code> (VARCHAR, NULLABLE)</li>
+</ul>
+</li>
+<li><p><strong>leituras</strong></p>
+<ul>
+<li><code>id_leitura</code> (SERIAL, PRIMARY KEY)</li>
+<li><code>id_sensor</code> (INTEGER, FOREIGN KEY REFERENCES sensores)</li>
+<li><code>valor</code> (NUMERIC, NULLABLE)</li>
+<li><code>valor_booleano</code> (BOOLEAN, NULLABLE)</li>
+<li><code>movimento</code> (BOOLEAN, NULLABLE)</li>
+<li><code>data_hora</code> (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>eventos</strong></p>
+<ul>
+<li><code>id_evento</code> (SERIAL, PRIMARY KEY)</li>
+<li><code>id_dispositivo</code> (INTEGER, FOREIGN KEY REFERENCES dispositivos)</li>
+<li><code>id_sensor</code> (INTEGER, FOREIGN KEY REFERENCES sensores, NULLABLE)</li>
+<li><code>tipo_evento</code> (VARCHAR)</li>
+<li><code>nivel_criticidade</code> (VARCHAR)</li>
+<li><code>data_evento</code> (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>tokens_revogados</strong></p>
+<ul>
+<li><code>token</code> (TEXT, PRIMARY KEY)</li>
+<li><code>revogado_em</code> (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+</ol>
+<h4>SQLite (Embarcado/Local)</h4>
+<p>As definições constam no arquivo <a href="../frontend/src/database/migrations/schema.ts">schema.ts</a>:</p>
+<ol>
+<li><p><strong>dispositivos</strong></p>
+<ul>
+<li><code>id_dispositivo</code> (INTEGER, PRIMARY KEY AUTOINCREMENT)</li>
+<li><code>uuid_dispositivo</code> (TEXT, UNIQUE, NOT NULL)</li>
+<li><code>id_usuario</code> (INTEGER)</li>
+<li><code>nome_dispositivo</code> (TEXT, NOT NULL)</li>
+<li><code>status_dispositivo</code> (TEXT, DEFAULT &#39;offline&#39;)</li>
+<li><code>ativo</code> (INTEGER, DEFAULT 1)</li>
+<li><code>criado_em</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+<li><code>atualizado_em</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>sensores</strong></p>
+<ul>
+<li><code>id_sensor</code> (INTEGER, PRIMARY KEY AUTOINCREMENT)</li>
+<li><code>id_dispositivo</code> (INTEGER, NOT NULL, FOREIGN KEY REFERENCES dispositivos)</li>
+<li><code>nome_sensor</code> (TEXT, NOT NULL)</li>
+<li><code>tipo_sensor</code> (TEXT, NOT NULL)</li>
+<li><code>unidade_medida</code> (TEXT)</li>
+<li><code>criado_em</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>limites_sensores</strong></p>
+<ul>
+<li><code>id_limite</code> (INTEGER, PRIMARY KEY AUTOINCREMENT)</li>
+<li><code>label</code> (TEXT, UNIQUE, NOT NULL)</li>
+<li><code>tipo_sensor</code> (TEXT, NOT NULL)</li>
+<li><code>min</code> (REAL, NOT NULL)</li>
+<li><code>max</code> (REAL, NOT NULL)</li>
+<li><code>unidade_medida</code> (TEXT)</li>
+<li><code>atualizado_em</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+</ul>
+</li>
+<li><p><strong>leituras</strong></p>
+<ul>
+<li><code>id_leitura</code> (INTEGER, PRIMARY KEY AUTOINCREMENT)</li>
+<li><code>id_sensor</code> (INTEGER, NOT NULL, FOREIGN KEY REFERENCES sensores)</li>
+<li><code>valor</code> (REAL)</li>
+<li><code>valor_booleano</code> (INTEGER)</li>
+<li><code>movimento</code> (INTEGER)</li>
+<li><code>data_hora</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+<li><code>sincronizado</code> (INTEGER, DEFAULT 0)</li>
+</ul>
+</li>
+<li><p><strong>eventos</strong></p>
+<ul>
+<li><code>id_evento</code> (INTEGER, PRIMARY KEY AUTOINCREMENT)</li>
+<li><code>id_dispositivo</code> (INTEGER, NOT NULL, FOREIGN KEY REFERENCES dispositivos)</li>
+<li><code>id_sensor</code> (INTEGER, FOREIGN KEY REFERENCES sensores, NULLABLE)</li>
+<li><code>tipo_evento</code> (TEXT, NOT NULL)</li>
+<li><code>nivel_criticidade</code> (TEXT, DEFAULT &#39;normal&#39;)</li>
+<li><code>data_evento</code> (DATETIME, DEFAULT CURRENT_TIMESTAMP)</li>
+<li><code>sincronizado</code> (INTEGER, DEFAULT 0)</li>
+</ul>
+</li>
+</ol>
+<h4>Modelo Relacional Textual</h4>
+<pre><code>[usuarios] 1 ------ 0..N [dispositivos]
+[dispositivos] 1 -- 0..N [sensores]
+[dispositivos] 1 -- 0..N [eventos]
+[sensores] 1 ------ 0..N [leituras]
+[sensores] 0..1 --- 0..N [eventos]
+</code></pre>
+<hr>
+<h3>14. Autenticação (JWT + Blacklist)</h3>
+<p>A autenticação do sistema é realizada via token JWT (JSON Web Token).</p>
+<ul>
+<li>O backend gera o token na rota <code>/auth/login</code> ou <code>/auth/registro</code> contendo o <code>id_usuario</code> e o <code>email</code> com expiração padrão.</li>
+<li>O token é transmitido no cabeçalho HTTP da requisição: <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+<li>O middleware <code>autenticacao.ts</code> no backend intercepta as rotas protegidas e valida a assinatura do token.</li>
+<li>Ao deslogar (<code>POST /auth/logout</code>), o token é armazenado na tabela PostgreSQL <code>tokens_revogados</code> (blacklist) para impedir sua reutilização posterior antes de expirar.</li>
+</ul>
+<h3>15. Controle de Sessão</h3>
+<p>No aplicativo móvel, a sessão do usuário é gerenciada localmente por meio do <code>AsyncStorage</code>.</p>
+<ul>
+<li>Ao logar/registrar, as funções persistirão o token sob a chave <code>&#39;token&#39;</code> e o objeto do usuário na chave <code>&#39;usuario&#39;</code>.</li>
+<li>Ao iniciar o aplicativo, o <code>AuthContext</code> lê estas chaves para determinar se direciona o fluxo para a tela de Login ou de Dashboard.</li>
+<li>Ao clicar em &quot;Sair da Conta&quot;, as chaves <code>&#39;token&#39;</code> e <code>&#39;usuario&#39;</code> são excluídas do <code>AsyncStorage</code> localmente e o token é enviado para revogação no backend.</li>
+</ul>
+<hr>
+<h3>16. Context API</h3>
+<p>O aplicativo móvel implementa dois contextos globais:</p>
+<h4>AuthContext</h4>
+<ul>
+<li><strong>Estado</strong>: <code>token</code> (string | null), <code>usuario</code> (DadosUsuario | null), <code>estaLogado</code> (boolean), <code>carregandoSessao</code> (boolean).</li>
+<li><strong>Métodos</strong>:<ul>
+<li><code>salvarSessao(token, usuario)</code>: Persiste dados do login/cadastro no <code>AsyncStorage</code> e atualiza estados.</li>
+<li><code>limparSessao()</code>: Remove chaves do <code>AsyncStorage</code> e limpa estados.</li>
+<li><code>atualizarUsuario(usuario)</code>: Atualiza os dados de perfil no contexto e no storage.</li>
+</ul>
+</li>
+<li><strong>Telas Consumidoras</strong>: <code>RootNavigator</code>, <code>LoginScreen</code>, <code>RegisterScreen</code>, <code>PerfilScreen</code>, <code>ConfiguracoesScreen</code>, <code>DashboardScreen</code>.</li>
+</ul>
+<h4>ThemeContext</h4>
+<ul>
+<li><strong>Estado</strong>: <code>isDarkMode</code> (boolean).</li>
+<li><strong>Métodos</strong>:<ul>
+<li><code>toggleDarkMode(value)</code>: Altera o estado do tema e persiste a preferência no <code>AsyncStorage</code> com a chave <code>@babyguard:darkMode</code>.</li>
+</ul>
+</li>
+<li><strong>Telas Consumidoras</strong>: <code>AppContent</code> (App.tsx), <code>TabNavigator</code>, e todas as telas e componentes estilizados para detecção de cores dinâmicas.</li>
+</ul>
+<hr>
+<h3>17. Gerenciamento de Estado (useReducer / Flux)</h3>
+<p>Para a tela principal de monitoramento (<a href="../frontend/src/views/screens/DashboardScreen.tsx">DashboardScreen.tsx</a>), o aplicativo implementa o hook <code>useReducer</code> do React para orquestrar estados complexos sob a arquitetura Flux:</p>
+<ul>
+<li><strong>Estado</strong>:<ul>
+<li><code>dispositivos</code>: Lista de robôs pertencentes ao usuário.</li>
+<li><code>dispositivoAtivo</code>: Robô selecionado para monitoramento atual.</li>
+<li><code>leituras</code>: Valores atuais dos sensores do robô selecionado.</li>
+<li><code>historicoLeituras</code>: Histórico das últimas 50 leituras agrupadas para o gráfico.</li>
+<li><code>loading</code>: Flag indicadora de requisições pendentes.</li>
+<li><code>isDeviceOn</code>: Flag que identifica se o dispositivo físico está ligado (modo ativo) ou desligado (standby).</li>
+</ul>
+</li>
+<li><strong>Ações</strong>: <code>START_LOADING</code>, <code>SET_DISPOSITIVOS</code>, <code>SELECT_DISPOSITIVO</code>, <code>SET_LEITURAS</code>, <code>SET_DEVICE_STATUS</code>, <code>STOP_LOADING</code>.</li>
+</ul>
+<hr>
+<h3>18. Navegação (Bottom Tabs + Native Stack)</h3>
+<p>A navegação é estruturada utilizando a biblioteca React Navigation com navegação híbrida Bottom Tabs e Native Stack:</p>
+<pre><code>Navegação do Aplicativo (RootNavigator Stack)
+├── Login (LoginScreen) [Rota Pública / Inicial se não logado]
+├── Register (RegisterScreen) [Rota Pública]
+├── Tabs (TabNavigator BottomTabs) [Rota Privada / Inicial se logado]
+│    ├── Início (DashboardScreen)
+│    ├── Alertas (AlertasScreen)
+│    ├── Robôs (MeusRobosScreen)
+│    └── Ajustes (ConfiguracoesScreen)
+├── NovoRobo (NovoRoboScreen) [Rota Privada]
+├── RenomearRobo (RenomearRoboScreen) [Rota Privada, Params: id, nome]
+├── RoboDetalhes (RoboDetalhesScreen) [Rota Privada, Params: id, nome, local?]
+└── Perfil (PerfilScreen) [Rota Privada]
+</code></pre>
+<hr>
+<h3>19. Recursos Nativos</h3>
+<p>O aplicativo móvel consome os recursos nativos do celular através do Expo SDK:</p>
+<ol>
+<li><strong>Câmera</strong>: Acionada via <code>ImagePicker.launchCameraAsync</code> em <code>PerfilScreen.tsx</code> para capturar fotos em tempo real.</li>
+<li><strong>Acesso à Galeria</strong>: Acionado via <code>ImagePicker.launchImageLibraryAsync</code> em <code>PerfilScreen.tsx</code> para selecionar imagens salvas.</li>
+<li><strong>Armazenamento Local</strong>: Acesso físico para persistência local pelo SQLite e AsyncStorage.</li>
+<li><strong>Permissões de Câmera/Galeria</strong>: Solicitadas explicitamente pelos métodos <code>ImagePicker.requestCameraPermissionsAsync()</code> e <code>ImagePicker.requestMediaLibraryPermissionsAsync()</code> antes do uso dos recursos nativos.</li>
+</ol>
+<hr>
+<h3>20. Comunicação com Hardware</h3>
+<p>A comunicação com o sistema embarcado (ESP32) é indireta e atravessa a internet pública.</p>
+<ol>
+<li>O ESP32 realiza medições locais físicas e envia os valores para o servidor do Blynk Cloud via protocolo proprietário TCP do Blynk.</li>
+<li>O backend da API interage com o Blynk Cloud por meio de requisições HTTP REST (Axios) para ler e escrever dados nos pinos virtuais.</li>
+<li>O aplicativo móvel faz requisições HTTP REST (fetch) para a API do backend para recuperar o histórico e envia chamadas de controle (como standby) diretamente para a API pública do Blynk Cloud.</li>
+</ol>
+<h3>21. Integração com Blynk IoT</h3>
+<p>A integração com a plataforma Blynk IoT Cloud é configurada pelos seguintes pinos virtuais:</p>
+<ul>
+<li><strong>V0, V1, V2</strong>: Controle manual dos canais R, B e G do LED RGB.</li>
+<li><strong>V3</strong>: Temperatura (graus Celsius) capturada pelo sensor DHT11.</li>
+<li><strong>V4</strong>: Umidade (porcentagem) capturada pelo sensor DHT11.</li>
+<li><strong>V5</strong>: Luminosidade (0 = escuro, 1 = claro) capturada pelo sensor de luminosidade digital (LDR).</li>
+<li><strong>V6</strong>: Distância do sensor ultrassônico (centímetros) — mapeada no banco de dados local e remoto como flag booleana de movimentação quando a leitura for menor que 50,0 cm.</li>
+<li><strong>V7</strong>: Estado de Standby do dispositivo (&quot;1&quot; = Dispositivo monitorando/ativo; &quot;0&quot; = Standby/pausado).</li>
+</ul>
+<hr>
+<h3>22. Fluxo de Sincronização (10s Polling / Sync)</h3>
+<p>O sincronismo de dados é orquestrado em duas frentes:</p>
+<ol>
+<li><strong>Ciclo Backend &lt;-&gt; Blynk</strong>: O worker em <code>blynkSyncService.ts</code> possui um loop automático via <code>setTimeout</code> recursivo que roda a cada <strong>10 segundos</strong> buscando dados ativos no Blynk. Se o hardware estiver online e o pino V7 for &quot;1&quot;, ele grava as leituras no banco PostgreSQL para manter o histórico centralizado.</li>
+<li><strong>Ciclo Mobile &lt;-&gt; Backend (Dashboard)</strong>: O aplicativo móvel executa requisições de leituras e histórico ao backend a cada <strong>10 segundos</strong> (sincronizado com o worker). Além disso, roda um ciclo mais rápido de <strong>5 segundos</strong> para buscar o pino V7 diretamente no Blynk Cloud, detectando e refletindo a entrada em Standby de forma quase imediata na interface móvel.</li>
+</ol>
+<h3>23. Fluxo Offline e Cache de Dados</h3>
+<p>Quando o aplicativo móvel perde a conexão com a internet:</p>
+<ol>
+<li>As funções de busca HTTP em <code>leiturasService.ts</code> e <code>eventosService.ts</code> falham devido a erro de rede.</li>
+<li>A cláusula <code>catch</code> captura a exceção de rede e redireciona o fluxo para o fallback offline.</li>
+<li>O fallback offline executa uma query direta de SELECT no SQLite local do aparelho móvel, filtrando o histórico local cadastrado anteriormente.</li>
+<li>Os dados são convertidos e renderizados na interface gráfica, permitindo que a Dashboard e a lista de Alertas continuem operacionais e legíveis de forma offline.</li>
+</ol>
+<hr>
+<h3>24. Telas do Aplicativo &amp; 25. Funcionalidades de Cada Tela</h3>
+<h4>Capturas de Tela Reais do Aplicativo (Screenshots)</h4>
+<p>Para ilustrar a interface gráfica (UI) real e a experiência de usuário (UX) do aplicativo BabyGuard em execução física, seguem as capturas de tela das principais telas do app:</p>
+<h5>1. Dashboard de Monitoramento (Aba Início)</h5>
+<p>Exibe as leituras físicas em tempo real recebidas do hardware (temperatura, umidade, luminosidade e presença) com banners dinâmicos de avisos (&quot;Umidade baixa detectada&quot;).</p>
+<p><img src="images/real_dashboard.png" alt="Dashboard Real"><br><em>Figura 1: Tela Real do Dashboard de Monitoramento</em></p>
+<h5>2. Histórico de Leituras Ambientais (Aba Alertas - Leituras)</h5>
+<p>Exibe a listagem do cache local SQLite com as leituras ambientais minuto a minuto capturadas pelo sistema.</p>
+<p><img src="images/real_alertas_leituras.png" alt="Histórico de Leituras Real"><br><em>Figura 2: Tela Real do Histórico de Leituras do SQLite</em></p>
+<h5>3. Histórico de Alertas de Ocorrências (Aba Alertas - Alertas)</h5>
+<p>Exibe a listagem de desvios e alarmes calculados pelo app (temperatura baixa, umidade baixa, movimento detectado) com ícones e status de criticidade.</p>
+<p><img src="images/real_alertas_ocorrencias.png" alt="Histórico de Alertas Real"><br><em>Figura 3: Tela Real do Histórico de Ocorrências do SQLite</em></p>
+<h5>4. Gerenciamento de Dispositivos (Aba Robôs)</h5>
+<p>Exibe os berços inteligentes pareados à conta, com botões para renomear, buscar detalhes ou excluir, além de status dinâmico Online/Offline e Claim Device (&quot;Configurar agora&quot;).</p>
+<p><img src="images/real_meus_robos.png" alt="Gerenciamento de Robôs Real"><br><em>Figura 4: Tela Real do Gerenciamento de Robôs</em></p>
+<h5>5. Preferências e Ajustes (Aba Ajustes)</h5>
+<p>Exibe as opções de habilitar alertas, sons, ativar Tema Escuro global do aplicativo e ajustar limites de sensores ideais (temperatura e umidade).</p>
+<p><img src="images/real_configuracoes.png" alt="Ajustes Real"><br><em>Figura 5: Tela Real de Preferências e Limites dos Sensores</em></p>
+<hr>
+<h4>Tabela Detalhada das Telas e Funcionalidades</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Nome da Tela</th>
+<th align="left">Arquivo</th>
+<th align="left">Objetivo</th>
+<th align="left">Funcionalidades</th>
+<th align="left">APIs consumidas</th>
+<th align="left">Contextos</th>
+<th align="left">Hooks</th>
+<th align="left">Componentes</th>
+<th align="left">Permissões</th>
+<th align="left">Banco Local</th>
+<th align="left">Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Login</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/LoginScreen.tsx">LoginScreen.tsx</a></td>
+<td align="left">Acesso do usuário</td>
+<td align="left">Validação, login de usuários, alternar visibilidade de senha, link para cadastro.</td>
+<td align="left"><code>POST /auth/login</code></td>
+<td align="left"><code>AuthContext</code></td>
+<td align="left"><code>useLogin</code>, <code>useAuth</code></td>
+<td align="left">View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Cadastro</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/RegisterScreen.tsx">RegisterScreen.tsx</a></td>
+<td align="left">Registro de contas</td>
+<td align="left">Criação de novos usuários com validação.</td>
+<td align="left"><code>POST /auth/registro</code></td>
+<td align="left"><code>AuthContext</code></td>
+<td align="left"><code>useAuth</code></td>
+<td align="left">View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Dashboard</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/DashboardScreen.tsx">DashboardScreen.tsx</a></td>
+<td align="left">Monitoramento ambiental</td>
+<td align="left">Cartões de sensores, polling de 5s do standby, polling de 10s das leituras, gráfico de temperatura.</td>
+<td align="left"><code>GET /dispositivos</code>, <code>GET /leituras/dispositivo/:id</code>, <code>GET /leituras</code>, <code>GET /external/api/get</code> (Blynk V7)</td>
+<td align="left"><code>AuthContext</code>, <code>ThemeContext</code></td>
+<td align="left"><code>useNavigation</code>, <code>useIsFocused</code>, <code>useTheme</code>, <code>useReducer</code>, <code>useAuth</code></td>
+<td align="left">ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Image, LineChart, SensorCard, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Alertas</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/AlertasScreen.tsx">AlertasScreen.tsx</a></td>
+<td align="left">Histórico de alertas</td>
+<td align="left">Filtro de leituras e alertas, cálculo dinâmico de alarmes baseados nos limites, apagar histórico.</td>
+<td align="left"><code>GET /leituras</code>, <code>DELETE /eventos/limpar/todos</code>, <code>DELETE /leituras/limpar/todos</code></td>
+<td align="left"><code>ThemeContext</code></td>
+<td align="left"><code>useTheme</code>, <code>useIsFocused</code></td>
+<td align="left">SectionList, View, Text, TouchableOpacity, ActivityIndicator, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Meus Robôs</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/MeusRobosScreen.tsx">MeusRobosScreen.tsx</a></td>
+<td align="left">Gerenciar dispositivos</td>
+<td align="left">Listagem de robôs associados à conta, busca textual, botão para remover robô.</td>
+<td align="left"><code>GET /dispositivos</code>, <code>DELETE /dispositivos/:uuid</code></td>
+<td align="left"><code>ThemeContext</code></td>
+<td align="left"><code>useNavigation</code>, <code>useIsFocused</code>, <code>useTheme</code></td>
+<td align="left">FlatList, TextInput, View, Text, TouchableOpacity, ActivityIndicator, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Novo Robô</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/NovoRoboScreen.tsx">NovoRoboScreen.tsx</a></td>
+<td align="left">Parear novo berço</td>
+<td align="left">Formulário de pareamento usando UUID e nome customizado do robô.</td>
+<td align="left"><code>POST /dispositivos</code></td>
+<td align="left"><code>ThemeContext</code></td>
+<td align="left"><code>useNavigation</code>, <code>useTheme</code></td>
+<td align="left">View, Text, TextInput, TouchableOpacity, ActivityIndicator, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Renomear Robô</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/RenomearRoboScreen.tsx">RenomearRoboScreen.tsx</a></td>
+<td align="left">Editar nome do berço</td>
+<td align="left">Alterar o apelido do dispositivo e sincronizar as modificações com a nuvem.</td>
+<td align="left"><code>PATCH /dispositivos/:uuid</code></td>
+<td align="left"><code>ThemeContext</code></td>
+<td align="left"><code>useNavigation</code>, <code>useRoute</code>, <code>useTheme</code></td>
+<td align="left">View, Text, TextInput, TouchableOpacity, ActivityIndicator</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Robô Detalhes</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/RoboDetalhesScreen.tsx">RoboDetalhesScreen.tsx</a></td>
+<td align="left">Visualizar dados do berço</td>
+<td align="left">Exibe UUID, status online/offline do robô e botões para renomear, ver leituras ou excluir.</td>
+<td align="left"><code>GET /dispositivos</code>, <code>DELETE /dispositivos/:uuid</code></td>
+<td align="left"><code>ThemeContext</code></td>
+<td align="left"><code>useNavigation</code>, <code>useRoute</code>, <code>useTheme</code></td>
+<td align="left">View, Text, TouchableOpacity, ActivityIndicator, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Perfil</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/PerfilScreen.tsx">PerfilScreen.tsx</a></td>
+<td align="left">Editar conta de usuário</td>
+<td align="left">Edição de Nome e Telefone, upload de foto Base64 tirada da Câmera ou Galeria, alterar senha.</td>
+<td align="left"><code>PATCH /usuarios/:id</code></td>
+<td align="left"><code>AuthContext</code>, <code>ThemeContext</code></td>
+<td align="left"><code>useTheme</code>, <code>useAuth</code>, <code>usePerfil</code></td>
+<td align="left">ScrollView, View, Text, TextInput, TouchableOpacity, Image, Modal, ActivityIndicator, Ionicons</td>
+<td align="left">Câmera, Galeria</td>
+<td align="left">AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+<tr>
+<td align="left"><strong>Configurações</strong></td>
+<td align="left"><a href="../frontend/src/views/screens/ConfiguracoesScreen.tsx">ConfiguracoesScreen.tsx</a></td>
+<td align="left">Preferências do aplicativo</td>
+<td align="left">Switch liga/desliga standby do hardware, alternar tema escuro, editar limites ideais, logout.</td>
+<td align="left"><code>GET /external/api/get</code> (Blynk V7), <code>GET /external/api/update</code> (Blynk V7), <code>POST /auth/logout</code></td>
+<td align="left"><code>AuthContext</code>, <code>ThemeContext</code></td>
+<td align="left"><code>useAuth</code>, <code>useTheme</code></td>
+<td align="left">ScrollView, View, Text, TouchableOpacity, Switch, Image, Modal, TextInput, Ionicons</td>
+<td align="left">Nenhuma</td>
+<td align="left">SQLite e AsyncStorage</td>
+<td align="left">Atendido</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>26. Fluxos de Interface do Usuário</h3>
+<ul>
+<li><strong>Fluxo de Pareamento</strong>: Usuário abre a aba &quot;Robôs&quot; -&gt; Clica no botão &quot;+&quot; ou &quot;Configurar agora&quot; -&gt; Insere o UUID e define um nome amigável -&gt; Clica em &quot;Conectar Robô&quot;. A API vincula o UUID ao usuário logado, e o registro é inserido localmente no SQLite.</li>
+<li><strong>Fluxo de Monitoramento</strong>: Usuário abre a Dashboard. O app consulta o status de standby no Blynk via polling de 5 segundos. Caso esteja ativo, realiza polling de 10s no banco via API, renderiza as barras de progresso, atualiza os dados em tempo real e armazena os valores no SQLite local.</li>
+<li><strong>Fluxo de Perda de Conexão</strong>: O aplicativo falha ao se comunicar com a API do backend, captura o erro de rede, emite um aviso silencioso e consome as leituras e alertas armazenados localmente no SQLite para renderização em tempo real das abas Início e Alertas.</li>
+</ul>
+<h3>27. Regras de Negócio e Travas de Segurança</h3>
+<ul>
+<li><strong>Conversão de Presença (HC-SR04)</strong>: A leitura física da distância do sensor é convertida em boolean de movimento. Valores inferiores a 50cm caracterizam presença ou agitação no berço e disparam a flag de movimento ativa.</li>
+<li><strong>Ativação e Standby (V7)</strong>: O interruptor no app envia o comando de Standby (V7 = 0) para o Blynk Cloud. Ao ler V7 = 0, o backend marca o dispositivo como &#39;offline&#39; e interrompe a gravação das leituras no banco. O app móvel detecta o standby em tempo real e exibe banners, ocultando o gráfico.</li>
+<li><strong>Isolamento de Contas</strong>: Os eventos e dispositivos são filtrados estritamente pelo <code>id_usuario</code> obtido a partir da validação do token JWT do usuário autenticado no backend.</li>
+<li><strong>Pareamento Único (Claim Device)</strong>: O robô só pode ser pareado se o seu UUID físico constar de fábrica na base PostgreSQL. Se outra conta tentar vincular um robô já associado, a API retorna erro de conflito <code>409</code>.</li>
+<li><strong>Trava de Controle de Standby</strong>: Se um usuário não tiver nenhum robô cadastrado na conta, a tela de configurações desabilita (bloqueia) a interação com o interruptor do Standby e renderiza em vermelho a mensagem: &quot;Cadastre um dispositivo para utilizar esta função.&quot;</li>
+</ul>
+<h3>28. Segurança Implementada</h3>
+<ul>
+<li><strong>Tokens JWT</strong>: Criptografados com assinatura HMAC-SHA256, contendo tempo de expiração curto para evitar vazamentos de credenciais.</li>
+<li><strong>Blacklist de Tokens</strong>: Logout efetivo que insere o token do usuário em uma tabela local do Postgres para bloqueio imediato caso o mesmo token tente ser reutilizado.</li>
+<li><strong>Hashing de Senhas</strong>: Algoritmo de hash criptográfico <code>bcryptjs</code> de via única com 10 rounds de salt.</li>
+<li><strong>SQL Injection Prevention</strong>: Utilização rigorosa de parâmetros nomeados/posicionais (<code>$1</code>, <code>$2</code> no Postgres client, e <code>?</code> no expo-sqlite).</li>
+</ul>
+<h3>29. Tratamento de Erros e Resiliência</h3>
+<ul>
+<li><strong>Backend</strong>: Middleware global que intercepta erros no Express e padroniza a saída em formato JSON no formato <code>{ sucesso: false, mensagem: &quot;...&quot; }</code> com códigos HTTP apropriados.</li>
+<li><strong>Frontend</strong>: Cláusulas <code>try/catch</code> envolvendo APIs de permissões de Câmera/Galeria e requisições para evitar que erros de rede ou de hardware quebrem e finalizem abruptamente (crash) o aplicativo React Native.</li>
+</ul>
+<h3>30. Boas Práticas e Arquitetura Limpa</h3>
+<ul>
+<li><strong>Clean Code</strong>: Divisão clara de responsabilidades no mobile e backend utilizando conceitos sólidos de MVC/MVVM.</li>
+<li><strong>Código Rígido e Tipado</strong>: Uso extensivo de TypeScript no frontend e backend para garantir integridade e diminuir erros humanos em tempo de execução.</li>
+<li><strong>Otimização de Renderização</strong>: Utilização de <code>useCallback</code> e <code>useMemo</code> em listagens de histórico do SQLite (<code>AlertasScreen</code>) para evitar gargalos de renderização desnecessários.</li>
+</ul>
+<hr>
+<h3>31. Processo de Instalação</h3>
+<h4>Backend</h4>
+<ol>
+<li>Navegue até a pasta <code>backend/</code>.</li>
+<li>Execute o comando para instalar as dependências:<pre><code class="language-bash">npm install
+</code></pre>
+</li>
+</ol>
+<h4>Frontend</h4>
+<ol>
+<li>Navegue até a pasta <code>frontend/</code>.</li>
+<li>Execute o comando para instalar as dependências:<pre><code class="language-bash">npm install
+</code></pre>
+</li>
+</ol>
+<h3>32. Processo de Execução</h3>
+<h4>Inicializando o Banco de Dados PostgreSQL</h4>
+<p>Execute as tabelas remotas no Supabase/PGAdmin conforme a seção 13 (PostgreSQL).</p>
+<h4>Configuração das Variáveis de Ambiente (<code>.env</code>)</h4>
+<p>No diretório <code>backend/.env</code>:</p>
+<pre><code class="language-env">DATABASE_URL=postgresql://usuario:senha@host:porta/banco?sslmode=require
+JWT_SECRET=sua_chave_secreta_jwt
+</code></pre>
+<p>No diretório <code>frontend/.env</code>:</p>
+<pre><code class="language-env">EXPO_PUBLIC_API_URL=http://&lt;IP_DO_SEU_COMPUTADOR&gt;:3000
+EXPO_PUBLIC_BLYNK_TOKEN=seu_blynk_auth_token
+EXPO_PUBLIC_BLYNK_BASE_URL=https://blynk.cloud/external/api
+</code></pre>
+<h4>Executando o Servidor de Backend</h4>
+<p>No diretório <code>backend/</code>:</p>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<h4>Executando o Aplicativo Móvel (Expo)</h4>
+<p>No diretório <code>frontend/</code>:</p>
+<pre><code class="language-bash">npx expo start
+</code></pre>
+<ul>
+<li>Use a tecla <code>a</code> para abrir no emulador Android, ou escaneie o QR Code no aparelho físico via Expo Go.</li>
+</ul>
+<h3>33. Ambiente de Desenvolvimento</h3>
+<ul>
+<li><strong>OS</strong>: Windows / macOS / Linux</li>
+<li><strong>Node.js</strong>: v18 ou superior.</li>
+<li><strong>Expo Go</strong>: v54 instalado no celular para validação local.</li>
+<li><strong>Wokwi</strong>: Para simulação física da placa ESP32 enviando telemetria.</li>
+</ul>
+<h3>34. Limitações Conhecidas</h3>
+<ul>
+<li><strong>Dependência Blynk</strong>: Se os servidores do Blynk Cloud ficarem lentos, o tempo de resposta do dashboard do aplicativo móvel ou do worker do backend será afetado.</li>
+<li><strong>Limites de Polling</strong>: O polling de 10 segundos impede o monitoramento em tempo real instantâneo (sub-segundo) na base de dados de histórico remoto, de modo que variações rápidos só aparecem na tela do Blynk, mas não no histórico do aplicativo.</li>
+<li><strong>Fallback Local Estático</strong>: O SQLite local do aplicativo móvel só recebe cache ao abrir e ler as telas sob conexão de internet. Caso o app seja aberto pela primeira vez sem nenhuma conexão prévia, o SQLite estará vazio.</li>
+</ul>
+<h3>35. Conclusão</h3>
+<p>O BabyGuard atende a todos os critérios e requisitos exigidos no regulamento da 2ª etapa de PPDM. A integração de persistência dupla (AsyncStorage para chave-valor rápida e SQLite para cache estruturado local) garante que o aplicativo funcione perfeitamente de forma offline, e a modularização baseada em clean code simplifica manutenções futuras.</p>
+<hr>
+
+        </div>
+      </div>
+
+      <!-- TAB PANEL 2: API -->
+      <div class="tab-panel" id="apiPanel">
+        <div class="markdown-body" id="apiContent">
+          <h3>36. Referência Completa da API REST (30 Endpoints)</h3>
+<p>Esta seção fornece os detalhes técnicos de todos os 30 endpoints REST expostos pela API backend do BabyGuard.</p>
+<h4>36.1 Visão Geral</h4>
+<ul>
+<li><strong>URL Base</strong>: Definida em <code>frontend/src/config/apiUrl.ts</code>.</li>
+<li><strong>Autenticação</strong>: Praticamente todos os endpoints protegidos exigem o cabeçalho HTTP:<pre><code class="language-http">Authorization: Bearer &lt;seu_token_jwt&gt;
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>36.2 Endpoints Autenticados e Públicos</h4>
+<h4>Grupo Raiz</h4>
+<h5>1. Status da API (Público)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/</code></li>
+<li><strong>Descrição</strong>: Verifica a atividade e disponibilidade do servidor de backend.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;API BabyGuard online&quot;
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Autenticação (<code>/auth</code>)</h4>
+<h5>2. Registro de Usuário (Público)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/auth/registro</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;nome&quot;: &quot;Joyce Masalla&quot;,
+  &quot;email&quot;: &quot;joyce@email.com&quot;,
+  &quot;password&quot;: &quot;senhaSegura123&quot;,
+  &quot;telefone&quot;: &quot;11999998888&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Usuário registrado com sucesso&quot;,
+  &quot;dados&quot;: {
+    &quot;token&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5...&quot;,
+    &quot;usuario&quot;: {
+      &quot;id_usuario&quot;: 1,
+      &quot;nome&quot;: &quot;Joyce Masalla&quot;,
+      &quot;email&quot;: &quot;joyce@email.com&quot;,
+      &quot;telefone&quot;: &quot;11999998888&quot;,
+      &quot;foto_perfil&quot;: null,
+      &quot;criado_em&quot;: &quot;2026-06-11T13:00:00Z&quot;
+    }
+  }
+}
+</code></pre>
+</li>
+<li><strong>Erros</strong>: <code>400 Bad Request</code> (validação), <code>409 Conflict</code> (email duplicado).</li>
+</ul>
+<h5>3. Login de Usuário (Público)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/auth/login</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;email&quot;: &quot;joyce@email.com&quot;,
+  &quot;password&quot;: &quot;senhaSegura123&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Login realizado com sucesso&quot;,
+  &quot;dados&quot;: {
+    &quot;token&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5...&quot;,
+    &quot;usuario&quot;: {
+      &quot;id_usuario&quot;: 1,
+      &quot;nome&quot;: &quot;Joyce Masalla&quot;,
+      &quot;email&quot;: &quot;joyce@email.com&quot;,
+      &quot;telefone&quot;: &quot;11999998888&quot;,
+      &quot;foto_perfil&quot;: null
+    },
+    &quot;dispositivos&quot;: []
+  }
+}
+</code></pre>
+</li>
+<li><strong>Erros</strong>: <code>401 Unauthorized</code> (credenciais inválidas).</li>
+</ul>
+<h5>4. Logout / Revogação de Token (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/auth/logout</code></li>
+<li><strong>Descrição</strong>: Adiciona o token JWT do cabeçalho da requisição à tabela de revogações (blacklist) no banco.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Logout realizado com sucesso&quot;
+}
+</code></pre>
+</li>
+</ul>
+<h5>5. Validar Token (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/auth/validar</code></li>
+<li><strong>Descrição</strong>: Valida se o token JWT armazenado no celular do usuário é válido.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;token_valido&quot;: true,
+    &quot;usuario&quot;: { &quot;id_usuario&quot;: 1, &quot;nome&quot;: &quot;Joyce Masalla&quot; }
+  }
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Blynk (<code>/blynk</code>)</h4>
+<h5>6. Testar Pinos do Blynk (Público)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/blynk/teste/:token</code></li>
+<li><strong>Descrição</strong>: Realiza requisição para a API do Blynk Cloud a fim de verificar se o hardware simulado está online.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;v3&quot;: &quot;24.5&quot;,
+    &quot;v4&quot;: &quot;55.2&quot;
+  }
+}
+</code></pre>
+</li>
+<li><strong>Erros</strong>: <code>502 Bad Gateway</code> (falha na nuvem do Blynk).</li>
+</ul>
+<hr>
+<h4>Grupo Usuários (<code>/usuarios</code>)</h4>
+<h5>7. Listar Usuários (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/usuarios</code></li>
+<li><strong>Query Params</strong>: <code>page</code> (página, default 1), <code>limit</code> (itens por página, default 10).</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;pagina&quot;: 1,
+    &quot;limite&quot;: 10,
+    &quot;quantidade&quot;: 1,
+    &quot;usuarios&quot;: [{ &quot;id_usuario&quot;: 1, &quot;nome&quot;: &quot;Joyce Masalla&quot; }]
+  }
+}
+</code></pre>
+</li>
+</ul>
+<h5>8. Buscar Usuário por ID (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/usuarios/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_usuario&quot;: 1, &quot;nome&quot;: &quot;Joyce Masalla&quot;, &quot;email&quot;: &quot;joyce@email.com&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>9. Criar Usuário (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/usuarios</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;nome&quot;: &quot;Arthur Fritz&quot;,
+  &quot;email&quot;: &quot;fritz@email.com&quot;,
+  &quot;senha&quot;: &quot;senhaCripto123&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_usuario&quot;: 2, &quot;nome&quot;: &quot;Arthur Fritz&quot;, &quot;email&quot;: &quot;fritz@email.com&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>10. Atualizar Usuário / Perfil (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>PATCH</code></li>
+<li><strong>Caminho</strong>: <code>/usuarios/:id</code></li>
+<li><strong>Corpo da Requisição</strong>: (Todos os campos são opcionais. Permite atualizar foto de perfil em Base64).<pre><code class="language-json">{
+  &quot;nome&quot;: &quot;Joyce Jorge&quot;,
+  &quot;telefone&quot;: &quot;11988887777&quot;,
+  &quot;foto_perfil&quot;: &quot;data:image/jpeg;base64,/9j/4AAQSk...&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_usuario&quot;: 1, &quot;nome&quot;: &quot;Joyce Jorge&quot;, &quot;telefone&quot;: &quot;11988887777&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>11. Deletar Usuário (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/usuarios/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Usuário deletado com sucesso&quot;
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Dispositivos (<code>/dispositivos</code>)</h4>
+<h5>12. Listar Dispositivos (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/dispositivos</code></li>
+<li><strong>Descrição</strong>: Retorna apenas os berços/robôs atrelados ao usuário logado no token.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: [
+    {
+      &quot;id_dispositivo&quot;: 5,
+      &quot;uuid_dispositivo&quot;: &quot;bg-device-001&quot;,
+      &quot;nome_dispositivo&quot;: &quot;Berço Principal&quot;,
+      &quot;status_dispositivo&quot;: &quot;online&quot;
+    }
+  ]
+}
+</code></pre>
+</li>
+</ul>
+<h5>13. Parear Dispositivo / Claim Device (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/dispositivos</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;uuid_dispositivo&quot;: &quot;bg-device-001&quot;,
+  &quot;nome_dispositivo&quot;: &quot;Berço do Arthur&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_dispositivo&quot;: 5, &quot;uuid_dispositivo&quot;: &quot;bg-device-001&quot;, &quot;nome_dispositivo&quot;: &quot;Berço do Arthur&quot; }
+}
+</code></pre>
+</li>
+<li><strong>Erros</strong>: <code>404 Not Found</code> (UUID de hardware de fábrica inexistente), <code>409 Conflict</code> (dispositivo já pareado por outro usuário).</li>
+</ul>
+<h5>14. Atualizar Dispositivo / Renomear (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>PATCH</code></li>
+<li><strong>Caminho</strong>: <code>/dispositivos/:uuid</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;nome_dispositivo&quot;: &quot;Berço Quarto Novo&quot;,
+  &quot;status_dispositivo&quot;: &quot;offline&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;uuid_dispositivo&quot;: &quot;bg-device-001&quot;, &quot;nome_dispositivo&quot;: &quot;Berço Quarto Novo&quot;, &quot;status_dispositivo&quot;: &quot;offline&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>15. Remover/Desvincular Dispositivo (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/dispositivos/:uuid</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Dispositivo removido com sucesso do banco de dados&quot;
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Sensores (<code>/sensores</code>)</h4>
+<h5>16. Listar Sensores (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/sensores</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;quantidade&quot;: 4,
+    &quot;sensores&quot;: [
+      { &quot;id_sensor&quot;: 1, &quot;id_dispositivo&quot;: 5, &quot;nome_sensor&quot;: &quot;DHT11 - Temperatura&quot;, &quot;tipo_sensor&quot;: &quot;temperatura&quot; }
+    ]
+  }
+}
+</code></pre>
+</li>
+</ul>
+<h5>17. Buscar Sensor por ID (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/sensores/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_sensor&quot;: 1, &quot;tipo_sensor&quot;: &quot;temperatura&quot;, &quot;unidade_medida&quot;: &quot;°C&quot;, &quot;descricao&quot;: &quot;Sensor DHT11&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>18. Criar Sensor (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/sensores</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;id_dispositivo&quot;: 5,
+  &quot;nome_sensor&quot;: &quot;LDR - Luminosidade&quot;,
+  &quot;tipo_sensor&quot;: &quot;luminosidade&quot;,
+  &quot;unidade_medida&quot;: &quot;Lux&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_sensor&quot;: 3, &quot;nome_sensor&quot;: &quot;LDR - Luminosidade&quot;, &quot;tipo_sensor&quot;: &quot;luminosidade&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>19. Deletar Sensor (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/sensores/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Sensor removido com sucesso&quot;
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Leituras (<code>/leituras</code>)</h4>
+<h5>20. Listar Leituras (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/leituras</code></li>
+<li><strong>Descrição</strong>: Histórico total de leituras ambientais minuto a minuto.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;quantidade&quot;: 1,
+    &quot;leituras&quot;: [{ &quot;id_leitura&quot;: 120, &quot;valor&quot;: 23.4, &quot;data_hora&quot;: &quot;2026-06-11T13:40:00Z&quot; }]
+  }
+}
+</code></pre>
+</li>
+</ul>
+<h5>21. Últimas Leituras por Dispositivo (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/leituras/dispositivo/:id_dispositivo</code></li>
+<li><strong>Descrição</strong>: Retorna o valor ativo mais recente de cada sensor atrelado a este robô.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: {
+    &quot;quantidade&quot;: 4,
+    &quot;leituras&quot;: [
+      { &quot;id_sensor&quot;: 1, &quot;tipo_sensor&quot;: &quot;temperatura&quot;, &quot;valor&quot;: 24.2 },
+      { &quot;id_sensor&quot;: 2, &quot;tipo_sensor&quot;: &quot;umidade&quot;, &quot;valor&quot;: 52.0 },
+      { &quot;id_sensor&quot;: 3, &quot;tipo_sensor&quot;: &quot;luminosidade&quot;, &quot;valor&quot;: 120.0 },
+      { &quot;id_sensor&quot;: 4, &quot;tipo_sensor&quot;: &quot;presenca&quot;, &quot;valor_booleano&quot;: false }
+    ]
+  }
+}
+</code></pre>
+</li>
+</ul>
+<h5>22. Buscar Leitura por ID (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/leituras/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_leitura&quot;: 120, &quot;valor&quot;: 23.4, &quot;data_hora&quot;: &quot;2026-06-11T13:40:00Z&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>23. Cadastrar Leitura (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/leituras</code></li>
+<li><strong>Descrição</strong>: Inserção de uma nova leitura individual (consumido pelo worker de sincronização do blynk).</li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;id_sensor&quot;: 1,
+  &quot;valor&quot;: 24.5
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_leitura&quot;: 121, &quot;id_sensor&quot;: 1, &quot;valor&quot;: 24.5 }
+}
+</code></pre>
+</li>
+</ul>
+<h5>24. Limpar Todo Histórico de Leituras (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/leituras/limpar/todos</code></li>
+<li><strong>Descrição</strong>: Deleta todo o histórico de leituras ambientais dos robôs do usuário autenticado no token.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Histórico de leituras limpo com sucesso...&quot;
+}
+</code></pre>
+</li>
+</ul>
+<h5>25. Deletar Leitura Individual (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/leituras/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Leitura removida com sucesso&quot;
+}
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4>Grupo Eventos (<code>/eventos</code>)</h4>
+<h5>26. Listar Eventos do Usuário (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/eventos</code></li>
+<li><strong>Descrição</strong>: Retorna o histórico de eventos/alertas ocorridos nos dispositivos do usuário.</li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: [
+    { &quot;id_evento&quot;: 55, &quot;id_dispositivo&quot;: 5, &quot;tipo_evento&quot;: &quot;Temperatura Alta&quot;, &quot;nivel_criticidade&quot;: &quot;perigo&quot; }
+  ]
+}
+</code></pre>
+</li>
+</ul>
+<h5>27. Buscar Evento por ID (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>GET</code></li>
+<li><strong>Caminho</strong>: <code>/eventos/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_evento&quot;: 55, &quot;tipo_evento&quot;: &quot;Temperatura Alta&quot;, &quot;nivel_criticidade&quot;: &quot;perigo&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>28. Criar Novo Evento (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>POST</code></li>
+<li><strong>Caminho</strong>: <code>/eventos</code></li>
+<li><strong>Corpo da Requisição</strong>:<pre><code class="language-json">{
+  &quot;id_dispositivo&quot;: 5,
+  &quot;id_sensor&quot;: 1,
+  &quot;tipo_evento&quot;: &quot;Temperatura Crítica Alta&quot;,
+  &quot;nivel_criticidade&quot;: &quot;critico&quot;
+}
+</code></pre>
+</li>
+<li><strong>Exemplo de Resposta (201 Created)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;dados&quot;: { &quot;id_evento&quot;: 56, &quot;id_dispositivo&quot;: 5, &quot;tipo_evento&quot;: &quot;Temperatura Crítica Alta&quot; }
+}
+</code></pre>
+</li>
+</ul>
+<h5>29. Limpar Todo o Histórico de Alertas (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/eventos/limpar/todos</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Histórico limpo com sucesso...&quot;
+}
+</code></pre>
+</li>
+</ul>
+<h5>30. Deletar Alerta Individual (Protegido)</h5>
+<ul>
+<li><strong>Método</strong>: <code>DELETE</code></li>
+<li><strong>Caminho</strong>: <code>/eventos/:id</code></li>
+<li><strong>Exemplo de Resposta (200 OK)</strong>:<pre><code class="language-json">{
+  &quot;sucesso&quot;: true,
+  &quot;mensagem&quot;: &quot;Evento deletado com sucesso&quot;
+}
+</code></pre>
+</li>
+</ul>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- INTERACTIVITY JAVASCRIPT -->
+  <script>
+    // Theme logic
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('docs-theme', isDark ? 'dark' : 'light');
+      
+      const btn = document.getElementById('themeToggleBtn');
+      if (isDark) {
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg> Tema Claro';
+      } else {
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Tema Escuro';
+      }
+    }
+
+    // Load saved theme
+    if (localStorage.getItem('docs-theme') === 'dark') {
+      toggleTheme();
+    }
+
+    // Switch main tabs (Academic / API)
+    function switchMainTab(tab) {
+      const academicPanel = document.getElementById('academicPanel');
+      const apiPanel = document.getElementById('apiPanel');
+      const academicTabBtn = document.getElementById('academicTabBtn');
+      const apiTabBtn = document.getElementById('apiTabBtn');
+      
+      const academicMenuItem = document.querySelector('[href="#academic"]');
+      const apiMenuItem = document.querySelector('[href="#api-ref"]');
+
+      if (tab === 'academic') {
+        academicPanel.classList.add('active');
+        apiPanel.classList.remove('active');
+        academicTabBtn.classList.add('active');
+        apiTabBtn.classList.remove('active');
+        
+        academicMenuItem.classList.add('active');
+        apiMenuItem.classList.remove('active');
+        
+        document.getElementById('academicMenu').style.display = 'block';
+        document.getElementById('headerBreadcrumb').innerText = 'Documentação Acadêmica';
+      } else {
+        academicPanel.classList.remove('active');
+        apiPanel.classList.add('active');
+        academicTabBtn.classList.remove('active');
+        apiTabBtn.classList.add('active');
+        
+        academicMenuItem.classList.remove('active');
+        apiMenuItem.classList.add('active');
+        
+        document.getElementById('academicMenu').style.display = 'none';
+        document.getElementById('headerBreadcrumb').innerText = 'Referência Completa de Endpoints da API';
+      }
+    }
+
+    // Dynamic generation of sidebar sub-menus from H3 tags in Academic documentation
+    function generateSidebarMenu() {
+      const container = document.getElementById('academicMenu');
+      container.innerHTML = '';
+      
+      // Encontra todos os H3 dentro da documentação acadêmica
+      const headings = document.querySelectorAll('#academicPanel h3');
+      headings.forEach((heading, idx) => {
+        // Gera ID para ancoragem se não existir
+        if (!heading.id) {
+          heading.id = 'secao-' + idx;
+        }
+        
+        const link = document.createElement('a');
+        link.href = '#' + heading.id;
+        link.className = 'menu-item';
+        link.style.paddingLeft = '20px';
+        link.style.fontSize = '0.8rem';
+        link.innerText = heading.innerText;
+        
+        link.addEventListener('click', (e) => {
+          switchMainTab('academic');
+        });
+        
+        container.appendChild(link);
+      });
+    }
+
+    // Search filtration logic
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (!query) {
+        // Limpar filtros
+        document.querySelectorAll('#academicPanel *, #apiPanel *').forEach(el => {
+          if (el.style) el.style.display = '';
+        });
+        document.querySelectorAll('.endpoint-card').forEach(el => {
+          if (el.style) el.style.display = '';
+        });
+        return;
+      }
+
+      // Procura em painel ativo
+      const activePanelId = document.getElementById('academicPanel').classList.contains('active') ? 'academicPanel' : 'apiPanel';
+      
+      if (activePanelId === 'apiPanel') {
+        // Tratamento especial para endpoints
+        const cards = document.querySelectorAll('.endpoint-card');
+        cards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          if (text.includes(query)) {
+            card.style.display = 'block';
+            // Abre o endpoint para mostrar onde achou
+            const content = card.querySelector('.endpoint-content');
+            if (content) content.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      } else {
+        // Filtragem textual geral de seções na documentação acadêmica
+        const sections = document.querySelectorAll('#academicPanel h3, #academicPanel h2, #academicPanel p, #academicPanel tr, #academicPanel li');
+        sections.forEach(sec => {
+          const text = sec.textContent.toLowerCase();
+          if (text.includes(query)) {
+            sec.style.display = '';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
+      }
+    });
+
+    // Accordion interaction logic for endpoints
+    function setupEndpointAccordions() {
+      const headings = document.querySelectorAll('#apiContent h4');
+      headings.forEach(heading => {
+        // O H4 define um endpoint. Vamos encapsulá-lo em uma estrutura interativa.
+        const nextUl = heading.nextElementSibling;
+        if (!nextUl || nextUl.tagName !== 'UL') return;
+        
+        // Pega as descrições
+        const nextSiblings = [];
+        let sib = nextUl.nextElementSibling;
+        while (sib && sib.tagName !== 'H4' && sib.tagName !== 'H3' && sib.tagName !== 'H2' && sib.tagName !== 'H1') {
+          nextSiblings.push(sib);
+          sib = sib.nextElementSibling;
+        }
+
+        // Criar card container
+        const card = document.createElement('div');
+        card.className = 'endpoint-card';
+        
+        const header = document.createElement('div');
+        header.className = 'endpoint-header';
+        
+        const content = document.createElement('div');
+        content.className = 'endpoint-content';
+        
+        // Extrai método e rota
+        const text = heading.innerText;
+        const parts = text.split('.');
+        const indexStr = parts[0];
+        const routeStr = parts.slice(1).join('.');
+        
+        // Procura os detalhes no UL
+        let method = 'GET';
+        let path = routeStr;
+        let isAuth = false;
+        
+        const listItems = nextUl.querySelectorAll('li');
+        listItems.forEach(li => {
+          const liText = li.innerText;
+          if (liText.includes('Método:')) {
+            method = liText.replace('Método:', '').trim();
+          } else if (liText.includes('Caminho:')) {
+            path = liText.replace('Caminho:', '').trim();
+          } else if (liText.includes('Autenticação:')) {
+            isAuth = liText.includes('Requer');
+          }
+        });
+
+        // Configura Header
+        const badge = document.createElement('span');
+        badge.className = 'method-badge method-' + method.toLowerCase();
+        badge.innerText = method;
+        
+        const pathSpan = document.createElement('span');
+        pathSpan.className = 'endpoint-path';
+        pathSpan.innerText = path || routeStr;
+        
+        const authSpan = document.createElement('span');
+        authSpan.className = 'endpoint-auth';
+        authSpan.innerText = isAuth ? 'JWT Requerido' : 'Público';
+
+        header.appendChild(badge);
+        header.appendChild(pathSpan);
+        header.appendChild(authSpan);
+        
+        // Preenche conteúdo
+        content.appendChild(nextUl.cloneNode(true));
+        nextSiblings.forEach(s => {
+          content.appendChild(s.cloneNode(true));
+        });
+
+        card.appendChild(header);
+        card.appendChild(content);
+
+        // Substitui elementos originais no DOM
+        heading.parentNode.insertBefore(card, heading);
+        heading.parentNode.removeChild(heading);
+        nextUl.parentNode.removeChild(nextUl);
+        nextSiblings.forEach(s => {
+          s.parentNode.removeChild(s);
+        });
+
+        // Evento de clique
+        header.addEventListener('click', () => {
+          const isVisible = content.style.display === 'block';
+          content.style.display = isVisible ? 'none' : 'block';
+        });
+      });
+    }
+
+    // Interactive tables for SQLite vs PostgreSQL databases
+    function setupDatabaseTabs() {
+      // Encontra a seção 13 "Estrutura Completa das Tabelas"
+      const pgHeading = Array.from(document.querySelectorAll('#academicContent h4')).find(el => el.innerText.includes('PostgreSQL'));
+      const sqliteHeading = Array.from(document.querySelectorAll('#academicContent h4')).find(el => el.innerText.includes('SQLite'));
+      
+      if (!pgHeading || !sqliteHeading) return;
+
+      const visualizer = document.createElement('div');
+      visualizer.className = 'db-visualizer';
+      visualizer.innerHTML = '<h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:8px;">Modelagem do Banco de Dados</h3>' +
+        '<div class="db-selector">' +
+          '<button class="db-tab-btn active" id="pgDbBtn" onclick="toggleDbView(\'pg\')">PostgreSQL (Nuvem)</button>' +
+          '<button class="db-tab-btn" id="sqliteDbBtn" onclick="toggleDbView(\'sqlite\')">SQLite (Local Cache)</button>' +
+        '</div>' +
+        '<div class="table-details active" id="pgDbDetails"></div>' +
+        '<div class="table-details" id="sqliteDbDetails"></div>';
+
+      // Extrair tabelas e listas da seção postgres
+      let sib = pgHeading.nextElementSibling;
+      const pgElements = [];
+      while (sib && sib !== sqliteHeading && !sib.tagName.startsWith('H3') && !sib.tagName.startsWith('H2') && !sib.tagName.startsWith('H1')) {
+        pgElements.push(sib);
+        sib = sib.nextElementSibling;
+      }
+
+      // Extrair tabelas e listas da seção sqlite
+      let sqliteSib = sqliteHeading.nextElementSibling;
+      const sqliteElements = [];
+      while (sqliteSib && !sqliteSib.tagName.startsWith('H4') && !sqliteSib.tagName.startsWith('H3') && !sqliteSib.tagName.startsWith('H2') && !sqliteSib.tagName.startsWith('H1')) {
+        sqliteElements.push(sqliteSib);
+        sqliteSib = sqliteSib.nextElementSibling;
+      }
+
+      // Injeta no DOM antes do PostgresHeading
+      pgHeading.parentNode.insertBefore(visualizer, pgHeading);
+
+      const pgContainer = document.getElementById('pgDbDetails');
+      const sqliteContainer = document.getElementById('sqliteDbDetails');
+
+      pgElements.forEach(el => {
+        pgContainer.appendChild(el.cloneNode(true));
+        el.parentNode.removeChild(el);
+      });
+
+      sqliteElements.forEach(el => {
+        sqliteContainer.appendChild(el.cloneNode(true));
+        el.parentNode.removeChild(el);
+      });
+
+      pgHeading.parentNode.removeChild(pgHeading);
+      sqliteHeading.parentNode.removeChild(sqliteHeading);
+    }
+
+    // Toggle Db selection in visualizer
+    window.toggleDbView = function(type) {
+      const pgBtn = document.getElementById('pgDbBtn');
+      const sqliteBtn = document.getElementById('sqliteDbBtn');
+      const pgDetails = document.getElementById('pgDbDetails');
+      const sqliteDetails = document.getElementById('sqliteDbDetails');
+
+      if (type === 'pg') {
+        pgBtn.classList.add('active');
+        sqliteBtn.classList.remove('active');
+        pgDetails.classList.add('active');
+        sqliteDetails.classList.remove('active');
+      } else {
+        pgBtn.classList.remove('active');
+        sqliteBtn.classList.add('active');
+        pgDetails.classList.remove('active');
+        sqliteDetails.classList.add('active');
+      }
+    };
+
+    // Run initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      setupEndpointAccordions();
+      setupDatabaseTabs();
+      generateSidebarMenu();
+    });
+  </script>
+</body>
+</html>
